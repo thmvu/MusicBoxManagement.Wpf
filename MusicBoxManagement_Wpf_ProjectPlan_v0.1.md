@@ -1,0 +1,35 @@
+# Music Box WPF — kế hoạch nền tảng v0.1
+
+Ngày: 02/10/2026. Lựa chọn đã chốt: **project riêng, WPF, .NET Framework 4.7.2, SQLite; giữ chế độ Khách tại máy demo/quầy**.
+
+## Phạm vi và nguồn nghiệp vụ
+
+Tham chiếu `../MusicBoxManagement/MusicBoxManagement_ProjectPlan_v1.3.md` và các quyết định người dùng đã chốt. Chỉ thay nền tảng theo yêu cầu; tài liệu này chưa thay thế đầy đủ plan v1.3 và không xác nhận các thay đổi nghiệp vụ.
+
+Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservation → RoomSession → Order → Invoice, walk-in, hủy/NoShow, snapshot, thu tiền mặt/chuyển khoản, lịch ngày/tuần, báo cáo/Excel, Admin/Manager/Staff, ma trận quyền và nhật ký.
+
+## Các bước nhỏ
+
+1. **Nền tảng — đã hoàn thành:** tạo solution WPF, mở cửa sổ, khởi tạo SQLite riêng, đọc hai loại phòng. Debug/Release build đạt; kiểm tra SQLite và giao diện đạt.
+2. **Chốt các điểm thay nền tảng:** Guest thao tác qua chế độ Khách tại máy demo/quầy (đã được người dùng chọn); đăng nhập và lưu tài khoản/role/permission trên SQLite; quy tắc transaction/đồng thời thay SQL Server. Không tự bỏ Guest hoặc thay cách tra cứu SĐT.
+3. **Đăng nhập và quyền:** chỉ sau khi chốt bước 2; Admin/Staff/Manager, quyền được kiểm tra trong service và UI.
+4. **Danh mục:** RoomType, phòng/ảnh/khóa mở, dịch vụ, khách hàng; validation theo plan gốc.
+5. **Đặt phòng:** lịch ngày/tuần, availability, đặt/hủy/NoShow và kiểm tra trùng.
+6. **Vận hành:** check-in, walk-in, gia hạn, gọi/xác nhận/hủy món, tiền tạm tính.
+7. **Thanh toán:** transaction trả phòng, hóa đơn bất biến, in bằng WPF.
+8. **Quản trị và báo cáo:** dashboard, khách hàng/lịch sử, ma trận quyền, user/audit, báo cáo/Excel.
+9. **Hoàn thiện đồ án:** kiểm tra luồng chính bằng SQLite và UI, dữ liệu demo, hướng dẫn và tài liệu bảo vệ.
+
+## Quy tắc dữ liệu cho bước 1
+
+- File riêng tại `%LOCALAPPDATA%\MusicBoxManagement.Wpf\musicbox.db`.
+- Bảng `RoomTypes`: mã STANDARD/VIP, tên, sức chứa, giá nguyên đồng, tiện ích, mô tả.
+- Schema v1 có CHECK/UNIQUE; seed trong cùng transaction lúc tạo schema lần đầu.
+- Mỗi kết nối bật foreign keys; schema mới hơn phiên bản ứng dụng phải được từ chối.
+- Database ứng dụng desktop chưa có tài khoản, booking hay phiên sử dụng.
+
+## Quyết định và điểm cần chốt trước bước 2
+
+Người dùng đã chọn giữ **chế độ Khách tại máy demo/quầy**. Guest xem phòng/lịch, đặt phòng, tra cứu SĐT, gia hạn và gọi món qua giao diện WPF riêng với khu vực nhân viên. Các chức năng và điều kiện nghiệp vụ Guest giữ theo plan gốc; ứng dụng không cần thêm website để chạy chế độ này. Truy cập khu vực nhân viên phải đăng nhập; chế độ Khách không mở dữ liệu quản trị.
+
+ASP.NET Identity/OWIN, Razor, FullCalendar và SQL Server không được sao chép nguyên trạng thành cách triển khai WPF/SQLite. Tái sử dụng quy tắc nghiệp vụ; thiết kế phần truy cập dữ liệu và đăng nhập phù hợp sau khi đối chiếu.
