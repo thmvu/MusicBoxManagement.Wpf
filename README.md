@@ -42,6 +42,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Foundatio
 
 Bài kiểm tra tạo file SQLite tạm riêng, kiểm tra tiếng Việt, lưu thay đổi qua lần mở lại, seed không ghi đè dữ liệu, giá nguyên đồng và schema version. Nó tự xóa file tạm đã tạo và không chạm database đang dùng.
 
+## Đã làm ở bước 2
+
+- Chốt thiết kế Identity Core + kho SQLite, phiên đăng nhập trong bộ nhớ và kiểm tra quyền hiện hành ở service/UI trong [tài liệu triển khai](docs/Wpf_Authentication_Transactions.md).
+- Thêm `SqliteDatabase.BeginWriteTransaction`: lấy quyền ghi trước khi đọc để kiểm tra và cập nhật nghiệp vụ; chưa thay schema v1.
+- Kiểm tra thêm commit, rollback toàn bộ khi lỗi, rollback tường minh và hai kết nối tranh quyền ghi trên SQLite thật. Debug/Release build và Verify-Foundation đạt.
+
+Chưa triển khai tài khoản/đăng nhập; tài liệu trên là thiết kế cho bước 3. Kiểm tra transaction nền tảng chưa thay thế kiểm tra booking/checkout đồng thời ở các bước sau.
+
 ## Kế hoạch tiếp theo
 
-Đọc `MusicBoxManagement_Wpf_ProjectPlan_v0.1.md`. Người dùng đã chọn giữ chế độ Khách tại máy demo/quầy. Nghiệp vụ lấy từ plan web v1.3; đăng nhập và cơ chế đồng thời phải đối chiếu trước khi triển khai trên SQLite.
+Đọc `MusicBoxManagement_Wpf_ProjectPlan_v0.1.md` và `docs/Wpf_Authentication_Transactions.md`. Tiếp theo là bước 3: migration tài khoản/quyền, thiết lập Admin đầu tiên, đăng nhập/đăng xuất và kiểm tra quyền ở service/UI. Giữ chế độ Khách tại máy demo/quầy và nghiệp vụ của plan web v1.3.

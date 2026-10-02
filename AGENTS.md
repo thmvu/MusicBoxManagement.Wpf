@@ -13,12 +13,13 @@
 
 - Bước 1 đã có: solution WPF truyền thống, SQLite schema v1/RoomTypes, Standard/VIP, màn hình đọc danh mục và nút làm mới.
 - Đã build Debug/Release, kiểm tra database bằng `Tests/Verify-Foundation.ps1` và thử giao diện.
+- Bước 2 đã chốt kỹ thuật tại `docs/Wpf_Authentication_Transactions.md`: Identity Core + kho SQLite, quyền hiện hành và phiên trong bộ nhớ. Có BeginWriteTransaction; đã build Debug/Release và kiểm tra commit/rollback/hai kết nối tranh quyền ghi trên database tạm. Schema vẫn v1.
 - Chưa có đăng nhập, quản lý phòng, đặt phòng, phiên sử dụng, gọi món, checkout/hóa đơn và báo cáo.
 - Database nằm ở `%LOCALAPPDATA%\MusicBoxManagement.Wpf\musicbox.db`; không ghi đè/xóa database đang dùng khi kiểm tra.
 
 ## Làm tiếp
 
-Đọc README và plan trước. Bước tiếp theo là chốt triển khai tài khoản/role/permission và transaction SQLite, rồi làm đăng nhập. Tái sử dụng quy tắc nghiệp vụ phù hợp; không giả định phần còn lại của ứng dụng desktop đã hoàn thành.
+Đọc README, plan và `docs/Wpf_Authentication_Transactions.md` trước. Bước tiếp theo là bước 3: migration tài khoản/role/permission, kho Identity trên SQLite, thiết lập Admin đầu tiên, đăng nhập/đăng xuất và kiểm tra quyền trong service/UI. Tái sử dụng quy tắc nghiệp vụ phù hợp; không giả định phần còn lại của ứng dụng desktop đã hoàn thành.
 
 ## Kiểm tra và Git
 

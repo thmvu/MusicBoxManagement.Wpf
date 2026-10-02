@@ -43,10 +43,19 @@ namespace MusicBoxManagement.Wpf.Data
             }
         }
 
+        // System.Data.SQLite maps Serializable to BEGIN IMMEDIATE: acquire the
+        // writer before reading data used to validate a business operation.
+        // The caller owns disposal; disposing without Commit rolls back.
+        public static SQLiteTransaction BeginWriteTransaction(SQLiteConnection connection)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return connection.BeginTransaction(IsolationLevel.Serializable);
+        }
+
         public void Initialize()
         {
             using (var connection = OpenConnection())
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = BeginWriteTransaction(connection))
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;

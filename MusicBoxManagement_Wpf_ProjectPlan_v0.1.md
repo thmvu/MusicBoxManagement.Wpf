@@ -11,7 +11,7 @@ Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservat
 ## Các bước nhỏ
 
 1. **Nền tảng — đã hoàn thành:** tạo solution WPF, mở cửa sổ, khởi tạo SQLite riêng, đọc hai loại phòng. Debug/Release build đạt; kiểm tra SQLite và giao diện đạt.
-2. **Chốt các điểm thay nền tảng:** Guest thao tác qua chế độ Khách tại máy demo/quầy (đã được người dùng chọn); đăng nhập và lưu tài khoản/role/permission trên SQLite; quy tắc transaction/đồng thời thay SQL Server. Không tự bỏ Guest hoặc thay cách tra cứu SĐT.
+2. **Chốt các điểm thay nền tảng — đã hoàn thành:** Guest tại máy demo/quầy; Identity Core + kho SQLite, phiên đăng nhập trong bộ nhớ, quyền hiện hành trong service/UI; transaction ghi IMMEDIATE. Chi tiết ở `docs/Wpf_Authentication_Transactions.md`. Đã kiểm tra commit/rollback và hai kết nối tranh quyền ghi; Debug/Release đạt. Chưa có schema tài khoản hoặc đăng nhập. Không tự bỏ Guest hoặc thay cách tra cứu SĐT.
 3. **Đăng nhập và quyền:** chỉ sau khi chốt bước 2; Admin/Staff/Manager, quyền được kiểm tra trong service và UI.
 4. **Danh mục:** RoomType, phòng/ảnh/khóa mở, dịch vụ, khách hàng; validation theo plan gốc.
 5. **Đặt phòng:** lịch ngày/tuần, availability, đặt/hủy/NoShow và kiểm tra trùng.
