@@ -2,6 +2,8 @@
 
 Ngày chốt kỹ thuật: 02/10/2026. Đối chiếu plan WPF bước 2–3 và plan web v1.3 mục 4–5, 33, 35, 53–55, 58. Đây là cách triển khai tương đương trên desktop; giữ nguyên phạm vi nghiệp vụ.
 
+**Cập nhật 03/10/2026:** bước 3 đã triển khai đăng nhập theo thiết kế này. Xem `Step3_Authentication.md` về phần đã làm, kiểm tra và phần quản trị còn ở bước 8. Các mô tả schema v1/chưa có tài khoản bên dưới ghi lại thời điểm kết thúc bước 2.
+
 ## Tài khoản và đăng nhập (thiết kế cho bước 3)
 
 - Dùng Microsoft.AspNet.Identity.Core 2 với `ApplicationUser : IdentityUser` và `IdentityRole` từ Microsoft.AspNet.Identity.EntityFramework 2 tương thích .NET Framework 4.7.2. Kho lưu tự triển khai các interface Identity trên System.Data.SQLite; không dùng Entity Framework để mở SQL Server, không dùng OWIN/cookie.

@@ -12,7 +12,7 @@ Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservat
 
 1. **Nền tảng — đã hoàn thành:** tạo solution WPF, mở cửa sổ, khởi tạo SQLite riêng, đọc hai loại phòng. Debug/Release build đạt; kiểm tra SQLite và giao diện đạt.
 2. **Chốt các điểm thay nền tảng — đã hoàn thành:** Guest tại máy demo/quầy; Identity Core + kho SQLite, phiên đăng nhập trong bộ nhớ, quyền hiện hành trong service/UI; transaction ghi IMMEDIATE. Chi tiết ở `docs/Wpf_Authentication_Transactions.md`. Đã kiểm tra commit/rollback và hai kết nối tranh quyền ghi; Debug/Release đạt. Chưa có schema tài khoản hoặc đăng nhập. Không tự bỏ Guest hoặc thay cách tra cứu SĐT.
-3. **Đăng nhập và quyền:** chỉ sau khi chốt bước 2; Admin/Staff/Manager, quyền được kiểm tra trong service và UI.
+3. **Đăng nhập và quyền — đã hoàn thành ngày 03/10/2026:** migration v2 giữ dữ liệu v1, kho SQLite cho Identity/UserManager, thiết lập Admin đầu tiên, đăng nhập/đăng xuất, ba role/27 permission, kiểm tra quyền hiện hành ở service/UI. Debug/Release và kiểm tra SQLite/xác thực/quyền/UI đạt. Chi tiết `docs/Step3_Authentication.md`. UI quản trị tài khoản/ma trận quyền/nhật ký đầy đủ vẫn thuộc bước 8.
 4. **Danh mục:** RoomType, phòng/ảnh/khóa mở, dịch vụ, khách hàng; validation theo plan gốc.
 5. **Đặt phòng:** lịch ngày/tuần, availability, đặt/hủy/NoShow và kiểm tra trùng.
 6. **Vận hành:** check-in, walk-in, gia hạn, gọi/xác nhận/hủy món, tiền tạm tính.
@@ -26,7 +26,7 @@ Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservat
 - Bảng `RoomTypes`: mã STANDARD/VIP, tên, sức chứa, giá nguyên đồng, tiện ích, mô tả.
 - Schema v1 có CHECK/UNIQUE; seed trong cùng transaction lúc tạo schema lần đầu.
 - Mỗi kết nối bật foreign keys; schema mới hơn phiên bản ứng dụng phải được từ chối.
-- Database ứng dụng desktop chưa có tài khoản, booking hay phiên sử dụng.
+- Tại bước 1 chưa có tài khoản; bước 3 bổ sung schema v2 và Admin do người vận hành tạo. Booking và phiên sử dụng vẫn chưa triển khai.
 
 ## Quyết định và điểm cần chốt trước bước 2
 

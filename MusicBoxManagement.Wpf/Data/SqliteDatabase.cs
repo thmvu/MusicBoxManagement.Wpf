@@ -61,7 +61,7 @@ namespace MusicBoxManagement.Wpf.Data
                 command.Transaction = transaction;
                 command.CommandText = "PRAGMA user_version;";
                 var version = Convert.ToInt32(command.ExecuteScalar());
-                if (version > 1) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
+                if (version > 2) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
                 if (version == 0)
                 {
                     command.CommandText = @"
@@ -81,6 +81,7 @@ PRAGMA user_version = 1;";
                     SeedRoomType(command, "VIP", "VIP", 6, 200000,
                         "TV lớn, Điều hòa, 4 micro, Loa cao cấp, Đèn LED, Sofa");
                 }
+                if (version < 2) AuthenticationSchema.Create(command);
                 transaction.Commit();
             }
         }

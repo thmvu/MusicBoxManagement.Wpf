@@ -23,15 +23,20 @@
                     <TextBlock Text="Quản lý phòng và dịch vụ" FontSize="12" Foreground="#C1CDD4" Margin="0,6,0,36" TextWrapping="Wrap" />
                 </StackPanel>
                 <Border Grid.Row="1" Background="#3B4B57" BorderBrush="#90A79C" BorderThickness="3,0,0,0" Padding="14,12">
-                    <TextBlock Text="Loại phòng" Foreground="White" FontWeight="SemiBold" />
+                    <TextBlock x:Name="CurrentAreaText" Text="Loại phòng" Foreground="White" FontWeight="SemiBold" />
                 </Border>
                 <StackPanel Grid.Row="3">
                     <Separator Background="#51616D" Margin="0,0,0,16" />
+                    <TextBlock x:Name="ModeText" Text="Chế độ Khách" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <Button x:Name="LoginButton" AutomationProperties.AutomationId="OpenLogin" Content="Đăng nhập nhân viên" IsEnabled="False"
+                            Click="Login_Click" Padding="8,9" Margin="0,0,0,8" FontSize="12" />
+                    <Button x:Name="LogoutButton" AutomationProperties.AutomationId="Logout" Content="Đăng xuất về Khách" Visibility="Collapsed"
+                            Click="Logout_Click" Padding="8,9" Margin="0,0,0,8" FontSize="12" />
                     <TextBlock Text="Dữ liệu lưu trên máy" Foreground="#C1CDD4" FontSize="12" />
                 </StackPanel>
             </Grid>
         </Border>
-        <Grid Grid.Column="1" Margin="36,32,36,24">
+        <Grid x:Name="GuestPanel" Grid.Column="1" Margin="36,32,36,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -101,6 +106,41 @@
                 </DataGrid.Columns>
             </DataGrid>
             <TextBlock Grid.Row="3" Text="{Binding Status}" Foreground="#5C6873" Margin="0,18,0,0" TextWrapping="Wrap" />
+        </Grid>
+        <Grid x:Name="StaffPanel" Grid.Column="1" Margin="36,32,36,24" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Khu vực nhân viên" FontSize="30" FontWeight="SemiBold" />
+            <TextBlock x:Name="StaffIdentity" AutomationProperties.AutomationId="StaffIdentity" Grid.Row="1" Margin="0,10,0,18" TextWrapping="Wrap" />
+            <DockPanel Grid.Row="2" Margin="0,0,0,18">
+                <Button x:Name="RefreshAccessButton" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click" DockPanel.Dock="Right" />
+                <TextBlock Text="Quyền hiện hành" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </DockPanel>
+            <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
+                      RowHeight="36" ColumnHeaderHeight="36" Background="White" BorderBrush="#CAD3D8"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" AlternatingRowBackground="#F7F9FA">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#E9EEF0" />
+                        <Setter Property="Foreground" Value="#3D4D58" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Padding" Value="12,8" />
+                    </Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Margin" Value="12,0" />
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Chức năng" Binding="{Binding Value}" Width="*" />
+                    <DataGridTextColumn Header="Mã quyền" Binding="{Binding Key}" Width="210" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock x:Name="AccessStatus" Grid.Row="4" Margin="0,18,0,0" TextWrapping="Wrap" Foreground="#5C6873"
+                       Text="Đã có đăng nhập và kiểm tra quyền. Các màn hình nghiệp vụ sẽ được triển khai ở các bước tiếp theo." />
         </Grid>
     </Grid>
 </Window>

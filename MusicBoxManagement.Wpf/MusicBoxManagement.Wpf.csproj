@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -43,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
+    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></ApplicationDefinition>
@@ -50,6 +53,16 @@
     <Compile Include="App.xaml.cs"><DependentUpon>App.xaml</DependentUpon></Compile>
     <Compile Include="Views\MainWindow.xaml.cs"><DependentUpon>MainWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\SqliteDatabase.cs" />
+    <Compile Include="Data\AuthenticationSchema.cs" />
+    <Compile Include="Data\SqliteIdentityStore.cs" />
+    <Compile Include="Models\ApplicationUser.cs" />
+    <Compile Include="Models\LoginSession.cs" />
+    <Compile Include="Services\Pbkdf2PasswordHasher.cs" />
+    <Compile Include="Services\PermissionCatalog.cs" />
+    <Compile Include="Services\PermissionService.cs" />
+    <Compile Include="Services\AuthenticationService.cs" />
+    <Page Include="Views\AuthenticationWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\RoomType.cs" />
     <Compile Include="Services\RoomTypeService.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
