@@ -61,6 +61,11 @@
     <Compile Include="Services\PermissionCatalog.cs" />
     <Compile Include="Services\PermissionService.cs" />
     <Compile Include="Services\AuthenticationService.cs" />
+    <Compile Include="Services\AuditService.cs" />
+    <Compile Include="Models\RoomTypeEdit.cs" />
+    <Compile Include="ViewModels\RoomTypeEditViewModel.cs" />
+    <Page Include="Views\RoomTypeEditWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\RoomTypeEditWindow.xaml.cs"><DependentUpon>RoomTypeEditWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\AuthenticationWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\RoomType.cs" />

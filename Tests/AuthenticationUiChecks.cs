@@ -62,7 +62,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -70,6 +70,7 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(() => Field<Button>(window, "LoginButton").IsEnabled && viewModel.RoomTypes.Count == 2);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "App did not start in Guest mode.");
             Assert(Field<Grid>(window, "StaffPanel").Visibility == Visibility.Collapsed, "Staff area was exposed before login.");
+            Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Guest saw an editing action.");
             Image(window, outputDirectory, "guest");
 
             // Drive the component's real event handlers using synthetic fields.
@@ -105,9 +106,60 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Admin UI did not show all current permissions.");
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
             Image(window, outputDirectory, "staff");
+
+            Assert(Field<Button>(window, "RoomTypesButton").Visibility == Visibility.Visible, "Admin did not receive the catalog action.");
+            Click(Field<Button>(window, "RoomTypesButton"));
+            PumpUntil(() => Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Visible &&
+                Field<Button>(window, "EditRoomTypeButton").IsEnabled);
+            var editHandled = false;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender, args) =>
+            {
+                var dialog = application.Windows.OfType<RoomTypeEditWindow>().FirstOrDefault();
+                if (dialog == null || editHandled) return;
+                editHandled = true;
+                try
+                {
+                    Field<TextBox>(dialog, "PriceInput").Text = "145000.5";
+                    Click(Field<Button>(dialog, "SaveButton"));
+                    var editViewModel = (RoomTypeEditViewModel)dialog.DataContext;
+                    Assert(editViewModel.Status.Contains("số nguyên đồng"), "Fractional VND UI validation did not display an error.");
+                    Image(dialog, outputDirectory, "roomtype-edit-error");
+                    Field<TextBox>(dialog, "NameInput").Text = "Standard học tập";
+                    Field<TextBox>(dialog, "PriceInput").Text = "145000";
+                    Field<TextBox>(dialog, "CapacityInput").Text = "5";
+                    Field<TextBox>(dialog, "DescriptionInput").Text = "Đã sửa từ giao diện thử nghiệm.";
+                    Click(Field<Button>(dialog, "SaveButton"));
+                }
+                catch (Exception error) { driverError = error; driver.Stop(); dialog.Close(); }
+            };
+            driver.Start();
+            Click(Field<Button>(window, "EditRoomTypeButton"));
+            PumpUntil(() => (viewModel.RoomTypes.Count == 2 && viewModel.RoomTypes[0].PricePerHour == 145000 &&
+                Field<Button>(window, "EditRoomTypeButton").IsEnabled) || driverError != null);
+            driver.Stop();
+            if (driverError != null) throw driverError;
+            Assert(viewModel.RoomTypes[0].Name == "Standard học tập" && viewModel.RoomTypes[0].Code == "STANDARD", "Saved editor data did not refresh the catalog.");
+            Image(window, outputDirectory, "roomtype-catalog");
+            var cancelHandled = false;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender, args) =>
+            {
+                var dialog = application.Windows.OfType<RoomTypeEditWindow>().FirstOrDefault();
+                if (dialog == null || cancelHandled) return;
+                cancelHandled = true;
+                Field<TextBox>(dialog, "NameInput").Text = "Không lưu tên này";
+                driver.Stop();
+                dialog.DialogResult = false;
+            };
+            driver.Start();
+            Click(Field<Button>(window, "EditRoomTypeButton"));
+            PumpUntil(() => cancelHandled && Field<Button>(window, "EditRoomTypeButton").IsEnabled);
+            Assert(new RoomTypeService(database).List()[0].Name == "Standard học tập", "Canceling the editor saved changes.");
             Click(Field<Button>(window, "LogoutButton"));
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 0, "Logout left employee data in the UI.");
+            Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Logout left an editing action in Guest mode.");
 
             var stage = 0;
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
@@ -160,7 +212,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest, bootstrap validation, async submit, Admin permissions, wrong/correct login, logout and cancel. Rendered five views.");
+            Console.WriteLine("PASS WPF UI: Guest, bootstrap, permissions, login/logout, room-type validation/save/cancel and catalog refresh. Rendered seven views.");
         }
         finally
         {

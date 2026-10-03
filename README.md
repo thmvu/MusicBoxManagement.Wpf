@@ -72,8 +72,27 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentic
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
 
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, lưu năm ảnh render trong thư mục tạm và in đường dẫn. Các bài kiểm tra không mở/xóa database đang dùng.
+Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng và lưu bảy ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
+
+## Bước 4a — sửa Standard/VIP
+
+1. Đăng nhập Admin (hoặc tài khoản có quyền sửa loại phòng).
+2. Trong khu vực nhân viên, bấm **Loại phòng**, chọn Standard/VIP rồi bấm **Sửa loại phòng**.
+3. Sửa tên, sức chứa, giá mỗi giờ, tiện ích và mô tả. Nhập giá nguyên đồng như `145000`, sức chứa là số nguyên dương; tên và tiện ích bắt buộc.
+4. Bấm **Lưu thay đổi** để cập nhật bảng. **Hủy** không lưu. Đăng xuất trở về danh mục Khách chỉ xem.
+
+Chỉ sửa hai loại đã có; không thêm/xóa hoặc sửa Code. Quyền `RoomType.Edit` được kiểm tra trong service cả khi mở form và khi lưu bằng cùng transaction với cập nhật/nhật ký. Form cũ bị chặn nếu người khác đã sửa dữ liệu; hãy đóng, làm mới rồi mở lại.
+
+Schema hiện là **v3**: nâng từ v2 để sửa ActorType của nhật ký nhân viên từ `User` thành `Staff` đúng plan; giữ nội dung, ID, thời gian và liên kết user của nhật ký cũ. Phần sửa loại phòng dùng bảng RoomTypes hiện có, không seed lại giá/tên.
+
+Kiểm tra phần này:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-RoomTypes.ps1
+```
+
+[Báo cáo bước 4a](docs/Step4a_RoomTypes.md) giải thích validation, transaction, nhật ký và kiểm tra đồng thời. Bước 4 còn danh mục phòng/ảnh/khóa mở, dịch vụ và khách hàng.
 
 ## Kế hoạch tiếp theo
 
-Tiếp theo là bước 4 — danh mục: đối chiếu plan web v1.3 rồi làm RoomType, phòng/ảnh/khóa mở, dịch vụ và khách hàng từng phần nhỏ. Các service nội bộ cần Permission tương ứng, kiểm tra lại trong transaction khi ghi. Giữ chế độ Khách tại máy demo/quầy và toàn bộ phạm vi đã chốt.
+Tiếp theo là bước 4b — danh mục phòng/ảnh/khóa mở, sau đó dịch vụ và khách hàng từng phần nhỏ theo plan web v1.3. Các service nội bộ cần Permission tương ứng, kiểm tra lại trong transaction khi ghi. Giữ chế độ Khách tại máy demo/quầy và toàn bộ phạm vi đã chốt.

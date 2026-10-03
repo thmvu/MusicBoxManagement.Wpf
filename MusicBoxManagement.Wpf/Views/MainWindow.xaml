@@ -49,11 +49,15 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Loại phòng" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="Làm mới" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="EditRoomTypeButton" Content="Sửa loại phòng" Visibility="Collapsed" IsEnabled="False" Click="EditRoomType_Click" Margin="0,0,8,0" />
+                    <Button Content="Làm mới" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click" />
+                    <Button x:Name="BackToStaffButton" Content="Nhân viên" Visibility="Collapsed" Click="RefreshAccess_Click" Margin="8,0,0,0" />
+                </StackPanel>
             </Grid>
             <TextBlock Grid.Row="1" Text="Sức chứa, giá theo giờ và tiện ích của Standard và VIP."
                        Foreground="#5C6873" Margin="0,10,0,28" TextWrapping="Wrap" />
-            <DataGrid Grid.Row="2" ItemsSource="{Binding RoomTypes}" AutoGenerateColumns="False"
+            <DataGrid x:Name="RoomTypesTable" Grid.Row="2" ItemsSource="{Binding RoomTypes}" AutoGenerateColumns="False" SelectionChanged="RoomType_SelectionChanged"
                       IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
                       CanUserReorderColumns="False" HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7"
@@ -116,6 +120,7 @@
             <TextBlock x:Name="StaffIdentity" AutomationProperties.AutomationId="StaffIdentity" Grid.Row="1" Margin="0,10,0,18" TextWrapping="Wrap" />
             <DockPanel Grid.Row="2" Margin="0,0,0,18">
                 <Button x:Name="RefreshAccessButton" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click" DockPanel.Dock="Right" />
+                <Button x:Name="RoomTypesButton" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
                 <TextBlock Text="Quyền hiện hành" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
             <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"

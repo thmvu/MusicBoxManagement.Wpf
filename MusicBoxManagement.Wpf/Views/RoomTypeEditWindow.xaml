@@ -1,0 +1,43 @@
+<Window x:Class="MusicBoxManagement.Wpf.Views.RoomTypeEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Music Box — Sửa loại phòng" Width="590" Height="690" MinWidth="520" MinHeight="560"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5">
+    <Grid Margin="28">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,18">
+            <TextBlock Text="Sửa loại phòng" FontSize="26" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Code, StringFormat=Mã loại phòng: {0}}" Margin="0,8,0,0" Foreground="#5C6873" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel IsEnabled="{Binding CanSave}" Margin="0,0,12,0">
+                <TextBlock Text="Tên loại phòng" Margin="0,0,0,6" />
+                <TextBox x:Name="NameInput" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8" />
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Sức chứa (người)" Margin="0,0,0,6" />
+                        <TextBox x:Name="CapacityInput" Text="{Binding CapacityText, UpdateSourceTrigger=PropertyChanged}" Padding="8" MaxLength="10" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Giá mỗi giờ (đồng)" Margin="0,0,0,6" />
+                        <TextBox x:Name="PriceInput" Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" Padding="8" MaxLength="19" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock Text="Nhập số nguyên, ví dụ giá 120000. Sức chứa và giá phải lớn hơn 0."
+                           FontSize="12" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,8,0,0" />
+                <TextBlock Text="Tiện ích (bắt buộc)" Margin="0,16,0,6" />
+                <TextBox x:Name="AmenitiesInput" Text="{Binding Amenities, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000"
+                         Padding="8" AcceptsReturn="True" TextWrapping="Wrap" Height="86" VerticalScrollBarVisibility="Auto" />
+                <TextBlock Text="Mô tả" Margin="0,16,0,6" />
+                <TextBox x:Name="DescriptionInput" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="2000"
+                         Padding="8" AcceptsReturn="True" TextWrapping="Wrap" Height="86" VerticalScrollBarVisibility="Auto" />
+            </StackPanel>
+        </ScrollViewer>
+        <TextBlock Grid.Row="2" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#8B2929" Margin="0,16,0,0" />
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button x:Name="SaveButton" Content="Lưu thay đổi" IsEnabled="{Binding CanSave}" Click="Save_Click" />
+            <Button Content="Hủy" IsCancel="True" IsEnabled="{Binding CanSave}" Margin="12,0,0,0" />
+        </StackPanel>
+    </Grid>
+</Window>

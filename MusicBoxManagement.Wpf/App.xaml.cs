@@ -17,8 +17,9 @@ namespace MusicBoxManagement.Wpf
             Thread.CurrentThread.CurrentCulture = culture;
             Thread.CurrentThread.CurrentUICulture = culture;
             var database = new SqliteDatabase(SqliteDatabase.DefaultPath);
-            MainWindow = new MainWindow(new MainViewModel(new RoomTypeService(database)),
-                new AuthenticationService(database), new PermissionService(database));
+            var roomTypes = new RoomTypeService(database);
+            MainWindow = new MainWindow(new MainViewModel(roomTypes),
+                new AuthenticationService(database), new PermissionService(database), roomTypes);
             MainWindow.Show();
         }
     }

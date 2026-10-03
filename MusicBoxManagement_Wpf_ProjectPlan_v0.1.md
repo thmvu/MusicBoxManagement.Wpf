@@ -13,7 +13,7 @@ Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservat
 1. **Nền tảng — đã hoàn thành:** tạo solution WPF, mở cửa sổ, khởi tạo SQLite riêng, đọc hai loại phòng. Debug/Release build đạt; kiểm tra SQLite và giao diện đạt.
 2. **Chốt các điểm thay nền tảng — đã hoàn thành:** Guest tại máy demo/quầy; Identity Core + kho SQLite, phiên đăng nhập trong bộ nhớ, quyền hiện hành trong service/UI; transaction ghi IMMEDIATE. Chi tiết ở `docs/Wpf_Authentication_Transactions.md`. Đã kiểm tra commit/rollback và hai kết nối tranh quyền ghi; Debug/Release đạt. Chưa có schema tài khoản hoặc đăng nhập. Không tự bỏ Guest hoặc thay cách tra cứu SĐT.
 3. **Đăng nhập và quyền — đã hoàn thành ngày 03/10/2026:** migration v2 giữ dữ liệu v1, kho SQLite cho Identity/UserManager, thiết lập Admin đầu tiên, đăng nhập/đăng xuất, ba role/27 permission, kiểm tra quyền hiện hành ở service/UI. Debug/Release và kiểm tra SQLite/xác thực/quyền/UI đạt. Chi tiết `docs/Step3_Authentication.md`. UI quản trị tài khoản/ma trận quyền/nhật ký đầy đủ vẫn thuộc bước 8.
-4. **Danh mục:** RoomType, phòng/ảnh/khóa mở, dịch vụ, khách hàng; validation theo plan gốc.
+4. **Danh mục — đang làm:** 4a sửa hai RoomType đã hoàn thành ngày 03/10/2026, quyền RoomType.Edit và nhật ký trong transaction, validation và chặn form cũ; schema v3 chuẩn hóa ActorType Staff. Chi tiết `docs/Step4a_RoomTypes.md`. Còn 4b phòng/ảnh/khóa mở, sau đó dịch vụ và khách hàng; validation theo plan gốc. Chưa hoàn tất cả bước 4.
 5. **Đặt phòng:** lịch ngày/tuần, availability, đặt/hủy/NoShow và kiểm tra trùng.
 6. **Vận hành:** check-in, walk-in, gia hạn, gọi/xác nhận/hủy món, tiền tạm tính.
 7. **Thanh toán:** transaction trả phòng, hóa đơn bất biến, in bằng WPF.

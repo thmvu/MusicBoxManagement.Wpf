@@ -2,6 +2,8 @@
 
 Ngày: 03/10/2026. Đối chiếu plan WPF bước 3, thiết kế bước 2 và plan web v1.3 mục 4–5, 33, 35, 53–55. Nền tảng vẫn WPF .NET Framework 4.7.2 + SQLite.
 
+Cập nhật sau bước 4a: schema hiện v3, nhật ký dùng ActorType Staff cho tài khoản nội bộ, giữ nhật ký cũ. UI đã có sửa loại phòng; bài kiểm tra UI hiện render bảy ảnh. Xem `Step4a_RoomTypes.md`; các mô tả schema v2 bên dưới ghi lại bước 3.
+
 ## Đã sửa
 
 - Nâng schema v1 lên v2 bằng transaction: thêm AspNetUsers, AspNetRoles, AspNetUserRoles, Permission, RolePermission và AuditLog. Không xóa hoặc seed lại RoomTypes cũ; lỗi migration rollback. Cả database mới và database v1 đều lên v2; từ chối schema >2.

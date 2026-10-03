@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using MusicBoxManagement.Wpf.Models;
 using MusicBoxManagement.Wpf.Services;
 using MusicBoxManagement.Wpf.ViewModels;
@@ -12,14 +13,18 @@ namespace MusicBoxManagement.Wpf.Views
         private readonly MainViewModel viewModel;
         private readonly AuthenticationService authentication;
         private readonly PermissionService permissions;
+        private readonly RoomTypeService roomTypes;
         private LoginSession session;
+        private bool canEditRoomTypes;
+        private bool isOpeningEditor;
 
-        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions)
+        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes)
         {
             InitializeComponent();
             this.viewModel = viewModel;
             this.authentication = authentication;
             this.permissions = permissions;
+            this.roomTypes = roomTypes;
             DataContext = viewModel;
         }
 
@@ -32,7 +37,12 @@ namespace MusicBoxManagement.Wpf.Views
         private async void Refresh_Click(object sender, RoutedEventArgs e)
         {
             await viewModel.RefreshAsync();
-            await PrepareLoginAsync();
+            if (session == null) await PrepareLoginAsync();
+            else
+            {
+                await RefreshAccessAsync();
+                if (session != null && canEditRoomTypes) ShowCatalog();
+            }
         }
 
         private async Task PrepareLoginAsync()
@@ -68,14 +78,19 @@ namespace MusicBoxManagement.Wpf.Views
 
         private async Task RefreshAccessAsync()
         {
+            var currentSession = session;
+            if (currentSession == null) return;
             RefreshAccessButton.IsEnabled = false;
             try
             {
-                var currentSession = session;
                 var access = await Task.Run(() => permissions.GetStaffAccess(currentSession));
                 if (session != currentSession) return;
                 StaffIdentity.Text = access.FullName + " — " + access.Role;
                 PermissionsTable.ItemsSource = access.Permissions;
+                canEditRoomTypes = access.Permissions.ContainsKey("RoomType.Edit");
+                RoomTypesButton.Visibility = canEditRoomTypes ? Visibility.Visible : Visibility.Collapsed;
+                EditRoomTypeButton.Visibility = Visibility.Collapsed;
+                BackToStaffButton.Visibility = Visibility.Collapsed;
                 ModeText.Text = "Nhân viên: " + access.Role;
                 CurrentAreaText.Text = "Khu vực nhân viên";
                 StaffPanel.Visibility = Visibility.Visible;
@@ -86,11 +101,13 @@ namespace MusicBoxManagement.Wpf.Views
             }
             catch (UnauthorizedAccessException error)
             {
+                if (session != currentSession) return;
                 ReturnToGuest();
                 MessageBox.Show(this, error.Message, "Music Box");
             }
             catch (Exception)
             {
+                if (session != currentSession) return;
                 ReturnToGuest();
                 MessageBox.Show(this, "Không kiểm tra được quyền. Hãy đăng nhập lại khi dữ liệu sẵn sàng.", "Music Box");
             }
@@ -108,6 +125,8 @@ namespace MusicBoxManagement.Wpf.Views
         {
             authentication.Logout(session);
             session = null;
+            canEditRoomTypes = false;
+            EditRoomTypeButton.Visibility = BackToStaffButton.Visibility = RoomTypesButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
             StaffIdentity.Text = "";
             ModeText.Text = "Chế độ Khách";
@@ -116,6 +135,57 @@ namespace MusicBoxManagement.Wpf.Views
             GuestPanel.Visibility = Visibility.Visible;
             LoginButton.Visibility = Visibility.Visible;
             LogoutButton.Visibility = Visibility.Collapsed;
+        }
+
+        private async void ShowRoomTypes_Click(object sender, RoutedEventArgs e)
+        {
+            await RefreshAccessAsync();
+            if (session == null || !canEditRoomTypes) return;
+            await viewModel.RefreshAsync();
+            ShowCatalog();
+        }
+
+        private void ShowCatalog()
+        {
+            if (session == null || !canEditRoomTypes) return;
+            StaffPanel.Visibility = Visibility.Collapsed;
+            GuestPanel.Visibility = Visibility.Visible;
+            CurrentAreaText.Text = "Loại phòng";
+            EditRoomTypeButton.Visibility = BackToStaffButton.Visibility = Visibility.Visible;
+            if (RoomTypesTable.SelectedItem == null && RoomTypesTable.Items.Count > 0) RoomTypesTable.SelectedIndex = 0;
+            UpdateEditButton();
+        }
+
+        private void RoomType_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateEditButton();
+
+        private void UpdateEditButton()
+        {
+            if (EditRoomTypeButton != null)
+                EditRoomTypeButton.IsEnabled = canEditRoomTypes && !isOpeningEditor && RoomTypesTable.SelectedItem is RoomType;
+        }
+
+        private async void EditRoomType_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningEditor || !(RoomTypesTable.SelectedItem is RoomType selected)) return;
+            isOpeningEditor = true;
+            UpdateEditButton();
+            try
+            {
+                var currentSession = session;
+                var original = await Task.Run(() => roomTypes.GetForEdit(currentSession, selected.RoomTypeId));
+                if (session != currentSession) return;
+                var editor = new RoomTypeEditWindow(new RoomTypeEditViewModel(roomTypes, currentSession, original)) { Owner = this };
+                if (editor.ShowDialog() == true) await viewModel.RefreshAsync();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền sửa loại phòng hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Không đọc được loại phòng. Hãy làm mới và thử lại.", "Music Box"); }
+            finally
+            {
+                isOpeningEditor = false;
+                await RefreshAccessAsync();
+                if (session != null && canEditRoomTypes) ShowCatalog();
+                UpdateEditButton();
+            }
         }
     }
 }

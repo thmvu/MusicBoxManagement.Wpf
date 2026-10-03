@@ -1,6 +1,4 @@
 using System;
-using System.Data.SQLite;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -73,7 +71,8 @@ namespace MusicBoxManagement.Wpf.Services
                             throw new InvalidOperationException("Admin đầu tiên đã được thiết lập. Hãy đóng cửa sổ và đăng nhập.");
                     }
                     store.SaveChanges();
-                    WriteAudit(connection, transaction, user.Id, "User.Bootstrap", "Thiết lập Admin đầu tiên.");
+                    AuditService.WriteStaff(connection, transaction, user.Id, "User.Bootstrap",
+                        "ApplicationUser", user.Id, "Thiết lập Admin đầu tiên.");
                     transaction.Commit();
                 }
                 return new LoginSession(user.Id, user.SecurityStamp);
@@ -98,28 +97,13 @@ namespace MusicBoxManagement.Wpf.Services
                 using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
                 {
                     new PermissionService(database).ReadAccess(session, connection, transaction);
-                    WriteAudit(connection, transaction, user.Id, "User.Login", "Đăng nhập khu vực nhân viên.");
+                    AuditService.WriteStaff(connection, transaction, user.Id, "User.Login",
+                        "ApplicationUser", user.Id, "Đăng nhập khu vực nhân viên.");
                     transaction.Commit();
                 }
                 return session;
             }
         }
 
-        private static void WriteAudit(SQLiteConnection connection, SQLiteTransaction transaction,
-            string userId, string action, string description)
-        {
-            using (var command = connection.CreateCommand())
-            {
-                command.Transaction = transaction;
-                command.CommandText = @"INSERT INTO AuditLog
-(ActorType, UserId, Action, EntityName, EntityId, Description, CreatedAt)
-VALUES ('User', @id, @action, 'ApplicationUser', @id, @description, @now);";
-                command.Parameters.AddWithValue("@id", userId);
-                command.Parameters.AddWithValue("@action", action);
-                command.Parameters.AddWithValue("@description", description);
-                command.Parameters.AddWithValue("@now", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-                command.ExecuteNonQuery();
-            }
-        }
     }
 }

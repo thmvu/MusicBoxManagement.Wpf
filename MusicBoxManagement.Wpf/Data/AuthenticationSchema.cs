@@ -5,6 +5,29 @@ namespace MusicBoxManagement.Wpf.Data
 {
     internal static class AuthenticationSchema
     {
+        internal static void UpgradeAuditActors(SQLiteCommand command)
+        {
+            command.Parameters.Clear();
+            command.CommandText = @"
+ALTER TABLE AuditLog RENAME TO AuditLog_v2;
+CREATE TABLE AuditLog (
+    AuditLogId INTEGER PRIMARY KEY,
+    ActorType TEXT NOT NULL CHECK(ActorType IN ('Staff', 'Guest', 'System')),
+    UserId TEXT NULL REFERENCES AspNetUsers(Id),
+    Action TEXT NOT NULL,
+    EntityName TEXT NOT NULL,
+    EntityId TEXT NULL,
+    Description TEXT NOT NULL,
+    CreatedAt TEXT NOT NULL
+);
+INSERT INTO AuditLog(AuditLogId, ActorType, UserId, Action, EntityName, EntityId, Description, CreatedAt)
+SELECT AuditLogId, CASE WHEN ActorType = 'User' THEN 'Staff' ELSE ActorType END,
+UserId, Action, EntityName, EntityId, Description, CreatedAt FROM AuditLog_v2;
+DROP TABLE AuditLog_v2;
+PRAGMA user_version = 3;";
+            command.ExecuteNonQuery();
+        }
+
         internal static void Create(SQLiteCommand command)
         {
             command.Parameters.Clear();
