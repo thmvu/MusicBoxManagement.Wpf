@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
     <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
     <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
   </ItemGroup>
@@ -53,6 +54,15 @@
     <Compile Include="App.xaml.cs"><DependentUpon>App.xaml</DependentUpon></Compile>
     <Compile Include="Views\MainWindow.xaml.cs"><DependentUpon>MainWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\SqliteDatabase.cs" />
+    <Compile Include="Data\RoomSchema.cs" />
+    <Compile Include="Models\Room.cs" />
+    <Compile Include="Services\RoomService.cs" />
+    <Compile Include="Services\RoomImages.cs" />
+    <Compile Include="ViewModels\RoomsViewModel.cs" />
+    <Page Include="Views\RoomsWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\RoomsWindow.xaml.cs"><DependentUpon>RoomsWindow.xaml</DependentUpon></Compile>
+    <Page Include="Views\RoomCreateWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\RoomCreateWindow.xaml.cs"><DependentUpon>RoomCreateWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\AuthenticationSchema.cs" />
     <Compile Include="Data\SqliteIdentityStore.cs" />
     <Compile Include="Models\ApplicationUser.cs" />

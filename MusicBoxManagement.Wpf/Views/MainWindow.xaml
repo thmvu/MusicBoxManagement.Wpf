@@ -121,6 +121,7 @@
             <DockPanel Grid.Row="2" Margin="0,0,0,18">
                 <Button x:Name="RefreshAccessButton" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click" DockPanel.Dock="Right" />
                 <Button x:Name="RoomTypesButton" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
+                <Button x:Name="RoomsButton" Content="Phòng" Click="ShowRooms_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
                 <TextBlock Text="Quyền hiện hành" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
             <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"

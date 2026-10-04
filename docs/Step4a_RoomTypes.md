@@ -2,6 +2,8 @@
 
 Ngày: 03/10/2026. Đối chiếu plan WPF bước 4 và plan web v1.3 mục 5, 18, 32, 47, 55. Đây là phần đầu của danh mục; bước 4 chưa hoàn tất.
 
+Cập nhật 04/10/2026: bước 4b.1 thêm phòng có ảnh đã hoàn thành, schema hiện v4 và bài kiểm tra UI render chín ảnh. Xem `Step4b1_RoomCreation.md`; mô tả v3/bảy ảnh bên dưới ghi lại thời điểm bước 4a.
+
 ## Đã sửa
 
 - Nhân viên có quyền RoomType.Edit được mở danh mục và form sửa Standard/VIP. Guest tiếp tục xem danh mục, không thấy nút sửa.

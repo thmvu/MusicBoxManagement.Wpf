@@ -7,7 +7,9 @@ $ErrorActionPreference = 'Stop'
 if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') { throw 'Run with powershell.exe -STA.' }
 $buildPath = (Resolve-Path $BuildDirectory).Path
 $assemblies = @('System.Data.SQLite.dll', 'Microsoft.AspNet.Identity.Core.dll',
-    'Microsoft.AspNet.Identity.EntityFramework.dll', 'EntityFramework.dll', 'MusicBoxManagement.Wpf.exe')
+    'Microsoft.AspNet.Identity.EntityFramework.dll', 'EntityFramework.dll', 'SkiaSharp.dll',
+    'System.Memory.dll', 'System.Buffers.dll', 'System.Numerics.Vectors.dll',
+    'System.Runtime.CompilerServices.Unsafe.dll', 'MusicBoxManagement.Wpf.exe')
 foreach ($assembly in $assemblies) {
     [void][Reflection.Assembly]::LoadFrom((Join-Path $buildPath $assembly))
 }

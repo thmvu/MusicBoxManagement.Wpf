@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng và đăng nhập ở bước 3, chưa phải ứng dụng quản lý hoàn chỉnh. Chưa triển khai phòng, đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng và thêm phòng có ảnh; chưa phải ứng dụng quản lý hoàn chỉnh. Chưa triển khai sửa/khóa phòng, đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -72,7 +72,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentic
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
 
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng và lưu bảy ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
+Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm phòng có ảnh và lưu chín ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
 
 ## Bước 4a — sửa Standard/VIP
 
@@ -93,6 +93,20 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-RoomTypes
 
 [Báo cáo bước 4a](docs/Step4a_RoomTypes.md) giải thích validation, transaction, nhật ký và kiểm tra đồng thời. Bước 4 còn danh mục phòng/ảnh/khóa mở, dịch vụ và khách hàng.
 
+## Bước 4b.1 — thêm phòng có ảnh
+
+1. Đăng nhập tài khoản có quyền `Room.Manage` (Admin/Manager mặc định), bấm **Phòng** → **Thêm phòng**.
+2. Nhập mã phòng riêng, tên, chọn Standard/VIP, chọn một ảnh JPEG/PNG/WebP hợp lệ tối đa 5 MB; mô tả tùy chọn.
+3. Bấm **Thêm phòng** rồi chọn dòng vừa tạo để xem ảnh. **Hủy** không lưu. Mã phòng cố định sau khi tạo; phòng mới đang mở.
+
+Schema hiện **v4**, thêm Rooms, giữ dữ liệu loại phòng/tài khoản/quyền/nhật ký cũ. Ảnh bắt buộc, được giải mã rồi lưu PNG với tên do ứng dụng tạo trong `%LOCALAPPDATA%\MusicBoxManagement.Wpf\Content\uploads\rooms`. Khi sao lưu/chuyển máy, giữ cả database và thư mục Content. Không tự seed phòng demo.
+
+Quyền, mã trùng, loại phòng và nhật ký được kiểm tra/ghi trong cùng transaction. Service chặn Guest/phiên hết hiệu lực; hai lần tạo cùng mã chỉ một thành công. Lỗi ghi ảnh/nhật ký rollback dữ liệu. Chi tiết và giới hạn khi process dừng đột ngột: [báo cáo bước 4b.1](docs/Step4b1_RoomCreation.md).
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Rooms.ps1
+```
+
 ## Kế hoạch tiếp theo
 
-Tiếp theo là bước 4b — danh mục phòng/ảnh/khóa mở, sau đó dịch vụ và khách hàng từng phần nhỏ theo plan web v1.3. Các service nội bộ cần Permission tương ứng, kiểm tra lại trong transaction khi ghi. Giữ chế độ Khách tại máy demo/quầy và toàn bộ phạm vi đã chốt.
+Tiếp theo là 4b.2 — sửa thông tin/thay ảnh/khóa mở phòng đúng điều kiện booking/session, sau đó dịch vụ và khách hàng từng phần nhỏ theo plan web v1.3. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest sẽ tiếp tục ở bước nghiệp vụ. Các service nội bộ cần Permission tương ứng, kiểm tra lại trong transaction khi ghi. Giữ toàn bộ phạm vi đã chốt.

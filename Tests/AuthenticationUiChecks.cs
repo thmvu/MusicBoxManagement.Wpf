@@ -50,7 +50,9 @@ public static class MusicBoxAuthenticationUiChecks
     public static void Run(string appXaml, string outputDirectory)
     {
         Directory.CreateDirectory(outputDirectory);
-        var file = Path.Combine(Path.GetTempPath(), "MusicBoxUi_" + Guid.NewGuid().ToString("N") + ".db");
+        var testDirectory = Path.Combine(Path.GetTempPath(), "MusicBoxUiData_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(testDirectory);
+        var file = Path.Combine(testDirectory, "test.db");
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         var xml = new XmlDocument();
         xml.Load(appXaml);
@@ -62,7 +64,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -71,6 +73,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "App did not start in Guest mode.");
             Assert(Field<Grid>(window, "StaffPanel").Visibility == Visibility.Collapsed, "Staff area was exposed before login.");
             Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Guest saw an editing action.");
+            Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Guest saw room management.");
             Image(window, outputDirectory, "guest");
 
             // Drive the component's real event handlers using synthetic fields.
@@ -156,10 +159,94 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "EditRoomTypeButton"));
             PumpUntil(() => cancelHandled && Field<Button>(window, "EditRoomTypeButton").IsEnabled);
             Assert(new RoomTypeService(database).List()[0].Name == "Standard học tập", "Canceling the editor saved changes.");
+
+            // Open the actual room catalog and create form, including image validation.
+            Click(Field<Button>(window, "BackToStaffButton"));
+            PumpUntil(() => Field<Grid>(window, "StaffPanel").Visibility == Visibility.Visible);
+            Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Visible, "Admin room action hidden.");
+            var fixtureImage = Path.Combine(testDirectory, "fixture.png");
+            var visual = new DrawingVisual();
+            using (var drawing = visual.RenderOpen())
+            {
+                drawing.DrawRectangle(new SolidColorBrush(Color.FromRgb(140, 158, 150)), null, new Rect(0, 0, 160, 120));
+                drawing.DrawRectangle(Brushes.DarkSlateGray, null, new Rect(30, 20, 100, 45));
+                drawing.DrawRectangle(Brushes.LightGray, null, new Rect(20, 85, 120, 20));
+            }
+            var fixtureBitmap = new RenderTargetBitmap(160, 120, 96, 96, PixelFormats.Pbgra32);
+            fixtureBitmap.Render(visual);
+            var fixtureEncoder = new PngBitmapEncoder(); fixtureEncoder.Frames.Add(BitmapFrame.Create(fixtureBitmap));
+            using (var stream = File.Create(fixtureImage)) fixtureEncoder.Save(stream);
+            var roomStage = 0;
+            RoomsWindow catalogWindow = null;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender, args) =>
+            {
+                try
+                {
+                    var catalog = application.Windows.OfType<RoomsWindow>().FirstOrDefault();
+                    var dialog = application.Windows.OfType<RoomCreateWindow>().FirstOrDefault();
+                    if (roomStage == 0 && catalog != null && Field<Button>(catalog, "AddRoomButton").IsEnabled)
+                    {
+                        catalogWindow = catalog;
+                        roomStage = 1;
+                        Click(Field<Button>(catalog, "AddRoomButton"));
+                    }
+                    else if (roomStage == 1 && dialog != null)
+                    {
+                        roomStage = 2;
+                        Field<TextBox>(dialog, "CodeInput").Text = "P01";
+                        Field<TextBox>(dialog, "NameInput").Text = "Phòng thử nghiệm";
+                        Field<ComboBox>(dialog, "TypeInput").SelectedIndex = 0;
+                        Click(Field<Button>(dialog, "SaveButton"));
+                    }
+                    else if (roomStage == 2 && dialog != null && Field<Button>(dialog, "SaveButton").IsEnabled)
+                    {
+                        Assert(Field<TextBlock>(dialog, "StatusText").Text.Contains("ảnh"), "Missing image validation was not shown.");
+                        Image(dialog, outputDirectory, "room-create-error");
+                        ((RoomsViewModel)dialog.DataContext).ImageFilePath = fixtureImage;
+                        Field<TextBox>(dialog, "DescriptionInput").Text = "Phòng thử nghiệm từ giao diện.";
+                        roomStage = 3;
+                        Click(Field<Button>(dialog, "SaveButton"));
+                        Assert(!Field<Button>(dialog, "SaveButton").IsEnabled, "Duplicate room submits were not blocked.");
+                    }
+                    else if (roomStage == 3 && dialog == null && catalog != null && Field<DataGrid>(catalog, "RoomsTable").Items.Count == 1)
+                    {
+                        Field<DataGrid>(catalog, "RoomsTable").SelectedIndex = 0;
+                        Assert(Field<System.Windows.Controls.Image>(catalog, "RoomImage").Source != null, "Saved room image did not display.");
+                        Image(catalog, outputDirectory, "room-catalog");
+                        roomStage = 4;
+                        Click(Field<Button>(catalog, "AddRoomButton"));
+                    }
+                    else if (roomStage == 4 && dialog != null)
+                    {
+                        Field<TextBox>(dialog, "CodeInput").Text = "CANCELLED";
+                        roomStage = 5;
+                        Assert(Field<Button>(dialog, "CancelButton").IsCancel, "Room form has no cancel action.");
+                        dialog.DialogResult = false;
+                    }
+                    else if (roomStage == 5 && dialog == null && catalog != null)
+                    {
+                        Assert(Field<DataGrid>(catalog, "RoomsTable").Items.Count == 1, "Cancel created another room.");
+                        roomStage = 6; driver.Stop(); catalog.Close();
+                    }
+                }
+                catch (Exception error)
+                {
+                    driverError = error; driver.Stop();
+                    foreach (var dialog in application.Windows.OfType<RoomCreateWindow>().ToArray()) dialog.Close();
+                    if (catalogWindow != null) catalogWindow.Close();
+                }
+            };
+            driver.Start();
+            Click(Field<Button>(window, "RoomsButton"));
+            PumpUntil(() => (roomStage == 6 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
+            driver.Stop();
+            if (driverError != null) throw driverError;
             Click(Field<Button>(window, "LogoutButton"));
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 0, "Logout left employee data in the UI.");
             Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Logout left an editing action in Guest mode.");
+            Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Logout exposed room management.");
 
             var stage = 0;
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
@@ -212,14 +299,14 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest, bootstrap, permissions, login/logout, room-type validation/save/cancel and catalog refresh. Rendered seven views.");
+            Console.WriteLine("PASS WPF UI: Guest, bootstrap, permissions, login/logout, room-type editing, room creation with mandatory image, cancel and catalog/image refresh. Rendered nine views.");
         }
         finally
         {
             if (driver != null) driver.Stop();
             window.Close();
             application.Shutdown();
-            if (File.Exists(file)) File.Delete(file);
+            Directory.Delete(testDirectory, true);
         }
     }
 }
