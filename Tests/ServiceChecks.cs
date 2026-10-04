@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
@@ -107,4 +107,3 @@ INSERT INTO AspNetUserRoles VALUES('staff','Staff');");
         finally { SQLiteConnection.ClearAllPools(); if (File.Exists(file)) File.Delete(file); }
     }
 }
-
