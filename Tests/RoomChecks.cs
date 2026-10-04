@@ -63,14 +63,14 @@ INSERT INTO AspNetUserRoles VALUES (@id,@role);", "@id", id, "@role", role, "@ha
             Sql(database, "UPDATE RoomTypes SET Name='Standard giữ lại', PricePerHour=135000 WHERE RoomTypeId=1;");
             var users = Count(database, "SELECT COUNT(*) FROM AspNetUsers;");
             var audits = Count(database, "SELECT COUNT(*) FROM AuditLog;");
-            Sql(database, @"DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms; PRAGMA user_version=3;
+            Sql(database, @"DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms; PRAGMA user_version=3;
 CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE(ABORT,'fixture'); END;");
             Reject<SQLiteException>(() => database.Initialize(), "Migration conflict ignored.");
             Assert(Count(database, "PRAGMA user_version;") == 3 &&
                 Count(database, "SELECT COUNT(*) FROM sqlite_master WHERE name='Rooms';") == 0, "Migration did not roll back schema/version.");
             Sql(database, "DROP TRIGGER Rooms_ImmutableCode;");
             database.Initialize();
-            Assert(Count(database, "PRAGMA user_version;") == 5 && service.ListForManagement(admin).Count == 0, "Migration/empty list incorrect.");
+            Assert(Count(database, "PRAGMA user_version;") == 6 && service.ListForManagement(admin).Count == 0, "Migration/empty list incorrect.");
             Assert(Count(database, "SELECT COUNT(*) FROM AspNetUsers;") == users &&
                 Count(database, "SELECT COUNT(*) FROM AuditLog;") == audits &&
                 Count(database, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 135000, "Migration changed existing data.");
@@ -279,12 +279,12 @@ CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE
         var roomsBefore = Count(database, "SELECT COUNT(*) FROM Rooms;");
         var auditBefore = Count(database, "SELECT COUNT(*) FROM AuditLog;");
         // Reconstruct v4 and inject a failure after v5 has already created Customers.
-        Sql(database, "DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; PRAGMA user_version=4; CREATE TABLE Reservations(Fixture TEXT);");
+        Sql(database, "DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; PRAGMA user_version=4; CREATE TABLE Reservations(Fixture TEXT);");
         Reject<SQLiteException>(() => database.Initialize(), "v5 migration conflict ignored.");
         Assert(Count(database, "PRAGMA user_version;") == 4 && Count(database, "SELECT COUNT(*) FROM sqlite_master WHERE name='Customers';") == 0,
             "Failed v5 migration left partial schema/version.");
         Sql(database, "DROP TABLE Reservations;"); database.Initialize();
-        Assert(Count(database, "PRAGMA user_version;") == 5 && Count(database, "SELECT COUNT(*) FROM Rooms;") == roomsBefore &&
+        Assert(Count(database, "PRAGMA user_version;") == 6 && Count(database, "SELECT COUNT(*) FROM Rooms;") == roomsBefore &&
             Count(database, "SELECT COUNT(*) FROM AuditLog;") == auditBefore && service.GetForEdit(admin, roomId).ImageUrl == original.ImageUrl,
             "v5 migration lost rooms/audit/images.");
         Sql(database, "INSERT INTO Customers VALUES(1,'Khách thử','0901234567'); INSERT INTO Customers VALUES(2,'Khách hai','0901234568');");

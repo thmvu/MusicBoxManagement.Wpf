@@ -1,0 +1,57 @@
+<Window x:Class="MusicBoxManagement.Wpf.Views.ServicesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Music Box — Dịch vụ" Width="1040" Height="680" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5" Loaded="Window_Loaded">
+    <Grid Margin="28">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <DockPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button x:Name="NewButton" Content="Thêm dịch vụ" Click="New_Click" IsEnabled="{Binding CanEdit}" />
+                <Button x:Name="RefreshButton" Content="Làm mới" Click="Refresh_Click" IsEnabled="{Binding CanRefresh}" Margin="8,0,0,0" />
+                <Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanRefresh}" Margin="8,0,0,0" />
+            </StackPanel>
+            <TextBlock Text="Danh mục dịch vụ" FontSize="28" FontWeight="SemiBold" />
+        </DockPanel>
+        <TextBlock Grid.Row="1" Text="Chọn dòng để sửa. Ngừng bán sẽ giữ dịch vụ và lịch sử đã có."
+                   Margin="0,10,0,20" Foreground="#5C6873" TextWrapping="Wrap" />
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="340" /></Grid.ColumnDefinitions>
+            <DataGrid x:Name="ServicesTable" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" SelectionChanged="Selection_Changed"
+                      HeadersVisibility="Column" RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8"
+                      AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" IsEnabled="{Binding CanEdit}">
+                <DataGrid.Resources>
+                    <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
+                    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tên dịch vụ" Binding="{Binding Name}" Width="*" MinWidth="140" />
+                    <DataGridTextColumn Header="Nhóm" Binding="{Binding Category}" Width="90" />
+                    <DataGridTextColumn Header="Giá" Binding="{Binding Price, StringFormat={}{0:N0} đ}" Width="110" />
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding ActiveLabel}" Width="100" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <ScrollViewer Grid.Column="1" Margin="22,0,0,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel IsEnabled="{Binding CanEdit}" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding EditorTitle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TextBlock Text="Tên dịch vụ" Margin="0,0,0,6" />
+                    <TextBox x:Name="NameInput" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8" />
+                    <TextBlock Text="Nhóm dịch vụ" Margin="0,14,0,6" />
+                    <ComboBox x:Name="CategoryInput" ItemsSource="{Binding Categories}" SelectedItem="{Binding Category}" Padding="8" />
+                    <TextBlock Text="Giá (đồng), ví dụ 15000" Margin="0,14,0,6" />
+                    <TextBox x:Name="PriceInput" Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" MaxLength="19" Padding="8" />
+                    <CheckBox x:Name="ActiveInput" Content="Đang bán" IsChecked="{Binding IsActive}" Margin="0,16,0,0" />
+                    <TextBlock Text="Mô tả" Margin="0,14,0,6" />
+                    <TextBox x:Name="DescriptionInput" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="2000"
+                             Padding="8" AcceptsReturn="True" TextWrapping="Wrap" Height="70" VerticalScrollBarVisibility="Auto" />
+                    <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                        <Button x:Name="SaveButton" Content="Lưu" Click="Save_Click" />
+                        <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" Margin="8,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <TextBlock x:Name="StatusText" Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,18,0,0" />
+    </Grid>
+</Window>

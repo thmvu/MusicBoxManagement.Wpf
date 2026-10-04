@@ -116,7 +116,7 @@ try {
     try {
         $command = $connection.CreateCommand()
         try {
-            $command.CommandText = 'PRAGMA user_version = 6;'
+            $command.CommandText = 'PRAGMA user_version = 7;'
             [void]$command.ExecuteNonQuery()
         } finally { $command.Dispose() }
     } finally { $connection.Dispose() }

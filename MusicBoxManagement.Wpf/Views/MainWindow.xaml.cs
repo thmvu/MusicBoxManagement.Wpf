@@ -15,12 +15,14 @@ namespace MusicBoxManagement.Wpf.Views
         private readonly PermissionService permissions;
         private readonly RoomTypeService roomTypes;
         private readonly RoomService rooms;
+        private readonly ServiceCatalogService services;
+        private bool isOpeningServices;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
         private bool isOpeningRooms;
 
-        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms)
+        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services)
         {
             InitializeComponent();
             this.viewModel = viewModel;
@@ -28,6 +30,7 @@ namespace MusicBoxManagement.Wpf.Views
             this.permissions = permissions;
             this.roomTypes = roomTypes;
             this.rooms = rooms;
+            this.services = services;
             DataContext = viewModel;
         }
 
@@ -93,6 +96,7 @@ namespace MusicBoxManagement.Wpf.Views
                 canEditRoomTypes = access.Permissions.ContainsKey("RoomType.Edit");
                 RoomTypesButton.Visibility = canEditRoomTypes ? Visibility.Visible : Visibility.Collapsed;
                 RoomsButton.Visibility = access.Permissions.ContainsKey("Room.Manage") ? Visibility.Visible : Visibility.Collapsed;
+                ServicesButton.Visibility = access.Permissions.ContainsKey("Service.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
                 BackToStaffButton.Visibility = Visibility.Collapsed;
                 ModeText.Text = "Nhân viên: " + access.Role;
@@ -132,6 +136,7 @@ namespace MusicBoxManagement.Wpf.Views
             canEditRoomTypes = false;
             EditRoomTypeButton.Visibility = BackToStaffButton.Visibility = RoomTypesButton.Visibility = Visibility.Collapsed;
             RoomsButton.Visibility = Visibility.Collapsed;
+            ServicesButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
             StaffIdentity.Text = "";
             ModeText.Text = "Chế độ Khách";
@@ -181,6 +186,23 @@ namespace MusicBoxManagement.Wpf.Views
             EditRoomTypeButton.Visibility = BackToStaffButton.Visibility = Visibility.Visible;
             if (RoomTypesTable.SelectedItem == null && RoomTypesTable.Items.Count > 0) RoomTypesTable.SelectedIndex = 0;
             UpdateEditButton();
+        }
+
+        private async void ShowServices_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningServices) return;
+            isOpeningServices = true;
+            ServicesButton.IsEnabled = false;
+            try
+            {
+                var currentSession = session;
+                await Task.Run(() => permissions.Demand(currentSession, "Service.Manage"));
+                if (session != currentSession) return;
+                new ServicesWindow(services, currentSession) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền quản lý dịch vụ hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Không mở được dịch vụ. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningServices = false; ServicesButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private void RoomType_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateEditButton();

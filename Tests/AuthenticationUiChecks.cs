@@ -64,7 +64,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -74,6 +74,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Grid>(window, "StaffPanel").Visibility == Visibility.Collapsed, "Staff area was exposed before login.");
             Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Guest saw an editing action.");
             Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Guest saw room management.");
+            Assert(Field<Button>(window, "ServicesButton").Visibility == Visibility.Collapsed, "Guest saw service management.");
             Image(window, outputDirectory, "guest");
 
             // Drive the component's real event handlers using synthetic fields.
@@ -106,6 +107,52 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(() => Field<Grid>(window, "StaffPanel").Visibility == Visibility.Visible || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
+            // This window contains both the list and the real add/edit form.
+            var serviceStage = 0;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender, args) =>
+            {
+                var catalog = application.Windows.OfType<ServicesWindow>().FirstOrDefault();
+                if (catalog == null) return;
+                try
+                {
+                    var vm = (ServicesViewModel)catalog.DataContext;
+                    if (serviceStage == 0 && vm.CanEdit)
+                    {
+                        Field<TextBox>(catalog, "NameInput").Text = "Trà chanh";
+                        Field<TextBox>(catalog, "PriceInput").Text = "15000.5";
+                        Click(Field<Button>(catalog, "SaveButton"));
+                        Assert(vm.Status.Contains("số nguyên đồng"), "Fractional service price accepted by UI.");
+                        Image(catalog, outputDirectory, "service-price-error");
+                        Field<TextBox>(catalog, "PriceInput").Text = "15000";
+                        serviceStage = 1; Click(Field<Button>(catalog, "SaveButton"));
+                    }
+                    else if (serviceStage == 1 && vm.CanEdit && vm.Items.Count == 1)
+                    {
+                        Field<DataGrid>(catalog, "ServicesTable").SelectedIndex = 0;
+                        Assert(vm.Items[0].Price == 15000 && vm.Items[0].Name == "Trà chanh", "Service create did not refresh.");
+                        Field<TextBox>(catalog, "NameInput").Text = "Trà sữa";
+                        Field<TextBox>(catalog, "PriceInput").Text = "25000";
+                        Field<ComboBox>(catalog, "CategoryInput").SelectedIndex = 1;
+                        Field<CheckBox>(catalog, "ActiveInput").IsChecked = false;
+                        serviceStage = 2; Click(Field<Button>(catalog, "SaveButton"));
+                    }
+                    else if (serviceStage == 2 && vm.CanEdit && vm.Items[0].Price == 25000)
+                    {
+                        Assert(vm.Items.Count == 1 && !vm.Items[0].IsActive && vm.Items[0].Category == "Đồ ăn", "Service edit/toggle changed identity or lost fields.");
+                        Image(catalog, outputDirectory, "service-catalog");
+                        Click(Field<Button>(catalog, "NewButton"));
+                        Field<TextBox>(catalog, "NameInput").Text = "Không lưu";
+                        Click(Field<Button>(catalog, "CancelEditButton"));
+                        Assert(string.IsNullOrEmpty(vm.Name) && vm.Items.Count == 1, "Cancel/new service wrote data.");
+                        serviceStage = 3; driver.Stop(); catalog.Close();
+                    }
+                }
+                catch (Exception error) { driverError = error; driver.Stop(); catalog.Close(); }
+            };
+            driver.Start(); Click(Field<Button>(window, "ServicesButton"));
+            PumpUntil(() => (serviceStage == 3 && Field<Button>(window, "ServicesButton").IsEnabled) || driverError != null);
+            driver.Stop(); if (driverError != null) throw driverError;
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Admin UI did not show all current permissions.");
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
             Image(window, outputDirectory, "staff");
@@ -385,7 +432,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/auth, room-type editing, room creation/editing/images, type change, lock reason, lock/unlock, save/cancel and refresh. Rendered thirteen views.");
+            Console.WriteLine("PASS WPF UI: Guest/auth, rooms/types/images, lock/unlock, services price validation/create/edit/category/toggle/cancel and refresh. Rendered fifteen views.");
         }
         finally
         {

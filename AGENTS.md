@@ -20,12 +20,13 @@
 - Bước 4b.1 đã có thêm phòng với mã/tên/loại/một ảnh bắt buộc JPEG/PNG/WebP <=5 MB, danh sách/ảnh nội bộ; schema v4 giữ dữ liệu cũ, mã unique/cố định. Room.Manage kiểm tra trong transaction cùng dữ liệu/nhật ký; ảnh chuẩn hóa PNG lưu cạnh database trong Content/uploads/rooms. Debug/Release và kiểm tra nền tảng/xác thực/RoomType/Rooms/UI đạt trên dữ liệu tạm. Chi tiết `docs/Step4b1_RoomCreation.md` (có giới hạn rollback filesystem khi process dừng đột ngột).
 - Bước 4b.2a đã có sửa tên/mô tả/thay ảnh phòng, giữ mã/loại/trạng thái/CreatedAt; GetForEdit/Update kiểm tra Room.Manage hiện hành, chặn form cũ và ghi Room.Update cùng transaction. Schema giữ v4. Ảnh cũ sau thay giữ trên đĩa, chưa có bộ dọn; xem `docs/Step4b2a_RoomEditing.md`. Debug/Release và kiểm tra nền tảng/phòng/UI đạt trên dữ liệu tạm.
 - Bước 4b.2b đã có đổi loại/khóa mở có lý do và log cùng transaction; chặn Active Session, khóa chặn Confirmed còn hạn (bao gồm tương lai), đúng +15 phút không còn chặn. Schema hiện v5 thêm Customers/Reservations/RoomSessions nền tảng, FK/CHECK/unique Active Room/Customer và Reservation nguồn; chưa có service/UI booking/session. Có IClock cho mốc thời gian trong transaction. Debug/Release và năm bộ kiểm tra đạt trên dữ liệu tạm. Chi tiết `docs/Step4b2b_RoomState.md`.
+- Bước 4c đã có danh mục dịch vụ: thêm/sửa tên/nhóm/giá/mô tả/đang bán, ba nhóm cố định, giá nguyên đồng dương, ngừng bán thay xóa. Schema hiện v6 thêm Services giữ dữ liệu cũ; Service.Manage/quy tắc/form cũ/nhật ký cùng transaction. Debug/Release và sáu bộ kiểm tra đạt trên dữ liệu tạm. Chi tiết `docs/Step4c_Services.md`.
 - Chưa có luồng đặt phòng, phiên sử dụng, gọi món, checkout/hóa đơn và báo cáo. Guest hiện chỉ có danh mục loại phòng, chưa đủ các luồng nghiệp vụ Guest.
 - Database nằm ở `%LOCALAPPDATA%\MusicBoxManagement.Wpf\musicbox.db`; không ghi đè/xóa database đang dùng khi kiểm tra.
 
 ## Làm tiếp
 
-Đọc README, plan và các báo cáo bước 2/3/4a/4b.1/4b.2a/4b.2b trước. Tiếp theo 4c — dịch vụ, rồi 4d — khách hàng dùng bảng Customers v5, chuẩn hóa SĐT chung đúng mục 21. Booking/session mới có schema, chưa có luồng nghiệp vụ; service tương lai phải kiểm tra Room.IsActive/quyền/giờ/overlap trong cùng transaction ghi, tái sử dụng IClock và quy tắc hiệu lực Confirmed. Tái sử dụng PermissionService/AuditService; không giả định đồ án đã hoàn thành.
+Đọc README, plan và các báo cáo bước 2/3/4a/4b.1/4b.2a/4b.2b/4c trước. Tiếp theo 4d — khách hàng dùng bảng Customers có từ v5, chuẩn hóa SĐT chung đúng mục 21. Booking/session mới có schema, chưa có luồng nghiệp vụ; service tương lai phải kiểm tra Room.IsActive/quyền/giờ/overlap trong cùng transaction ghi, tái sử dụng IClock và quy tắc hiệu lực Confirmed. OrderItem tương lai phải snapshot tên/giá, chặn món mới từ dịch vụ ngừng bán, giữ món cũ theo mục 23. Tái sử dụng PermissionService/AuditService; không giả định đồ án đã hoàn thành.
 
 ## Kiểm tra và Git
 
@@ -34,4 +35,5 @@
 - Khi sửa xác thực/quyền, chạy thêm `Tests/Verify-Authentication.ps1`; khi sửa UI đăng nhập, chạy `powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1`.
 - Khi sửa loại phòng, chạy thêm `Tests/Verify-RoomTypes.ps1`; bài kiểm tra UI trên cũng kiểm tra mở/sửa/lưu/hủy loại phòng.
 - Khi sửa phòng/ảnh, chạy thêm `Tests/Verify-Rooms.ps1` và bài kiểm tra UI trên (thêm phòng/ảnh/hủy/refresh). Khi sao lưu dữ liệu thật, giữ cả database và thư mục Content chứa ảnh; kiểm tra chỉ dùng thư mục tạm riêng.
+- Khi sửa dịch vụ, chạy thêm `Tests/Verify-Services.ps1` và bài kiểm tra UI trên (giá/thêm/sửa/nhóm/ngừng bán/bỏ thay đổi).
 - Commit tiếng Việt. Đây là Git repository độc lập, origin là `https://github.com/thmvu/MusicBoxManagement.Wpf.git` (private); không dùng remote của project web.

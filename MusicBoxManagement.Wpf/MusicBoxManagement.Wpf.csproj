@@ -56,6 +56,12 @@
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\RoomSchema.cs" />
     <Compile Include="Data\RoomUsageSchema.cs" />
+    <Compile Include="Data\ServiceSchema.cs" />
+    <Compile Include="Models\ServiceItem.cs" />
+    <Compile Include="Services\ServiceCatalogService.cs" />
+    <Compile Include="ViewModels\ServicesViewModel.cs" />
+    <Page Include="Views\ServicesWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\ServicesWindow.xaml.cs"><DependentUpon>ServicesWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\IClock.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Services\RoomService.cs" />
