@@ -1,5 +1,8 @@
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -18,6 +21,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private string replacementImageFilePath;
         public string RoomCode => original.RoomCode;
         public string RoomTypeName => original.RoomTypeName;
+        public ObservableCollection<RoomType> RoomTypes { get; }
+        public RoomType SelectedRoomType { get; set; }
+        public bool IsActive { get; set; }
+        public string InactiveReason { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReplacementImageFilePath
@@ -30,19 +37,25 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Status => status;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public RoomEditViewModel(RoomService service, LoginSession session, Room original)
+        public RoomEditViewModel(RoomService service, LoginSession session, Room original, List<RoomType> types = null)
         {
             this.service = service;
             this.session = session;
             this.original = original;
             Name = original.Name;
             Description = original.Description;
+            RoomTypes = new ObservableCollection<RoomType>(types ?? new List<RoomType> {
+                new RoomType { RoomTypeId = original.RoomTypeId, Name = original.RoomTypeName } });
+            SelectedRoomType = RoomTypes.FirstOrDefault(x => x.RoomTypeId == original.RoomTypeId);
+            IsActive = original.IsActive;
+            InactiveReason = original.InactiveReason;
         }
 
         public async Task<bool> SaveAsync()
         {
             if (isBusy) return false;
-            var input = new RoomEdit { Name = Name, Description = Description, ReplacementImageFilePath = ReplacementImageFilePath };
+            var input = new RoomEdit { Name = Name, Description = Description, ReplacementImageFilePath = ReplacementImageFilePath,
+                RoomTypeId = SelectedRoomType?.RoomTypeId ?? 0, IsActive = IsActive, InactiveReason = InactiveReason };
             isBusy = true; Notify(nameof(IsBusy)); Notify(nameof(CanSave)); SetStatus("Đang lưu phòng…");
             try
             {

@@ -2,6 +2,8 @@
 
 Ngày: 04/10/2026. Đối chiếu plan WPF bước 4 và plan web v1.3 mục 5, 19–20, 32, 47. Đây là một phần nhỏ của 4b.2. Nền tảng giữ WPF .NET Framework 4.7.2 + SQLite; schema vẫn v4.
 
+Cập nhật cùng ngày: 4b.2b đã có đổi loại/khóa mở, schema hiện v5 và UI render 13 ảnh. Xem `Step4b2b_RoomState.md`; các mô tả v4/chưa có thao tác bên dưới ghi lại bước 4b.2a.
+
 ## Đã làm và cách dùng
 
 Đăng nhập tài khoản có Room.Manage → Phòng → chọn dòng → **Sửa phòng**. Sửa tên (bắt buộc, trim, 1–100 ký tự), mô tả (tùy chọn, tối đa 2000; trắng lưu NULL). Chọn ảnh mới nếu muốn thay; không chọn thì giữ ImageUrl hiện tại. **Giữ ảnh hiện tại** bỏ lựa chọn ảnh mới. **Lưu thay đổi** tải lại danh sách và chọn lại phòng để hiển thị ảnh/mô tả mới; **Hủy** không lưu.

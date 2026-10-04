@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm phòng và sửa tên/mô tả/thay ảnh phòng; chưa phải ứng dụng quản lý hoàn chỉnh. Chưa triển khai đổi loại/khóa mở phòng, đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng; chưa phải ứng dụng quản lý hoàn chỉnh. Chưa triển khai luồng đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -72,7 +72,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentic
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
 
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm và sửa phòng có ảnh, lưu 11 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
+Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm và sửa phòng có ảnh/đổi loại/khóa mở, lưu 13 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
 
 ## Bước 4a — sửa Standard/VIP
 
@@ -111,4 +111,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Rooms.ps1
 
 Bước 4b.2a đã có: **Phòng → chọn dòng → Sửa phòng**, sửa tên/mô tả và chọn ảnh mới nếu cần; không chọn thì giữ ảnh hiện tại. Hủy không lưu. Service kiểm tra Room.Manage khi mở/lưu, chặn form cũ và lưu nhật ký cùng transaction. Schema giữ v4. Ảnh cũ sau thay được giữ trên đĩa; hiện chưa có bộ dọn ảnh cũ. Xem [báo cáo 4b.2a](docs/Step4b2a_RoomEditing.md). Kiểm tra bằng Verify-Rooms.ps1 và Verify-AuthenticationUi.ps1 ở trên.
 
-Phần còn lại 4b.2 là đổi loại/khóa mở phòng đúng điều kiện booking/session; cần bổ sung nền tảng kiểm tra Active Session/Confirmed còn hiệu lực trước khi mở thao tác, không giả định các điều kiện này đã được kiểm tra. Sau đó dịch vụ và khách hàng từng phần nhỏ theo plan web v1.3. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest sẽ tiếp tục ở bước nghiệp vụ. Giữ toàn bộ phạm vi đã chốt.
+**4b.2b đã hoàn thành:** trong form sửa, chọn Standard/VIP và bật/tắt **Mở phòng để nhận khách**. Khóa cần lý do; phiên Active chặn đổi loại/khóa, booking Confirmed còn hiệu lực (kể cả tương lai) chặn khóa. Đúng mốc StartTime+15 phút thì booking hết hạn dù worker chưa ghi NoShow. Mở lại xóa lý do. Quyền/kiểm tra dữ liệu/cập nhật/nhật ký cùng transaction; schema hiện **v5**. Xem [báo cáo 4b.2b](docs/Step4b2b_RoomState.md).
+
+V5 thêm nền tảng Customers/Reservations/RoomSessions, giữ dữ liệu cũ; chưa có UI/service đặt hoặc nhận phòng. Không tạo dữ liệu demo trong database đang dùng. Tiếp theo danh mục dịch vụ (4c), rồi khách hàng (4d), sau đó các luồng booking/session theo plan. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest giữ trong phạm vi.

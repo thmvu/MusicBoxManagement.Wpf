@@ -90,7 +90,7 @@ PRAGMA user_version=1;");
             var auth = new AuthenticationService(database);
             var permissions = new PermissionService(database);
             Assert(auth.NeedsSetup(), "A migrated database unexpectedly has a default account.");
-            Assert(Count(database, "PRAGMA user_version;") == 4, "Schema v4 migration failed.");
+            Assert(Count(database, "PRAGMA user_version;") == 5, "Schema v5 migration failed.");
             Assert((string)Sql(database, "SELECT Name FROM RoomTypes WHERE RoomTypeId=1;") == "Standard đã chỉnh", "Migration overwrote v1 data.");
             Assert(Count(database, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 135000, "Migration changed the existing price.");
             Assert(Count(database, "SELECT COUNT(*) FROM AspNetRoles;") == 3, "Expected three Identity roles.");

@@ -63,14 +63,14 @@ INSERT INTO AspNetUserRoles VALUES (@id,@role);", "@id", id, "@role", role, "@ha
             Sql(database, "UPDATE RoomTypes SET Name='Standard giữ lại', PricePerHour=135000 WHERE RoomTypeId=1;");
             var users = Count(database, "SELECT COUNT(*) FROM AspNetUsers;");
             var audits = Count(database, "SELECT COUNT(*) FROM AuditLog;");
-            Sql(database, @"DROP TABLE Rooms; PRAGMA user_version=3;
+            Sql(database, @"DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms; PRAGMA user_version=3;
 CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE(ABORT,'fixture'); END;");
             Reject<SQLiteException>(() => database.Initialize(), "Migration conflict ignored.");
             Assert(Count(database, "PRAGMA user_version;") == 3 &&
                 Count(database, "SELECT COUNT(*) FROM sqlite_master WHERE name='Rooms';") == 0, "Migration did not roll back schema/version.");
             Sql(database, "DROP TRIGGER Rooms_ImmutableCode;");
             database.Initialize();
-            Assert(Count(database, "PRAGMA user_version;") == 4 && service.ListForManagement(admin).Count == 0, "Migration/empty list incorrect.");
+            Assert(Count(database, "PRAGMA user_version;") == 5 && service.ListForManagement(admin).Count == 0, "Migration/empty list incorrect.");
             Assert(Count(database, "SELECT COUNT(*) FROM AspNetUsers;") == users &&
                 Count(database, "SELECT COUNT(*) FROM AuditLog;") == audits &&
                 Count(database, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 135000, "Migration changed existing data.");
@@ -172,7 +172,8 @@ CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE
             Assert(Count(blockedDb, "SELECT COUNT(*) FROM Rooms;") == 0 &&
                 Count(blockedDb, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Create';") == 0, "Filesystem failure did not roll back creation.");
             Editing(database, service, auth, admin, manager, png, fake, large);
-            Console.WriteLine("PASS Rooms: migration, creation, image formats/validation, editing with retained/replaced image, live permissions, stale/concurrent forms, atomic audit/filesystem rollback and immutable fields.");
+            UsageGuards(database, admin, png);
+            Console.WriteLine("PASS Rooms: migration/preservation, creation/editing/images/RBAC, rollback/concurrency, active-session guards, confirmed/grace-boundary locks, unlock and schema constraints.");
         }
         finally
         {
@@ -261,5 +262,113 @@ CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE
         var final = new RoomService(new SqliteDatabase(database.FilePath)).GetForEdit(admin, id);
         Assert(!final.IsActive && final.InactiveReason == "Fixture" && final.RoomCode == room.RoomCode && final.RoomTypeId == room.RoomTypeId &&
             final.CreatedAt == originalTime && final.Name == "Sửa tên phòng đã khóa", "Editing changed protected fields or persistence failed.");
+    }
+
+    private sealed class FixedClock : IClock
+    {
+        public DateTimeOffset Now;
+        public DateTimeOffset UtcNow { get { return Now; } }
+    }
+    private static string Utc(DateTimeOffset time) { return time.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture); }
+    private static void UsageGuards(SqliteDatabase database, LoginSession admin, string png)
+    {
+        var clock = new FixedClock { Now = new DateTimeOffset(2026, 10, 4, 10, 0, 0, TimeSpan.Zero) };
+        var service = new RoomService(database, clock);
+        var original = service.ListForManagement(admin).First(x => x.IsActive);
+        var roomId = original.RoomId;
+        var roomsBefore = Count(database, "SELECT COUNT(*) FROM Rooms;");
+        var auditBefore = Count(database, "SELECT COUNT(*) FROM AuditLog;");
+        // Reconstruct v4 and inject a failure after v5 has already created Customers.
+        Sql(database, "DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; PRAGMA user_version=4; CREATE TABLE Reservations(Fixture TEXT);");
+        Reject<SQLiteException>(() => database.Initialize(), "v5 migration conflict ignored.");
+        Assert(Count(database, "PRAGMA user_version;") == 4 && Count(database, "SELECT COUNT(*) FROM sqlite_master WHERE name='Customers';") == 0,
+            "Failed v5 migration left partial schema/version.");
+        Sql(database, "DROP TABLE Reservations;"); database.Initialize();
+        Assert(Count(database, "PRAGMA user_version;") == 5 && Count(database, "SELECT COUNT(*) FROM Rooms;") == roomsBefore &&
+            Count(database, "SELECT COUNT(*) FROM AuditLog;") == auditBefore && service.GetForEdit(admin, roomId).ImageUrl == original.ImageUrl,
+            "v5 migration lost rooms/audit/images.");
+        Sql(database, "INSERT INTO Customers VALUES(1,'Khách thử','0901234567'); INSERT INTO Customers VALUES(2,'Khách hai','0901234568');");
+        Reject<SQLiteException>(() => Sql(database, "INSERT INTO Customers VALUES(3,'Trùng','0901234567');"), "Duplicate phone accepted.");
+        Reject<SQLiteException>(() => Sql(database, "INSERT INTO Customers VALUES(3,'Sai','+84901234567');"), "Unnormalized phone accepted.");
+        Action<int,int> session = (targetRoom, customer) => Sql(database, @"INSERT INTO RoomSessions
+(CustomerId,RoomId,ActualStartTime,HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status)
+VALUES(@customer,@room,@start,120000,'Fixture','STANDARD','Standard snapshot','Active');", "@customer", customer, "@room", targetRoom, "@start", Utc(clock.Now.AddMinutes(-5)));
+        session(roomId, 1);
+        Reject<SQLiteException>(() => session(roomId, 2), "Two Active sessions in one room accepted.");
+        var otherId = service.ListForManagement(admin).First(x => x.RoomId != roomId).RoomId;
+        Reject<SQLiteException>(() => session(otherId, 1), "Two Active sessions for one customer accepted.");
+        Action lockRoom = () => {
+            var current = service.GetForEdit(admin, roomId);
+            service.Update(admin, current, new RoomEdit { Name = current.Name, Description = current.Description, IsActive = false, InactiveReason = "Thử khóa" });
+        };
+        Reject<InvalidOperationException>(lockRoom, "Active session did not block lock.");
+        Reject<InvalidOperationException>(() => service.Update(admin, original, new RoomEdit { Name = original.Name, RoomTypeId = 2 }), "Active session did not block type change.");
+        service.Update(admin, original, new RoomEdit { Name = "Tên mới khi đang dùng" });
+        Assert((string)Sql(database, "SELECT RoomTypeNameSnapshot FROM RoomSessions;") == "Standard snapshot" &&
+            Count(database, "SELECT HourlyRate FROM RoomSessions;") == 120000, "Catalog change modified session snapshot.");
+        Sql(database, "UPDATE RoomSessions SET Status='Completed', ActualEndTime=@end;", "@end", Utc(clock.Now));
+        var currentRoom = service.GetForEdit(admin, roomId);
+        service.Update(admin, currentRoom, new RoomEdit { Name = currentRoom.Name, RoomTypeId = 2 });
+        Assert(service.GetForEdit(admin, roomId).RoomTypeId == 2, "Completed session blocked type change.");
+        Action<DateTimeOffset,string> booking = (start, status) => Sql(database, @"INSERT INTO Reservations
+(CustomerId,RoomId,StartTime,EndTime,Status,CreatedAt) VALUES(1,@room,@start,@end,@status,@now);",
+            "@room", roomId, "@start", Utc(start), "@end", Utc(start.AddHours(1)), "@status", status, "@now", Utc(clock.Now));
+        booking(clock.Now.AddDays(1), "Confirmed");
+        Reject<InvalidOperationException>(lockRoom, "Future booking did not block lock.");
+        Sql(database, "DELETE FROM Reservations;");
+        booking(clock.Now.AddMinutes(-15).AddTicks(1), "Confirmed");
+        Reject<InvalidOperationException>(lockRoom, "Booking one tick before grace expiry did not block lock.");
+        Sql(database, "DELETE FROM Reservations;"); booking(clock.Now.AddMinutes(-15), "Confirmed");
+        var room = service.GetForEdit(admin, roomId);
+        Reject<ArgumentException>(() => service.Update(admin, room, new RoomEdit { Name = room.Name, IsActive = false, InactiveReason = " " }), "Missing lock reason accepted.");
+        Reject<ArgumentException>(() => service.Update(admin, room, new RoomEdit { Name = room.Name, IsActive = false, InactiveReason = new string('x',1001) }), "Oversize lock reason accepted.");
+        Reject<ArgumentException>(() => service.Update(admin, room, new RoomEdit { Name = room.Name, RoomTypeId = 999 }), "Unknown type accepted.");
+        lockRoom();
+        Assert(!service.GetForEdit(admin, roomId).IsActive && Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Lock';") == 1,
+            "Exact grace expiry did not permit lock/audit.");
+        room = service.GetForEdit(admin, roomId);
+        service.Update(admin, room, new RoomEdit { Name = room.Name, IsActive = true, InactiveReason = "Ignored" });
+        Assert(service.GetForEdit(admin, roomId).IsActive && service.GetForEdit(admin, roomId).InactiveReason == null, "Unlock did not clear reason.");
+        Sql(database, "DELETE FROM Reservations;");
+        foreach (var status in new[] { "Cancelled", "NoShow", "Completed", "CheckedIn" }) booking(clock.Now.AddDays(1), status);
+        lockRoom(); // Non-Confirmed history does not hold the lock.
+        room = service.GetForEdit(admin, roomId); service.Update(admin, room, new RoomEdit { Name = room.Name, IsActive = true });
+        var files = Directory.GetFiles(Path.GetDirectoryName(service.GetImagePath(room.ImageUrl))).Length;
+        Sql(database, "CREATE TRIGGER FailLockAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Room.Lock' BEGIN SELECT RAISE(ABORT,'fixture'); END;");
+        room = service.GetForEdit(admin, roomId);
+        Reject<SQLiteException>(() => service.Update(admin, room, new RoomEdit { Name = room.Name, IsActive = false, InactiveReason = "Rollback", ReplacementImageFilePath = png }), "Lock audit failure ignored.");
+        Assert(service.GetForEdit(admin, roomId).IsActive && Directory.GetFiles(Path.GetDirectoryName(service.GetImagePath(room.ImageUrl))).Length == files,
+            "Lock audit failure left inactive room/new image.");
+        Sql(database, "DROP TRIGGER FailLockAudit;");
+        Sql(database, "DELETE FROM Reservations;");
+        var raceOriginal = service.GetForEdit(admin, roomId);
+        using (var gate = new ManualResetEventSlim(false))
+        {
+            // Contract fixture for the later booking service: it must check IsActive inside the writer transaction.
+            var bookingAttempt = Task.Run(() => {
+                gate.Wait();
+                using (var connection = database.OpenConnection())
+                using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
+                using (var command = connection.CreateCommand())
+                {
+                    command.Transaction = transaction;
+                    command.CommandText = "SELECT IsActive FROM Rooms WHERE RoomId=@room;";
+                    command.Parameters.AddWithValue("@room", roomId);
+                    if (Convert.ToInt32(command.ExecuteScalar()) != 1) return false;
+                    command.CommandText = "INSERT INTO Reservations(CustomerId,RoomId,StartTime,EndTime,Status,CreatedAt) VALUES(1,@room,@start,@end,'Confirmed',@now);";
+                    command.Parameters.AddWithValue("@start", Utc(clock.Now.AddDays(1)));
+                    command.Parameters.AddWithValue("@end", Utc(clock.Now.AddDays(1).AddHours(1)));
+                    command.Parameters.AddWithValue("@now", Utc(clock.Now));
+                    command.ExecuteNonQuery(); transaction.Commit(); return true;
+                }
+            });
+            var lockAttempt = Task.Run(() => {
+                gate.Wait();
+                try { service.Update(admin, raceOriginal, new RoomEdit { Name = raceOriginal.Name, IsActive = false, InactiveReason = "Race" }); return true; }
+                catch (InvalidOperationException) { return false; }
+            });
+            gate.Set(); Task.WaitAll(bookingAttempt, lockAttempt);
+            Assert(bookingAttempt.Result != lockAttempt.Result, "Booking writer contract and lock both succeeded/failed.");
+        }
     }
 }

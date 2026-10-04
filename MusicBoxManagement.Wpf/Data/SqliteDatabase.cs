@@ -61,7 +61,7 @@ namespace MusicBoxManagement.Wpf.Data
                 command.Transaction = transaction;
                 command.CommandText = "PRAGMA user_version;";
                 var version = Convert.ToInt32(command.ExecuteScalar());
-                if (version > 4) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
+                if (version > 5) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
                 if (version == 0)
                 {
                     command.CommandText = @"
@@ -84,6 +84,7 @@ PRAGMA user_version = 1;";
                 if (version < 2) AuthenticationSchema.Create(command);
                 if (version < 3) AuthenticationSchema.UpgradeAuditActors(command);
                 if (version < 4) RoomSchema.Create(command);
+                if (version < 5) RoomUsageSchema.Create(command);
                 transaction.Commit();
             }
         }

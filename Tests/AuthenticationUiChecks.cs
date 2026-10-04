@@ -267,12 +267,44 @@ public static class MusicBoxAuthenticationUiChecks
                         editVm.ReplacementImageFilePath = fixtureImage;
                         Click(Field<Button>(editDialog, "KeepImageButton"));
                         Assert(editVm.ReplacementImageFilePath == null, "Keep current image did not clear replacement.");
-                        Field<TextBox>(editDialog, "NameInput").Text = "Không lưu tên này";
+                        Field<ComboBox>(editDialog, "TypeInput").SelectedIndex = 1;
+                        Field<CheckBox>(editDialog, "ActiveInput").IsChecked = false;
                         roomStage = 10;
+                        Click(Field<Button>(editDialog, "SaveButton"));
+                    }
+                    else if (roomStage == 10 && editDialog != null && Field<Button>(editDialog, "SaveButton").IsEnabled)
+                    {
+                        Assert(Field<TextBlock>(editDialog, "StatusText").Text.Contains("lý do"), "Missing lock reason was not shown.");
+                        Image(editDialog, outputDirectory, "room-lock-error");
+                        Field<TextBox>(editDialog, "ReasonInput").Text = "Vệ sinh phòng";
+                        roomStage = 11; Click(Field<Button>(editDialog, "SaveButton"));
+                    }
+                    else if (roomStage == 11 && editDialog == null && catalog != null && Field<Button>(catalog, "EditRoomButton").IsEnabled)
+                    {
+                        var locked = (MusicBoxManagement.Wpf.Models.Room)Field<DataGrid>(catalog, "RoomsTable").SelectedItem;
+                        Assert(!locked.IsActive && locked.InactiveReason == "Vệ sinh phòng" && locked.RoomTypeId == 2, "UI did not change type/lock with reason.");
+                        Image(catalog, outputDirectory, "room-locked-catalog");
+                        roomStage = 12; Click(Field<Button>(catalog, "EditRoomButton"));
+                    }
+                    else if (roomStage == 12 && editDialog != null)
+                    {
+                        Field<CheckBox>(editDialog, "ActiveInput").IsChecked = true;
+                        roomStage = 13; Click(Field<Button>(editDialog, "SaveButton"));
+                    }
+                    else if (roomStage == 13 && editDialog == null && catalog != null && Field<Button>(catalog, "EditRoomButton").IsEnabled)
+                    {
+                        var opened = (MusicBoxManagement.Wpf.Models.Room)Field<DataGrid>(catalog, "RoomsTable").SelectedItem;
+                        Assert(opened.IsActive && opened.InactiveReason == null && opened.RoomTypeId == 2, "Unlock UI did not clear reason/preserve type.");
+                        roomStage = 14; Click(Field<Button>(catalog, "EditRoomButton"));
+                    }
+                    else if (roomStage == 14 && editDialog != null)
+                    {
+                        Field<TextBox>(editDialog, "NameInput").Text = "Không lưu tên này";
+                        roomStage = 15;
                         Assert(Field<Button>(editDialog, "CancelButton").IsCancel, "Editor has no cancel action.");
                         editDialog.DialogResult = false;
                     }
-                    else if (roomStage == 10 && editDialog == null && catalog != null)
+                    else if (roomStage == 15 && editDialog == null && catalog != null)
                     {
                         using (var connection = database.OpenConnection())
                         using (var command = connection.CreateCommand())
@@ -280,7 +312,7 @@ public static class MusicBoxAuthenticationUiChecks
                             command.CommandText = "SELECT Name FROM Rooms WHERE RoomCode='P01';";
                             Assert((string)command.ExecuteScalar() == "Phòng đã sửa từ UI", "Canceling editor saved changes.");
                         }
-                        roomStage = 11; driver.Stop(); catalog.Close();
+                        roomStage = 16; driver.Stop(); catalog.Close();
                     }
                 }
                 catch (Exception error)
@@ -293,7 +325,7 @@ public static class MusicBoxAuthenticationUiChecks
             };
             driver.Start();
             Click(Field<Button>(window, "RoomsButton"));
-            PumpUntil(() => (roomStage == 11 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
+            PumpUntil(() => (roomStage == 16 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
             Click(Field<Button>(window, "LogoutButton"));
@@ -353,7 +385,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/auth, room-type editing, room creation/editing/image replacement, validation, save/cancel, keep image and catalog/image refresh. Rendered eleven views.");
+            Console.WriteLine("PASS WPF UI: Guest/auth, room-type editing, room creation/editing/images, type change, lock reason, lock/unlock, save/cancel and refresh. Rendered thirteen views.");
         }
         finally
         {

@@ -70,6 +70,7 @@ namespace MusicBoxManagement.Wpf.Views
             if (!(RoomsTable.SelectedItem is Room room))
             { RoomDescription.Text = "Chọn một phòng để xem ảnh và mô tả."; return; }
             RoomDescription.Text = room.Description ?? "Chưa có mô tả.";
+            if (!room.IsActive) RoomDescription.Text += "\nLý do khóa: " + room.InactiveReason;
             try
             {
                 using (var stream = File.OpenRead(service.GetImagePath(room.ImageUrl)))
@@ -102,8 +103,9 @@ namespace MusicBoxManagement.Wpf.Views
             try
             {
                 var original = await Task.Run(() => service.GetForEdit(session, selected.RoomId));
+                var types = await Task.Run(() => roomTypes.List());
                 if (!IsVisible) return;
-                var editor = new RoomEditWindow(new RoomEditViewModel(service, session, original)) { Owner = this };
+                var editor = new RoomEditWindow(new RoomEditViewModel(service, session, original, types)) { Owner = this };
                 if (editor.ShowDialog() == true)
                 {
                     await viewModel.RefreshAsync();

@@ -26,6 +26,9 @@ namespace MusicBoxManagement.Wpf.Models
 
     public sealed class RoomEdit
     {
+        public int? RoomTypeId { get; set; }
+        public bool? IsActive { get; set; }
+        public string InactiveReason { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReplacementImageFilePath { get; set; }

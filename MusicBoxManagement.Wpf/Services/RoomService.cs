@@ -13,10 +13,13 @@ namespace MusicBoxManagement.Wpf.Services
     {
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;
-        public RoomService(SqliteDatabase database)
+        private readonly IClock clock;
+        public RoomService(SqliteDatabase database) : this(database, new SystemClock()) { }
+        public RoomService(SqliteDatabase database, IClock clock)
         {
             this.database = database;
             permissions = new PermissionService(database);
+            this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
         }
 
         public List<Room> ListForManagement(LoginSession session)
@@ -141,7 +144,34 @@ SELECT last_insert_rowid();";
                         current.Name != original.Name || current.Description != original.Description || current.ImageUrl != original.ImageUrl ||
                         current.IsActive != original.IsActive || current.InactiveReason != original.InactiveReason || current.CreatedAt != original.CreatedAt)
                         throw new InvalidOperationException("Phòng đã thay đổi. Hãy đóng form, làm mới danh sách rồi mở lại để sửa.");
-                    if (newUrl == null && name == current.Name && description == current.Description) return;
+                    var typeId = input.RoomTypeId ?? current.RoomTypeId;
+                    var active = input.IsActive ?? current.IsActive;
+                    var reason = input.IsActive.HasValue ? (active ? null : (input.InactiveReason ?? "").Trim()) : current.InactiveReason;
+                    if (!active && string.IsNullOrWhiteSpace(reason)) throw new ArgumentException("Khóa phòng cần nhập lý do.");
+                    if (reason != null && reason.Length > 1000) throw new ArgumentException("Lý do khóa tối đa 1000 ký tự.");
+                    using (var check = connection.CreateCommand())
+                    {
+                        check.Transaction = transaction;
+                        check.CommandText = "SELECT COUNT(*) FROM RoomTypes WHERE RoomTypeId=@type;";
+                        check.Parameters.AddWithValue("@type", typeId);
+                        if (Convert.ToInt32(check.ExecuteScalar()) != 1) throw new ArgumentException("Cần chọn loại phòng hợp lệ.");
+                        check.Parameters.AddWithValue("@room", current.RoomId);
+                        if (typeId != current.RoomTypeId || (current.IsActive && !active))
+                        {
+                            check.CommandText = "SELECT COUNT(*) FROM RoomSessions WHERE RoomId=@room AND Status='Active';";
+                            if (Convert.ToInt32(check.ExecuteScalar()) > 0) throw new InvalidOperationException("Phòng còn phiên đang sử dụng; hãy checkout trước khi đổi loại hoặc khóa.");
+                        }
+                        if (current.IsActive && !active)
+                        {
+                            // Fresh time after acquiring the writer; expired Confirmed does not block even when NoShow worker is late.
+                            var cutoff = clock.UtcNow.ToUniversalTime().AddMinutes(-15).ToString("O", CultureInfo.InvariantCulture);
+                            check.CommandText = "SELECT COUNT(*) FROM Reservations WHERE RoomId=@room AND Status='Confirmed' AND StartTime>@cutoff;";
+                            check.Parameters.AddWithValue("@cutoff", cutoff);
+                            if (Convert.ToInt32(check.ExecuteScalar()) > 0) throw new InvalidOperationException("Phòng còn booking Confirmed có hiệu lực; hãy xử lý booking trước khi khóa.");
+                        }
+                    }
+                    if (newUrl == null && name == current.Name && description == current.Description && typeId == current.RoomTypeId &&
+                        active == current.IsActive && reason == current.InactiveReason) return;
                     if (png != null)
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(newPath));
@@ -155,15 +185,19 @@ SELECT last_insert_rowid();";
                     using (var command = connection.CreateCommand())
                     {
                         command.Transaction = transaction;
-                        command.CommandText = "UPDATE Rooms SET Name=@name, Description=@description, ImageUrl=@image WHERE RoomId=@id;";
+                        command.CommandText = "UPDATE Rooms SET Name=@name, Description=@description, ImageUrl=@image, RoomTypeId=@type, IsActive=@active, InactiveReason=@reason WHERE RoomId=@id;";
+                        command.Parameters.AddWithValue("@type", typeId);
+                        command.Parameters.AddWithValue("@active", active ? 1 : 0);
+                        command.Parameters.AddWithValue("@reason", (object)reason ?? DBNull.Value);
                         command.Parameters.AddWithValue("@name", name);
                         command.Parameters.AddWithValue("@description", (object)description ?? DBNull.Value);
                         command.Parameters.AddWithValue("@image", newUrl ?? current.ImageUrl);
                         command.Parameters.AddWithValue("@id", current.RoomId);
                         command.ExecuteNonQuery();
                     }
-                    AuditService.WriteStaff(connection, transaction, session.UserId, "Room.Update", "Room",
-                        current.RoomId.ToString(CultureInfo.InvariantCulture), "Cập nhật phòng " + current.RoomCode + (png == null ? "." : ", thay ảnh."));
+                    var action = active != current.IsActive ? (active ? "Room.Unlock" : "Room.Lock") : "Room.Update";
+                    AuditService.WriteStaff(connection, transaction, session.UserId, action, "Room",
+                        current.RoomId.ToString(CultureInfo.InvariantCulture), "Cập nhật phòng " + current.RoomCode + (active ? "." : ", lý do khóa: " + reason + ".") + (png == null ? "" : " Thay ảnh."));
                     transaction.Commit();
                     committed = true;
                     // Retain the old file for readers/backups. Only ImageUrl's current image is shown.

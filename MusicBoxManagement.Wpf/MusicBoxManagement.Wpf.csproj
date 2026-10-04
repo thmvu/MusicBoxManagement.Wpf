@@ -55,6 +55,8 @@
     <Compile Include="Views\MainWindow.xaml.cs"><DependentUpon>MainWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\RoomSchema.cs" />
+    <Compile Include="Data\RoomUsageSchema.cs" />
+    <Compile Include="Services\IClock.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\RoomImages.cs" />
