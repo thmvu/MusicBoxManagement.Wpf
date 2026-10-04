@@ -23,4 +23,11 @@ namespace MusicBoxManagement.Wpf.Models
         public string Description { get; set; }
         public string ImageFilePath { get; set; }
     }
+
+    public sealed class RoomEdit
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ReplacementImageFilePath { get; set; }
+    }
 }

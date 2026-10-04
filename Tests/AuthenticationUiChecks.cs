@@ -177,6 +177,7 @@ public static class MusicBoxAuthenticationUiChecks
             var fixtureEncoder = new PngBitmapEncoder(); fixtureEncoder.Frames.Add(BitmapFrame.Create(fixtureBitmap));
             using (var stream = File.Create(fixtureImage)) fixtureEncoder.Save(stream);
             var roomStage = 0;
+            string originalImageUrl = null;
             RoomsWindow catalogWindow = null;
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             driver.Tick += (sender, args) =>
@@ -185,6 +186,7 @@ public static class MusicBoxAuthenticationUiChecks
                 {
                     var catalog = application.Windows.OfType<RoomsWindow>().FirstOrDefault();
                     var dialog = application.Windows.OfType<RoomCreateWindow>().FirstOrDefault();
+                    var editDialog = application.Windows.OfType<RoomEditWindow>().FirstOrDefault();
                     if (roomStage == 0 && catalog != null && Field<Button>(catalog, "AddRoomButton").IsEnabled)
                     {
                         catalogWindow = catalog;
@@ -227,19 +229,71 @@ public static class MusicBoxAuthenticationUiChecks
                     else if (roomStage == 5 && dialog == null && catalog != null)
                     {
                         Assert(Field<DataGrid>(catalog, "RoomsTable").Items.Count == 1, "Cancel created another room.");
-                        roomStage = 6; driver.Stop(); catalog.Close();
+                        Field<DataGrid>(catalog, "RoomsTable").SelectedIndex = 0;
+                        originalImageUrl = ((MusicBoxManagement.Wpf.Models.Room)Field<DataGrid>(catalog, "RoomsTable").SelectedItem).ImageUrl;
+                        roomStage = 6;
+                        Click(Field<Button>(catalog, "EditRoomButton"));
+                    }
+                    else if (roomStage == 6 && editDialog != null)
+                    {
+                        Field<TextBox>(editDialog, "NameInput").Text = " ";
+                        roomStage = 7;
+                        Click(Field<Button>(editDialog, "SaveButton"));
+                    }
+                    else if (roomStage == 7 && editDialog != null && Field<Button>(editDialog, "SaveButton").IsEnabled)
+                    {
+                        Assert(Field<TextBlock>(editDialog, "StatusText").Text.Contains("Tên phòng"), "Invalid room name did not display error.");
+                        Image(editDialog, outputDirectory, "room-edit-error");
+                        Field<TextBox>(editDialog, "NameInput").Text = "Phòng đã sửa từ UI";
+                        Field<TextBox>(editDialog, "DescriptionInput").Text = "Mô tả đã sửa từ UI.";
+                        ((RoomEditViewModel)editDialog.DataContext).ReplacementImageFilePath = fixtureImage;
+                        roomStage = 8;
+                        Click(Field<Button>(editDialog, "SaveButton"));
+                        Assert(!Field<Button>(editDialog, "SaveButton").IsEnabled, "Room edit did not block duplicate saves.");
+                    }
+                    else if (roomStage == 8 && editDialog == null && catalog != null && Field<Button>(catalog, "EditRoomButton").IsEnabled)
+                    {
+                        var savedRoom = (MusicBoxManagement.Wpf.Models.Room)Field<DataGrid>(catalog, "RoomsTable").SelectedItem;
+                        Assert(savedRoom.Name == "Phòng đã sửa từ UI" && savedRoom.Description == "Mô tả đã sửa từ UI." &&
+                            savedRoom.RoomCode == "P01" && savedRoom.ImageUrl != originalImageUrl &&
+                            Field<System.Windows.Controls.Image>(catalog, "RoomImage").Source != null, "Edited room/image did not refresh.");
+                        Image(catalog, outputDirectory, "room-edited-catalog");
+                        roomStage = 9;
+                        Click(Field<Button>(catalog, "EditRoomButton"));
+                    }
+                    else if (roomStage == 9 && editDialog != null)
+                    {
+                        var editVm = (RoomEditViewModel)editDialog.DataContext;
+                        editVm.ReplacementImageFilePath = fixtureImage;
+                        Click(Field<Button>(editDialog, "KeepImageButton"));
+                        Assert(editVm.ReplacementImageFilePath == null, "Keep current image did not clear replacement.");
+                        Field<TextBox>(editDialog, "NameInput").Text = "Không lưu tên này";
+                        roomStage = 10;
+                        Assert(Field<Button>(editDialog, "CancelButton").IsCancel, "Editor has no cancel action.");
+                        editDialog.DialogResult = false;
+                    }
+                    else if (roomStage == 10 && editDialog == null && catalog != null)
+                    {
+                        using (var connection = database.OpenConnection())
+                        using (var command = connection.CreateCommand())
+                        {
+                            command.CommandText = "SELECT Name FROM Rooms WHERE RoomCode='P01';";
+                            Assert((string)command.ExecuteScalar() == "Phòng đã sửa từ UI", "Canceling editor saved changes.");
+                        }
+                        roomStage = 11; driver.Stop(); catalog.Close();
                     }
                 }
                 catch (Exception error)
                 {
                     driverError = error; driver.Stop();
                     foreach (var dialog in application.Windows.OfType<RoomCreateWindow>().ToArray()) dialog.Close();
+                    foreach (var editor in application.Windows.OfType<RoomEditWindow>().ToArray()) editor.Close();
                     if (catalogWindow != null) catalogWindow.Close();
                 }
             };
             driver.Start();
             Click(Field<Button>(window, "RoomsButton"));
-            PumpUntil(() => (roomStage == 6 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
+            PumpUntil(() => (roomStage == 11 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
             Click(Field<Button>(window, "LogoutButton"));
@@ -299,7 +353,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest, bootstrap, permissions, login/logout, room-type editing, room creation with mandatory image, cancel and catalog/image refresh. Rendered nine views.");
+            Console.WriteLine("PASS WPF UI: Guest/auth, room-type editing, room creation/editing/image replacement, validation, save/cancel, keep image and catalog/image refresh. Rendered eleven views.");
         }
         finally
         {

@@ -2,6 +2,8 @@
 
 Ngày: 04/10/2026. Đối chiếu plan WPF bước 4 và plan web v1.3 mục 5, 19–20, 32, 35, 47, 55. Đây là phần đầu của 4b, chưa hoàn thành sửa phòng/thay ảnh/khóa mở. Giữ WPF .NET Framework 4.7.2 + SQLite; database online sẽ được xem xét riêng khi người dùng chốt.
 
+Cập nhật cùng ngày: 4b.2a đã có sửa tên/mô tả/thay ảnh, schema giữ v4; bài kiểm tra UI hiện render 11 ảnh. Xem `Step4b2a_RoomEditing.md`; nội dung bên dưới ghi lại thời điểm 4b.1.
+
 ## Đã làm và cách dùng
 
 Đăng nhập → **Phòng** → **Thêm phòng** → nhập mã/tên, chọn loại Standard/VIP, chọn một ảnh, nhập mô tả tùy chọn → **Thêm phòng**. Sau khi lưu, danh sách được tải lại; chọn dòng để xem ảnh/mô tả. Hủy không lưu. Database mới không tự thêm phòng demo.

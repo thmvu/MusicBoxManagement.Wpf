@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 using MusicBoxManagement.Wpf.Data;
@@ -103,6 +104,100 @@ SELECT last_insert_rowid();";
                     catch (UnauthorizedAccessException error) { System.Diagnostics.Trace.TraceError("Không dọn được ảnh phòng: " + error.Message); }
                 }
                 throw;
+            }
+        }
+
+        public Room GetForEdit(LoginSession session, int roomId)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                permissions.Demand(session, "Room.Manage", connection, transaction);
+                return Find(connection, transaction, roomId);
+            }
+        }
+
+        public void Update(LoginSession session, Room original, RoomEdit input)
+        {
+            permissions.Demand(session, "Room.Manage");
+            if (original == null || input == null) throw new ArgumentException("Cần chọn phòng và nhập thông tin sửa.");
+            var name = (input.Name ?? "").Trim();
+            var description = string.IsNullOrWhiteSpace(input.Description) ? null : input.Description.Trim();
+            if (name.Length < 1 || name.Length > 100) throw new ArgumentException("Tên phòng từ 1–100 ký tự.");
+            if (description != null && description.Length > 2000) throw new ArgumentException("Mô tả tối đa 2000 ký tự.");
+            var png = string.IsNullOrWhiteSpace(input.ReplacementImageFilePath) ? null : RoomImages.ReadPng(input.ReplacementImageFilePath);
+            var newUrl = png == null ? null : "Content/uploads/rooms/" + Guid.NewGuid().ToString("N") + ".png";
+            var newPath = newUrl == null ? null : GetImagePath(newUrl);
+            var ownsFile = false;
+            var committed = false;
+            using (var connection = database.OpenConnection())
+            using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
+            {
+                try
+                {
+                    permissions.Demand(session, "Room.Manage", connection, transaction);
+                    var current = Find(connection, transaction, original.RoomId);
+                    if (current.RoomCode != original.RoomCode || current.RoomTypeId != original.RoomTypeId ||
+                        current.Name != original.Name || current.Description != original.Description || current.ImageUrl != original.ImageUrl ||
+                        current.IsActive != original.IsActive || current.InactiveReason != original.InactiveReason || current.CreatedAt != original.CreatedAt)
+                        throw new InvalidOperationException("Phòng đã thay đổi. Hãy đóng form, làm mới danh sách rồi mở lại để sửa.");
+                    if (newUrl == null && name == current.Name && description == current.Description) return;
+                    if (png != null)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                        using (var stream = new FileStream(newPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        {
+                            ownsFile = true;
+                            stream.Write(png, 0, png.Length);
+                            stream.Flush(true);
+                        }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.Transaction = transaction;
+                        command.CommandText = "UPDATE Rooms SET Name=@name, Description=@description, ImageUrl=@image WHERE RoomId=@id;";
+                        command.Parameters.AddWithValue("@name", name);
+                        command.Parameters.AddWithValue("@description", (object)description ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@image", newUrl ?? current.ImageUrl);
+                        command.Parameters.AddWithValue("@id", current.RoomId);
+                        command.ExecuteNonQuery();
+                    }
+                    AuditService.WriteStaff(connection, transaction, session.UserId, "Room.Update", "Room",
+                        current.RoomId.ToString(CultureInfo.InvariantCulture), "Cập nhật phòng " + current.RoomCode + (png == null ? "." : ", thay ảnh."));
+                    transaction.Commit();
+                    committed = true;
+                    // Retain the old file for readers/backups. Only ImageUrl's current image is shown.
+                }
+                catch
+                {
+                    if (ownsFile && !committed)
+                    {
+                        try { File.Delete(newPath); }
+                        catch (IOException error) { System.Diagnostics.Trace.TraceError("Không dọn được ảnh phòng: " + error.Message); }
+                        catch (UnauthorizedAccessException error) { System.Diagnostics.Trace.TraceError("Không dọn được ảnh phòng: " + error.Message); }
+                    }
+                    throw;
+                }
+            }
+        }
+
+        private static Room Find(SQLiteConnection connection, SQLiteTransaction transaction, int id)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText = @"SELECT r.RoomId, r.RoomCode, r.RoomTypeId, t.Name, r.Name,
+r.ImageUrl, r.Description, r.IsActive, r.InactiveReason, r.CreatedAt
+FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@id;";
+                command.Parameters.AddWithValue("@id", id);
+                using (var reader = command.ExecuteReader())
+                {
+                    if (!reader.Read()) throw new InvalidOperationException("Không tìm thấy phòng đã chọn.");
+                    return new Room { RoomId = reader.GetInt32(0), RoomCode = reader.GetString(1), RoomTypeId = reader.GetInt32(2),
+                        RoomTypeName = reader.GetString(3), Name = reader.GetString(4), ImageUrl = reader.GetString(5),
+                        Description = reader.IsDBNull(6) ? null : reader.GetString(6), IsActive = reader.GetInt32(7) == 1,
+                        InactiveReason = reader.IsDBNull(8) ? null : reader.GetString(8), CreatedAt = reader.GetString(9) };
+                }
             }
         }
 

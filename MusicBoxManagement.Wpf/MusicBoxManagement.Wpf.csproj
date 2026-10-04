@@ -59,6 +59,9 @@
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\RoomImages.cs" />
     <Compile Include="ViewModels\RoomsViewModel.cs" />
+    <Compile Include="ViewModels\RoomEditViewModel.cs" />
+    <Page Include="Views\RoomEditWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\RoomEditWindow.xaml.cs"><DependentUpon>RoomEditWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\RoomsWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\RoomsWindow.xaml.cs"><DependentUpon>RoomsWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\RoomCreateWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>

@@ -18,12 +18,13 @@
 - UI quản lý user/reset mật khẩu/đổi role/ma trận quyền/audit đầy đủ vẫn ở bước 8; kho Identity hiện chỉ lưu tài khoản mới cho bootstrap, không cho cập nhật tài khoản bỏ qua service quản trị.
 - Bước 4a đã có sửa Standard/VIP: Name/Capacity/PricePerHour/Amenities/Description, Code cố định; service kiểm tra RoomType.Edit trong transaction cùng cập nhật/AuditLog, chặn form cũ ghi đè. UI nhân viên có danh mục/nút sửa; Guest chỉ xem. Schema hiện v3, nhật ký nhân viên đã chuyển User → Staff đúng plan, giữ dữ liệu cũ. Debug/Release và kiểm tra nền tảng/xác thực/RoomType/UI đạt trên database tạm. Chi tiết `docs/Step4a_RoomTypes.md`.
 - Bước 4b.1 đã có thêm phòng với mã/tên/loại/một ảnh bắt buộc JPEG/PNG/WebP <=5 MB, danh sách/ảnh nội bộ; schema v4 giữ dữ liệu cũ, mã unique/cố định. Room.Manage kiểm tra trong transaction cùng dữ liệu/nhật ký; ảnh chuẩn hóa PNG lưu cạnh database trong Content/uploads/rooms. Debug/Release và kiểm tra nền tảng/xác thực/RoomType/Rooms/UI đạt trên dữ liệu tạm. Chi tiết `docs/Step4b1_RoomCreation.md` (có giới hạn rollback filesystem khi process dừng đột ngột).
-- Chưa có sửa/thay ảnh/khóa mở phòng, đặt phòng, phiên sử dụng, gọi món, checkout/hóa đơn và báo cáo. Guest hiện chỉ có danh mục loại phòng, chưa đủ các luồng nghiệp vụ Guest.
+- Bước 4b.2a đã có sửa tên/mô tả/thay ảnh phòng, giữ mã/loại/trạng thái/CreatedAt; GetForEdit/Update kiểm tra Room.Manage hiện hành, chặn form cũ và ghi Room.Update cùng transaction. Schema giữ v4. Ảnh cũ sau thay giữ trên đĩa, chưa có bộ dọn; xem `docs/Step4b2a_RoomEditing.md`. Debug/Release và kiểm tra nền tảng/phòng/UI đạt trên dữ liệu tạm.
+- Chưa có đổi loại/khóa mở phòng, đặt phòng, phiên sử dụng, gọi món, checkout/hóa đơn và báo cáo. Guest hiện chỉ có danh mục loại phòng, chưa đủ các luồng nghiệp vụ Guest.
 - Database nằm ở `%LOCALAPPDATA%\MusicBoxManagement.Wpf\musicbox.db`; không ghi đè/xóa database đang dùng khi kiểm tra.
 
 ## Làm tiếp
 
-Đọc README, plan, `docs/Wpf_Authentication_Transactions.md`, `docs/Step3_Authentication.md`, `docs/Step4a_RoomTypes.md` và `docs/Step4b1_RoomCreation.md` trước. Bước tiếp theo là 4b.2 — sửa/thay ảnh/khóa mở phòng đúng quy tắc Active Session/Confirmed còn hiệu lực, sau đó dịch vụ/khách hàng, từng phần nhỏ sau đối chiếu plan gốc. Tái sử dụng PermissionService và AuditService; thao tác ghi kiểm tra quyền/dữ liệu bằng cùng kết nối/transaction. Không giả định phần còn lại của ứng dụng desktop đã hoàn thành.
+Đọc README, plan, `docs/Wpf_Authentication_Transactions.md`, `docs/Step3_Authentication.md`, `docs/Step4a_RoomTypes.md`, `docs/Step4b1_RoomCreation.md` và `docs/Step4b2a_RoomEditing.md` trước. Phần còn lại 4b.2 là đổi loại/khóa mở phòng; cần bổ sung nền tảng kiểm tra Active Session/Confirmed còn hiệu lực đúng plan trước khi mở thao tác, không coi kiểm tra phụ thuộc booking/session đã hoàn thành. Sau đó dịch vụ/khách hàng, từng phần nhỏ. Tái sử dụng PermissionService và AuditService; thao tác ghi kiểm tra quyền/dữ liệu bằng cùng kết nối/transaction. Không giả định phần còn lại của ứng dụng desktop đã hoàn thành.
 
 ## Kiểm tra và Git
 

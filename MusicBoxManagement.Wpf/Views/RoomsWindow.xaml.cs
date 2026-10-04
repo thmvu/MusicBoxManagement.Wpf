@@ -25,6 +25,7 @@ namespace MusicBoxManagement.Wpf.Views
             this.roomTypes = roomTypes;
             viewModel = new RoomsViewModel(service, session, new System.Collections.Generic.List<RoomType>());
             DataContext = viewModel;
+            viewModel.PropertyChanged += (sender, args) => UpdateEditButton();
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) => await viewModel.RefreshAsync();
@@ -35,6 +36,7 @@ namespace MusicBoxManagement.Wpf.Views
             if (isOpeningEditor || viewModel.IsBusy) return;
             isOpeningEditor = true;
             AddRoomButton.IsEnabled = false;
+            UpdateEditButton();
             try
             {
                 // Check current permission before opening a form; Create checks it again when saving.
@@ -57,11 +59,13 @@ namespace MusicBoxManagement.Wpf.Views
             {
                 isOpeningEditor = false;
                 AddRoomButton.SetBinding(IsEnabledProperty, new System.Windows.Data.Binding("CanAddRoom"));
+                UpdateEditButton();
             }
         }
 
         private void Room_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            UpdateEditButton();
             RoomImage.Source = null;
             if (!(RoomsTable.SelectedItem is Room room))
             { RoomDescription.Text = "Chọn một phòng để xem ảnh và mô tả."; return; }
@@ -81,6 +85,48 @@ namespace MusicBoxManagement.Wpf.Views
                 }
             }
             catch (Exception) { RoomDescription.Text += "\nKhông đọc được ảnh đã lưu."; }
+        }
+
+        private void UpdateEditButton()
+        {
+            if (EditRoomButton != null && viewModel != null)
+                EditRoomButton.IsEnabled = viewModel.CanAddRoom && !isOpeningEditor && RoomsTable.SelectedItem is Room;
+        }
+
+        private async void EditRoom_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningEditor || viewModel.IsBusy || !(RoomsTable.SelectedItem is Room selected)) return;
+            isOpeningEditor = true;
+            UpdateEditButton();
+            AddRoomButton.IsEnabled = false;
+            try
+            {
+                var original = await Task.Run(() => service.GetForEdit(session, selected.RoomId));
+                if (!IsVisible) return;
+                var editor = new RoomEditWindow(new RoomEditViewModel(service, session, original)) { Owner = this };
+                if (editor.ShowDialog() == true)
+                {
+                    await viewModel.RefreshAsync();
+                    foreach (var room in viewModel.Rooms)
+                        if (room.RoomId == original.RoomId) { RoomsTable.SelectedItem = room; break; }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                if (IsVisible)
+                {
+                    await viewModel.RefreshAsync();
+                    MessageBox.Show(this, "Bạn không còn quyền quản lý phòng hoặc phiên đã hết hiệu lực.", "Music Box");
+                }
+            }
+            catch (InvalidOperationException error) { if (IsVisible) MessageBox.Show(this, error.Message, "Music Box"); }
+            catch (Exception) { if (IsVisible) MessageBox.Show(this, "Không mở được form sửa phòng. Hãy làm mới và thử lại.", "Music Box"); }
+            finally
+            {
+                isOpeningEditor = false;
+                AddRoomButton.SetBinding(IsEnabledProperty, new System.Windows.Data.Binding("CanAddRoom"));
+                UpdateEditButton();
+            }
         }
     }
 }

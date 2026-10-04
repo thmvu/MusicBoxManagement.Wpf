@@ -171,12 +171,95 @@ CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE
             Reject<IOException>(() => new RoomService(blockedDb).Create(blockedAdmin, Input("DISKFAIL", png)), "Image write failure ignored.");
             Assert(Count(blockedDb, "SELECT COUNT(*) FROM Rooms;") == 0 &&
                 Count(blockedDb, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Create';") == 0, "Filesystem failure did not roll back creation.");
-            Console.WriteLine("PASS Rooms: v3 migration/rollback, preservation, RBAC, mandatory images, PNG/JPEG/WebP decode, corrupt/oversize rejection, immutable code/FK/reason constraints, audit/filesystem rollback and concurrent uniqueness.");
+            Editing(database, service, auth, admin, manager, png, fake, large);
+            Console.WriteLine("PASS Rooms: migration, creation, image formats/validation, editing with retained/replaced image, live permissions, stale/concurrent forms, atomic audit/filesystem rollback and immutable fields.");
         }
         finally
         {
             // This entire directory belongs to this fixture, never the live app.
             Directory.Delete(root, true);
         }
+    }
+
+    private static void Editing(SqliteDatabase database, RoomService service, AuthenticationService auth,
+        LoginSession admin, LoginSession manager, string png, string fake, string large)
+    {
+        var room = service.ListForManagement(admin).First();
+        var id = room.RoomId;
+        var oldUrl = room.ImageUrl;
+        var originalTime = room.CreatedAt;
+        var imageFolder = Path.GetDirectoryName(service.GetImagePath(oldUrl));
+        Reject<UnauthorizedAccessException>(() => service.GetForEdit(null, id), "Guest opened room editor.");
+        Reject<UnauthorizedAccessException>(() => service.Update(null, room, new RoomEdit { Name = "Guest" }), "Guest saved room editor.");
+        Reject<InvalidOperationException>(() => service.GetForEdit(admin, 999), "Missing room opened.");
+        Reject<InvalidOperationException>(() => service.Update(admin, new Room { RoomId = 999 }, new RoomEdit { Name = "Missing" }), "Missing room saved.");
+        Sql(database, "INSERT INTO RolePermission SELECT 'Manager', PermissionId FROM Permission WHERE Code='Room.Manage';");
+        var original = service.GetForEdit(manager, id);
+        service.Update(manager, original, new RoomEdit { Name = "  Phòng đã sửa  ", Description = "  Mô tả mới  " });
+        var saved = service.GetForEdit(admin, id);
+        Assert(saved.Name == "Phòng đã sửa" && saved.Description == "Mô tả mới" && saved.ImageUrl == oldUrl && saved.RoomCode == room.RoomCode &&
+            saved.RoomTypeId == room.RoomTypeId && saved.CreatedAt == originalTime && saved.IsActive == room.IsActive,
+            "Edit did not normalize/preserve immutable fields/current image.");
+        var auditCount = Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';");
+        service.Update(admin, saved, new RoomEdit { Name = saved.Name, Description = saved.Description });
+        Assert(Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';") == auditCount, "No-op save created audit.");
+        Reject<InvalidOperationException>(() => service.Update(admin, original, new RoomEdit { Name = "Stale", ReplacementImageFilePath = png }), "Stale edit overwrote room.");
+        foreach (var edit in new[] { new RoomEdit { Name = " " }, new RoomEdit { Name = new string('x', 101) },
+            new RoomEdit { Name = saved.Name, Description = new string('x', 2001) },
+            new RoomEdit { Name = saved.Name, ReplacementImageFilePath = fake }, new RoomEdit { Name = saved.Name, ReplacementImageFilePath = large } })
+            Reject<ArgumentException>(() => service.Update(admin, saved, edit), "Invalid edit accepted.");
+
+        foreach (var format in new[] { SKEncodedImageFormat.Png, SKEncodedImageFormat.Jpeg, SKEncodedImageFormat.Webp })
+        {
+            var path = Path.Combine(Path.GetDirectoryName(database.FilePath), "replacement." + format); Image(path, format);
+            var before = service.GetForEdit(admin, id);
+            service.Update(admin, before, new RoomEdit { Name = before.Name, Description = " ", ReplacementImageFilePath = path });
+            saved = service.GetForEdit(admin, id);
+            Assert(saved.ImageUrl != before.ImageUrl && saved.Description == null && File.Exists(service.GetImagePath(before.ImageUrl)) &&
+                File.Exists(service.GetImagePath(saved.ImageUrl)), "Image replacement lost current/old file or blank description was not NULL.");
+        }
+        var beforeFailure = service.GetForEdit(admin, id);
+        var fileCount = Directory.GetFiles(imageFolder).Length;
+        auditCount = Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';");
+        Sql(database, "CREATE TRIGGER FailUpdateAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Room.Update' BEGIN SELECT RAISE(ABORT,'fixture'); END;");
+        Reject<SQLiteException>(() => service.Update(admin, beforeFailure, new RoomEdit { Name = "Rollback", ReplacementImageFilePath = png }), "Update audit failure ignored.");
+        saved = service.GetForEdit(admin, id);
+        Assert(saved.Name == beforeFailure.Name && saved.ImageUrl == beforeFailure.ImageUrl && Directory.GetFiles(imageFolder).Length == fileCount &&
+            Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';") == auditCount, "Update rollback left data/new image/audit.");
+        Sql(database, "DROP TRIGGER FailUpdateAudit;");
+        var vm = new RoomEditViewModel(service, manager, saved) { Name = "Revoked" };
+        Sql(database, "DELETE FROM RolePermission WHERE RoleId='Manager' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Room.Manage');");
+        Assert(!vm.SaveAsync().GetAwaiter().GetResult() && vm.Status.Contains("quyền"), "Open editor bypassed revoked permission.");
+        Reject<UnauthorizedAccessException>(() => service.GetForEdit(manager, id), "Revoked user opened room edit.");
+        var staff = auth.LoginAsync("staff", Password).GetAwaiter().GetResult();
+        var staffOriginal = service.GetForEdit(staff, id);
+        service.Update(staff, staffOriginal, new RoomEdit { Name = "Staff được cấp quyền" });
+        var logoutOriginal = service.GetForEdit(staff, id); auth.Logout(staff);
+        Reject<UnauthorizedAccessException>(() => service.Update(staff, logoutOriginal, new RoomEdit { Name = "Logout" }), "Logout session edited room.");
+        var firstOriginal = service.GetForEdit(admin, id);
+        var secondOriginal = service.GetForEdit(admin, id);
+        fileCount = Directory.GetFiles(imageFolder).Length;
+        auditCount = Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';");
+        using (var gate = new ManualResetEventSlim(false))
+        {
+            Func<Room, string, Task<bool>> attempt = (snapshot, name) => Task.Run(() => {
+                gate.Wait();
+                try { service.Update(admin, snapshot, new RoomEdit { Name = name, ReplacementImageFilePath = png }); return true; }
+                catch (InvalidOperationException) { return false; }
+            });
+            var first = attempt(firstOriginal, "Concurrent A"); var second = attempt(secondOriginal, "Concurrent B");
+            gate.Set(); Task.WaitAll(first, second);
+            Assert(first.Result != second.Result, "Concurrent stale edits did not have one success.");
+        }
+        Assert(Directory.GetFiles(imageFolder).Length == fileCount + 1 &&
+            Count(database, "SELECT COUNT(*) FROM AuditLog WHERE Action='Room.Update';") == auditCount + 1, "Concurrent edits left extra image/audit.");
+        var beforeLock = service.GetForEdit(admin, id);
+        Sql(database, "UPDATE Rooms SET IsActive=0, InactiveReason='Fixture' WHERE RoomId=@id;", "@id", id);
+        Reject<InvalidOperationException>(() => service.Update(admin, beforeLock, new RoomEdit { Name = "Stale state" }), "Changed room state bypassed stale check.");
+        var inactive = service.GetForEdit(admin, id);
+        service.Update(admin, inactive, new RoomEdit { Name = "Sửa tên phòng đã khóa" });
+        var final = new RoomService(new SqliteDatabase(database.FilePath)).GetForEdit(admin, id);
+        Assert(!final.IsActive && final.InactiveReason == "Fixture" && final.RoomCode == room.RoomCode && final.RoomTypeId == room.RoomTypeId &&
+            final.CreatedAt == originalTime && final.Name == "Sửa tên phòng đã khóa", "Editing changed protected fields or persistence failed.");
     }
 }

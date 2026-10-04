@@ -9,6 +9,7 @@
         <DockPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                 <Button x:Name="AddRoomButton" Content="Thêm phòng" Click="AddRoom_Click" IsEnabled="{Binding CanAddRoom}" />
+                <Button x:Name="EditRoomButton" Content="Sửa phòng" Click="EditRoom_Click" IsEnabled="False" Margin="8,0,0,0" />
                 <Button x:Name="RefreshButton" Content="Làm mới" Click="Refresh_Click" IsEnabled="{Binding CanOperate}" Margin="8,0,0,0" />
                 <Button Content="Đóng" IsCancel="True" Margin="8,0,0,0" />
             </StackPanel>
