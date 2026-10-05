@@ -1,0 +1,53 @@
+<Window x:Class="MusicBoxManagement.Wpf.Views.CustomersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Music Box — Khách hàng" Width="1040" Height="640" MinWidth="900" MinHeight="540"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5" Loaded="Window_Loaded">
+    <Grid Margin="28">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="NewButton" Content="Thêm khách hàng" Click="New_Click" IsEnabled="{Binding CanCreate}" />
+                <Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanSearch}" Margin="8,0,0,0" />
+            </StackPanel>
+            <TextBlock Text="Khách hàng" FontSize="28" FontWeight="SemiBold" />
+        </DockPanel>
+        <Grid Grid.Row="1" Margin="0,20,0,20" IsEnabled="{Binding CanSearch}">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,12,0"><TextBlock Text="Tìm theo tên" Margin="0,0,0,6" /><TextBox x:Name="NameQueryInput" Text="{Binding NameQuery, UpdateSourceTrigger=PropertyChanged}" Padding="8" MaxLength="100" /></StackPanel>
+            <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="SĐT đầy đủ (0… / +84… / 84…)" Margin="0,0,0,6" /><TextBox x:Name="PhoneQueryInput" Text="{Binding PhoneQuery, UpdateSourceTrigger=PropertyChanged}" Padding="8" MaxLength="50" /></StackPanel>
+            <Button x:Name="SearchButton" Grid.Column="2" Content="Tìm" Click="Search_Click" VerticalAlignment="Bottom" />
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
+            <DataGrid x:Name="CustomersTable" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" SelectionChanged="Selection_Changed"
+                      HeadersVisibility="Column" RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8"
+                      AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" IsEnabled="{Binding CanSelect}">
+                <DataGrid.Resources>
+                    <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
+                    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Mã" Binding="{Binding CustomerId}" Width="70" />
+                    <DataGridTextColumn Header="Họ tên" Binding="{Binding FullName}" Width="*" MinWidth="180" />
+                    <DataGridTextColumn Header="Số điện thoại" Binding="{Binding PhoneNumber}" Width="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <ScrollViewer Grid.Column="1" Margin="22,0,0,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="{Binding EditorTitle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <StackPanel IsEnabled="{Binding CanSave}">
+                        <TextBlock Text="Họ tên" Margin="0,0,0,6" />
+                        <TextBox x:Name="NameInput" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8" />
+                        <TextBlock Text="Số điện thoại" Margin="0,14,0,6" />
+                        <TextBox x:Name="PhoneInput" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Padding="8" />
+                        <TextBlock Text="Ví dụ: 0912345678 hoặc +84 912 345 678. Mỗi SĐT chỉ thuộc một khách hàng." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,12,0,0" />
+                        <Button x:Name="SaveButton" Content="Lưu" Click="Save_Click" HorizontalAlignment="Left" Margin="0,18,0,0" />
+                    </StackPanel>
+                    <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" IsEnabled="{Binding CanSelect}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,18,0,0" />
+    </Grid>
+</Window>

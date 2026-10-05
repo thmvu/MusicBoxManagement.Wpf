@@ -64,7 +64,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -75,6 +75,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Guest saw an editing action.");
             Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Guest saw room management.");
             Assert(Field<Button>(window, "ServicesButton").Visibility == Visibility.Collapsed, "Guest saw service management.");
+            Assert(Field<Button>(window, "CustomersButton").Visibility == Visibility.Collapsed, "Guest saw customer management.");
             Image(window, outputDirectory, "guest");
 
             // Drive the component's real event handlers using synthetic fields.
@@ -152,6 +153,59 @@ public static class MusicBoxAuthenticationUiChecks
             };
             driver.Start(); Click(Field<Button>(window, "ServicesButton"));
             PumpUntil(() => (serviceStage == 3 && Field<Button>(window, "ServicesButton").IsEnabled) || driverError != null);
+            driver.Stop(); if (driverError != null) throw driverError;
+            var customerStage = 0;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender, args) =>
+            {
+                var customers = application.Windows.OfType<CustomersWindow>().FirstOrDefault();
+                if (customers == null) return;
+                try
+                {
+                    var vm = (CustomersViewModel)customers.DataContext;
+                    if (customerStage == 0 && vm.CanCreate)
+                    {
+                        Field<TextBox>(customers, "NameInput").Text = " Nguyễn An ";
+                        Field<TextBox>(customers, "PhoneInput").Text = "+84 912.345-678";
+                        customerStage = 1; Click(Field<Button>(customers, "SaveButton"));
+                    }
+                    else if (customerStage == 1 && vm.CanSelect && vm.Items.Count == 1)
+                    {
+                        Assert(vm.Items[0].PhoneNumber == "0912345678" && vm.Items[0].FullName == "Nguyễn An", "Customer normalization failed in UI.");
+                        Field<TextBox>(customers, "PhoneQueryInput").Text = "84 912 345 678";
+                        customerStage = 2; Click(Field<Button>(customers, "SearchButton"));
+                    }
+                    else if (customerStage == 2 && vm.CanSelect)
+                    {
+                        Assert(vm.Items.Count == 1, "Normalized phone lookup failed.");
+                        Field<DataGrid>(customers, "CustomersTable").SelectedIndex = 0;
+                        Field<TextBox>(customers, "NameInput").Text = "Chưa lưu";
+                        Click(Field<Button>(customers, "CancelEditButton"));
+                        Assert(vm.FullName == "Nguyễn An", "Cancel edit did not restore customer.");
+                        Field<TextBox>(customers, "PhoneInput").Text = "abc";
+                        customerStage = 3; Click(Field<Button>(customers, "SaveButton"));
+                    }
+                    else if (customerStage == 3 && vm.CanSelect && vm.Status.Contains("10 chữ số"))
+                    {
+                        Image(customers, outputDirectory, "customer-phone-error");
+                        Field<TextBox>(customers, "NameInput").Text = "Nguyễn Bình";
+                        Field<TextBox>(customers, "PhoneInput").Text = "0987-654-321";
+                        customerStage = 4; Click(Field<Button>(customers, "SaveButton"));
+                    }
+                    else if (customerStage == 4 && vm.CanSelect && vm.Items[0].PhoneNumber == "0987654321")
+                    {
+                        Assert(vm.Items.Count == 1 && vm.Items[0].FullName == "Nguyễn Bình", "Customer edit inserted a new customer.");
+                        Image(customers, outputDirectory, "customers");
+                        Click(Field<Button>(customers, "NewButton")); Field<TextBox>(customers, "NameInput").Text = "Không lưu";
+                        Click(Field<Button>(customers, "CancelEditButton"));
+                        Assert(string.IsNullOrEmpty(vm.FullName) && vm.Items.Count == 1, "Cancel new customer wrote data.");
+                        customerStage = 5; driver.Stop(); customers.Close();
+                    }
+                }
+                catch (Exception error) { driverError = error; driver.Stop(); customers.Close(); }
+            };
+            driver.Start(); Click(Field<Button>(window, "CustomersButton"));
+            PumpUntil(() => (customerStage == 5 && Field<Button>(window, "CustomersButton").IsEnabled) || driverError != null);
             driver.Stop(); if (driverError != null) throw driverError;
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Admin UI did not show all current permissions.");
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
@@ -432,7 +486,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/auth, rooms/types/images, lock/unlock, services price validation/create/edit/category/toggle/cancel and refresh. Rendered fifteen views.");
+            Console.WriteLine("PASS WPF UI: Guest/auth, rooms/types/images, services, customer normalization/search/create/edit/cancel/validation. Rendered seventeen views.");
         }
         finally
         {

@@ -57,6 +57,12 @@
     <Compile Include="Data\RoomSchema.cs" />
     <Compile Include="Data\RoomUsageSchema.cs" />
     <Compile Include="Data\ServiceSchema.cs" />
+    <Compile Include="Models\Customer.cs" />
+    <Compile Include="Services\PhoneNumberNormalizer.cs" />
+    <Compile Include="Services\CustomerService.cs" />
+    <Compile Include="ViewModels\CustomersViewModel.cs" />
+    <Page Include="Views\CustomersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\CustomersWindow.xaml.cs"><DependentUpon>CustomersWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\ServiceItem.cs" />
     <Compile Include="Services\ServiceCatalogService.cs" />
     <Compile Include="ViewModels\ServicesViewModel.cs" />

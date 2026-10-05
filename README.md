@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng và danh mục dịch vụ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa triển khai luồng đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng, danh mục dịch vụ và tìm/thêm/sửa khách hàng nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa triển khai luồng đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -72,7 +72,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentic
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
 
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm và sửa phòng có ảnh/đổi loại/khóa mở/danh mục dịch vụ, lưu 15 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
+Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm và sửa phòng có ảnh/đổi loại/khóa mở/dịch vụ/khách hàng, lưu 17 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
 
 ## Bước 4a — sửa Standard/VIP
 
@@ -113,7 +113,7 @@ Bước 4b.2a đã có: **Phòng → chọn dòng → Sửa phòng**, sửa tên
 
 **4b.2b đã hoàn thành:** trong form sửa, chọn Standard/VIP và bật/tắt **Mở phòng để nhận khách**. Khóa cần lý do; phiên Active chặn đổi loại/khóa, booking Confirmed còn hiệu lực (kể cả tương lai) chặn khóa. Đúng mốc StartTime+15 phút thì booking hết hạn dù worker chưa ghi NoShow. Mở lại xóa lý do. Quyền/kiểm tra dữ liệu/cập nhật/nhật ký cùng transaction; schema hiện **v5**. Xem [báo cáo 4b.2b](docs/Step4b2b_RoomState.md).
 
-V5 thêm nền tảng Customers/Reservations/RoomSessions, giữ dữ liệu cũ; chưa có UI/service đặt hoặc nhận phòng. Không tạo dữ liệu demo trong database đang dùng. Tiếp theo khách hàng (4d), sau đó các luồng booking/session theo plan. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest giữ trong phạm vi.
+V5 thêm nền tảng Customers/Reservations/RoomSessions, giữ dữ liệu cũ; chưa có UI/service đặt hoặc nhận phòng. Không tạo dữ liệu demo trong database đang dùng. Phần danh mục khách hàng 4d.1 ở dưới; tiếp theo các luồng booking/session theo plan. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest giữ trong phạm vi.
 
 ## Bước 4c — danh mục dịch vụ
 
@@ -128,4 +128,19 @@ Gọi món chưa triển khai. Khi làm OrderItem phải dùng snapshot tên/gi�
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Services.ps1
+```
+
+## Bước 4d.1 — khách hàng và chuẩn hóa SĐT
+
+1. Đăng nhập nhân viên có `Customer.View`, bấm **Khách hàng**. Staff/Manager/Admin mặc định có quyền xem/thêm/sửa.
+2. Nhập một phần tên hoặc SĐT đầy đủ rồi bấm **Tìm**; nhập cả hai để lọc đồng thời. Để trống hai ô để xem tất cả. Tìm tên không phân biệt hoa/thường, giữ dấu tiếng Việt.
+3. **Thêm khách hàng**: nhập họ tên, SĐT rồi **Lưu**. Chọn dòng để sửa; **Bỏ thay đổi** không lưu.
+4. SĐT được bỏ khoảng trắng/chấm/gạch ngang, đổi `+84`/`84` thành `0` rồi kiểm tra đúng 10 chữ số đầu 0. Ví dụ `+84 912.345-678` lưu thành `0912345678`.
+
+SĐT unique: tạo/sửa sang số đã thuộc khách khác bị chặn, không tự ghi đè tên khách cũ. Đổi số giữ CustomerId và các liên kết lịch sử; các lần tìm sau dùng số mới. Không xóa khách hàng. Quyền thêm/sửa tách riêng và cần quyền xem để dùng màn hình; tài khoản chỉ xem có form bị khóa. Khi lưu xong, bộ lọc được xóa để thấy dòng vừa sửa.
+
+Schema giữ **v6**, dùng bảng Customers có từ v5. Hàm chuẩn hóa dùng chung đã sẵn sàng cho các luồng sau. **Đây là tìm khách hàng nội bộ, chưa phải Guest tra cứu phòng đã đặt.** Trang lịch sử Reservation/Session/Invoice, số lần hoàn tất/lần sử dụng gần nhất còn cần hoàn thiện khi có luồng dữ liệu tương ứng; không bỏ khỏi scope. Xem [báo cáo 4d.1](docs/Step4d1_Customers.md).
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Customers.ps1
 ```
