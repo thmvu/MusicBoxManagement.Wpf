@@ -21,6 +21,8 @@ public static class MusicBoxAuthenticationUiChecks
     private const string Password = "MusicBox-Ui-Test!";
     private sealed class WorkerClock : IClock
     { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,3,15,0,TimeSpan.Zero); } } }
+    private sealed class BookingClock : IClock
+    { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero); } } }
     private static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
     private static T Field<T>(Window window, string name) { return (T)window.FindName(name); }
     private static void Click(Button button) { button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
@@ -67,7 +69,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -80,6 +82,17 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "ServicesButton").Visibility == Visibility.Collapsed, "Guest saw service management.");
             Assert(Field<Button>(window, "CustomersButton").Visibility == Visibility.Collapsed, "Guest saw customer management.");
             Image(window, outputDirectory, "guest");
+            VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender,args) => {
+                var form=application.Windows.OfType<GuestBookingWindow>().FirstOrDefault();
+                if(form==null)return;
+                var vm=(GuestBookingViewModel)form.DataContext;
+                if(vm.IsBusy || !vm.Status.Contains("Chưa có phòng"))return;
+                Assert(!vm.CanBook && vm.Rooms.Count==0,"Empty guest catalog allowed submission.");
+                Image(form,outputDirectory,"booking-empty");driver.Stop();form.Close();
+            };
+            driver.Start();Click(Field<Button>(window,"BookingButton"));driver.Stop();
 
             // Drive the component's real event handlers using synthetic fields.
             // No OS input, UI Automation, or user database is involved.
@@ -489,7 +502,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: NoShow worker startup/retry, Guest/auth, rooms/types/images, services, customers. Rendered seventeen views.");
+            Console.WriteLine("PASS WPF UI: Guest booking/preview/conflict/confirmation/duplicate guard, NoShow, auth, rooms/types/images, services, customers. Rendered twenty-one views.");
         }
         finally
         {
@@ -519,5 +532,51 @@ CREATE TRIGGER FailWorkerAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Reserv
             run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
             Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Reservation.NoShow';"))==1,"Worker rerun duplicated audit.");
         }
+    }
+
+    private static void VerifyGuestBooking(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);db.Initialize();
+        var imageUrl="Content/uploads/rooms/"+Guid.NewGuid().ToString("N")+".png";
+        var imagePath=Path.Combine(Path.GetDirectoryName(file),imageUrl.Replace('/',Path.DirectorySeparatorChar));Directory.CreateDirectory(Path.GetDirectoryName(imagePath));
+        var bitmap=BitmapSource.Create(2,2,96,96,PixelFormats.Bgra32,null,new byte[]{80,100,120,255,80,100,120,255,80,100,120,255,80,100,120,255},8);
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var stream=File.Create(imagePath))encoder.Save(stream);
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,object> value=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return cmd.ExecuteScalar();}};
+        sql("INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,InactiveReason,CreatedAt) VALUES('P01','Phòng demo',1,'"+imageUrl+"',1,NULL,'test'),('LOCK','Phòng khóa',2,'"+imageUrl+"',0,'Bảo trì','test'); INSERT INTO Customers(FullName,PhoneNumber) VALUES('Tên đã có','0912345678');");
+        var clock=new BookingClock();var service=new GuestBookingService(db,clock);var vm=new GuestBookingViewModel(service,clock);
+        var form=new GuestBookingWindow(service,vm);
+        Action<Func<bool>,string> wait=(ready,step)=>{try{PumpUntil(ready);}catch(Exception error){throw new Exception("Guest booking "+step+": "+vm.Status+"; "+vm.PreviewText+"; room="+(vm.SelectedRoom==null?"null":vm.SelectedRoom.RoomCode)+"; time="+vm.StartTimeText+"; duration="+vm.Duration,error);}};
+        try
+        {
+            form.Show();wait(()=>!vm.IsBusy && vm.CanBook,"load");
+            Assert(vm.Rooms.Count==1 && Field<Image>(form,"RoomImage").Source!=null,"Public room filter/image failed.");
+            Field<DatePicker>(form,"DateInput").SelectedDate=new DateTime(2026,10,5);
+            Field<ComboBox>(form,"TimeInput").SelectedItem="13:00";Field<TextBox>(form,"NameInput").Text="Tên vừa nhập";
+            Field<TextBox>(form,"PhoneInput").Text="bad";Click(Field<Button>(form,"PreviewButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("SĐT"),"invalid phone");
+            Field<TextBox>(form,"PhoneInput").Text="+84 912.345-678";
+            Field<ComboBox>(form,"TimeInput").SelectedItem="11:00";Field<ComboBox>(form,"DurationInput").SelectedItem=180;
+            Click(Field<Button>(form,"PreviewButton"));wait(()=>!vm.IsBusy && vm.PreviewText.Contains("một ca"),"shift");
+            Field<ComboBox>(form,"TimeInput").SelectedItem="13:00";Field<ComboBox>(form,"DurationInput").SelectedItem=60;
+            Click(Field<Button>(form,"PreviewButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("Có thể đặt"),"preview");
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==0 && Convert.ToInt64(value("SELECT COUNT(*) FROM Customers;"))==1,"Preview wrote a booking/customer.");
+            Image(form,outputDirectory,"booking-form");
+            service.Create(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,5,13,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Người khác",PhoneNumber="0987654321"});
+            Click(Field<Button>(form,"SubmitButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("trùng"),"conflict");
+            Image(form,outputDirectory,"booking-conflict");
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==1,"Submit trusted stale preview.");
+            Field<ComboBox>(form,"TimeInput").SelectedItem="15:00";
+            Assert(!vm.PreviewText.Contains("Khoảng giờ hợp lệ"),"Changing input left old preview valid.");
+            Click(Field<Button>(form,"SubmitButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("thành công"),"confirmation");
+            Assert(!vm.CanInput && !vm.CanBook && (string)value("SELECT FullName FROM Customers WHERE PhoneNumber='0912345678';")=="Tên đã có","Confirmation/old customer name failed.");
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM AspNetUsers;"))==0 && Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations WHERE Status='Confirmed' AND CreatedByUserId IS NULL;"))==2,"Guest booking required account or created wrong state.");
+            Image(form,outputDirectory,"booking-confirmed");Click(Field<Button>(form,"SubmitButton"));
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==2,"Repeated successful submit created duplicate.");
+            Click(Field<Button>(form,"NewButton"));PumpUntil(()=>!vm.IsBusy && vm.CanInput);
+            Assert(string.IsNullOrEmpty(vm.FullName) && string.IsNullOrEmpty(vm.PhoneNumber),"New booking retained previous guest details.");
+            Field<TextBox>(form,"NameInput").Text="Không lưu";form.Close();
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==2,"Closing form submitted booking.");
+        }
+        finally{form.Close();}
     }
 }

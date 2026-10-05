@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng, dịch vụ, khách hàng nội bộ và service tạo đặt phòng/NoShow; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có giao diện đặt/tra cứu phòng, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow và giao diện Khách đặt phòng; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có tra cứu/hủy booking Guest, UI đặt hộ nhân viên, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -72,7 +72,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentic
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
 
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm sửa loại phòng/thêm và sửa phòng có ảnh/đổi loại/khóa mở/dịch vụ/khách hàng, lưu 17 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
+Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm phòng/ảnh/loại/khóa mở/dịch vụ/khách hàng/worker NoShow và Khách đặt phòng, lưu 21 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
 
 ## Bước 4a — sửa Standard/VIP
 
@@ -172,4 +172,22 @@ Build Debug/Release và chín bộ kiểm tra đạt, tất cả bằng dữ li�
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Reservations.ps1
+```
+
+## Bước 5b.2 — Khách đặt phòng từ giao diện
+
+1. Ở **chế độ Khách**, bấm **Đặt phòng**. Nếu chưa có phòng, đăng nhập Admin → Phòng để thêm phòng có ảnh, rồi đăng xuất về Khách. Không tự seed phòng demo.
+2. Chọn phòng đang mở, xem ảnh/loại/sức chứa/giá/tiện ích/mô tả. Danh sách này là phòng nhận đặt; phòng đang có khách vẫn có thể nhận lịch tương lai theo plan.
+3. Chọn ngày (hôm nay đến +30), giờ, thời lượng 60/90/120/180 phút, nhập tên và SĐT.
+4. Bấm **Kiểm tra giờ** để xem khoảng đã chọn có đặt được không. Đây chỉ là xem trước, chưa giữ chỗ.
+5. Bấm **Xác nhận đặt**: service kiểm tra lại và lưu Confirmed. Thành công hiện mã booking, phòng, giờ bắt đầu/kết thúc và hạn đến nhận phòng trước StartTime+15 phút. Không thu cọc.
+6. Sau thành công form/nút gửi được khóa. **Đặt lượt mới** xóa tên/SĐT để nhập lượt khác. Đóng khi chưa xác nhận không lưu; đóng sau thành công giữ booking đã lưu.
+
+SĐT 0/+84/84 dùng chung chuẩn hóa; số cũ giữ tên khách cũ. Nếu vừa xem trống nhưng có người đặt trước, lần xác nhận báo trùng và không ghi thêm khách/booking. Sửa lựa chọn hoặc thông tin sẽ bỏ kết quả preview cũ. Khi bận không đóng/gửi lặp; schema giữ v6 và các transaction của 5b.1.
+
+Chưa có màn hình Guest tra cứu/hủy sau khi đóng form, calendar ngày/tuần hoặc UI Staff đặt hộ. Đây là các phần kế tiếp, không bị bỏ khỏi scope. Chi tiết [báo cáo 5b.2](docs/Step5b2_GuestBooking.md).
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestBooking.ps1
+powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```

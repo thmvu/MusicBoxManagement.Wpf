@@ -19,12 +19,14 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningServices;
         private readonly CustomerService customers;
         private bool isOpeningCustomers;
+        private readonly GuestBookingService guestBooking;
+        private bool isOpeningBooking;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
         private bool isOpeningRooms;
 
-        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers)
+        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers, GuestBookingService guestBooking)
         {
             InitializeComponent();
             this.viewModel = viewModel;
@@ -34,6 +36,7 @@ namespace MusicBoxManagement.Wpf.Views
             this.rooms = rooms;
             this.services = services;
             this.customers = customers;
+            this.guestBooking = guestBooking;
             DataContext = viewModel;
         }
 
@@ -107,6 +110,7 @@ namespace MusicBoxManagement.Wpf.Views
                 CurrentAreaText.Text = "Khu vực nhân viên";
                 StaffPanel.Visibility = Visibility.Visible;
                 GuestPanel.Visibility = Visibility.Collapsed;
+                BookingButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Collapsed;
                 LogoutButton.Visibility = Visibility.Visible;
                 AccessStatus.Text = "Đã kiểm tra " + access.Permissions.Count + " quyền hiện hành. Các màn hình nghiệp vụ sẽ làm ở bước tiếp theo.";
@@ -148,6 +152,7 @@ namespace MusicBoxManagement.Wpf.Views
             CurrentAreaText.Text = "Loại phòng";
             StaffPanel.Visibility = Visibility.Collapsed;
             GuestPanel.Visibility = Visibility.Visible;
+            BookingButton.Visibility = Visibility.Visible;
             LoginButton.Visibility = Visibility.Visible;
             LogoutButton.Visibility = Visibility.Collapsed;
         }
@@ -224,6 +229,14 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem khách hàng hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được khách hàng. Hãy thử lại.", "Music Box"); }
             finally { isOpeningCustomers = false; CustomersButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+
+        private void ShowBooking_Click(object sender, RoutedEventArgs e)
+        {
+            if(session!=null || isOpeningBooking)return;
+            isOpeningBooking=true;BookingButton.IsEnabled=false;
+            try{new GuestBookingWindow(guestBooking){Owner=this}.ShowDialog();}
+            finally{isOpeningBooking=false;BookingButton.IsEnabled=true;}
         }
 
         private void RoomType_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateEditButton();
