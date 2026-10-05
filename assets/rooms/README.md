@@ -1,0 +1,23 @@
+# Ảnh phòng Music Box
+
+Ngày tạo: 05/10/2026. Tạo bằng công cụ imagegen tích hợp theo yêu cầu người dùng; đây là ảnh AI minh họa, không phải ảnh chụp một địa điểm thực tế.
+
+- `standard-canon-50mm.png`: phòng Standard 4 khách, sofa vải và ánh đèn ấm.
+- `vip-canon-50mm.png`: phòng VIP 6 khách, không gian rộng hơn, ánh sáng cửa sổ pha đèn ấm.
+
+Cả hai là ảnh PNG ngang 1536×1024, dưới 5 MB (Standard 2.086.466 byte, VIP 2.035.481 byte), tập trung bối cảnh phòng với ánh sáng tự nhiên, vật liệu có dấu sử dụng nhẹ và cảm giác Canon full-frame/50mm/f/1.8. Ảnh đã được xem trực quan và kiểm tra thành công qua chính hàm RoomImages.ReadPng của ứng dụng. Không thêm phòng mẫu hoặc tự đổi dữ liệu phòng/booking.
+
+## Dùng trong ứng dụng
+
+Đăng nhập nhân viên có Room.Manage → Phòng → thêm/sửa phòng → Chọn ảnh → chọn file tương ứng trong thư mục này → Lưu. RoomService kiểm tra/chuẩn hóa và sao chép ảnh vào Content/uploads/rooms cạnh database, ghi nhật ký theo luồng hiện có. Ảnh cũ sau thay vẫn được giữ theo bước 4b.2a. Khi sao lưu, giữ database và thư mục Content chứa ảnh.
+
+Tại thời điểm thực hiện, database mặc định trên môi trường này chỉ có schema v1/RoomTypes, chưa có bảng Rooms hoặc ảnh phòng để thay. Chưa thay ảnh trong database đang dùng; nếu có database khác cần xác định đường dẫn đó trước khi áp dụng. Bộ ảnh được lưu vào Git để dùng lại trên máy chạy đồ án.
+
+## Prompt gốc — Standard
+
+Use case: photorealistic-natural. Asset: landscape room photograph for the Music Box karaoke room listing in a Vietnamese WPF app. Generate one single 1536x1024 landscape photograph, no collage. Subject: an empty, modest Standard private karaoke room for four guests in Vietnam. Focus on the actual room environment: a practical dark gray fabric bench sofa with slightly uneven cushions, a small low table with two wireless microphones, wall-mounted TV with blank dark screen, speakers, acoustic wall panels and air conditioner. Naturally lived-in but clean, slight fabric wear, subtle fingerprints and normal imperfections, believable material grain. Photograph from the entrance at seated eye level, a normal 50mm field of view and natural perspective, showing enough of the room context, not an ultra-wide architectural shot and not a close-up of a microphone. Photorealistic candid interior photography as if shot with a Canon full-frame camera and a 50mm prime lens at f/1.8: focus on the mid-distance seating area, gentle foreground falloff and subtle soft bokeh toward the far wall, still readable room layout. Realistic mixed lighting: a warm practical ceiling lamp lights the seats and creates soft believable shadows, a little cool ambient spill near the doorway; moderate contrast, restrained colors, natural white balance, slight ISO grain. No perfect symmetrical staging, no showroom gloss, no over-sharpened HDR, no CGI/render appearance, no neon glow or psychedelic lighting, no people, no branding, no text or watermark. Context and honest natural light take priority over visual perfection.
+
+## Prompt gốc — VIP
+
+Use case: photorealistic-natural. Asset: a single landscape VIP karaoke room photograph for the Music Box room listing in a Vietnamese WPF app. Produce one 1536x1024 landscape photograph, no collage. Subject: an empty private VIP karaoke room for six guests in Vietnam, more spacious than a Standard room but believable and comfortably used. Focus on room context: a charcoal upholstered sofa around a low wood-and-stone table, two wireless microphones, a large wall-mounted TV with dark inactive screen, proper speakers, wood acoustic panels and understated curtains. Slightly displaced cushions and mild fabric creasing, subtle wear and everyday asymmetry; clean but not a perfectly staged showroom. A normal human view from the room entrance, Canon full-frame DSLR and 50mm prime lens at f/1.8 aesthetic: normal perspective, no ultra-wide fisheye, focus on mid-distance seating with subtle depth falloff, a softly out-of-focus foreground edge and gently softer distant fixtures, keeping the environment legible. Natural believable lighting: soft late-afternoon daylight comes through a partly drawn curtain, mixed with warm ceiling and wall lamps; realistic light falloff and shadows, gentle warm highlights, restrained gray and brown materials, natural white balance, a little high-ISO grain. The setting is the main subject, not individual props. No people, no neon or magenta glow, no gold palace look, no CGI/3D-render gloss, no dramatic HDR or excessive sharpness, no text, logos or watermark. Prioritize photographic light and credible everyday imperfections over perfection.
+

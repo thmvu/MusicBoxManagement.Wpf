@@ -22,6 +22,8 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 
 ## Cấu trúc để học
 
+Ảnh phòng AI minh họa Standard/VIP có sẵn tại [assets/rooms](assets/rooms/README.md), theo phong cách Canon 50mm f/1.8 và ánh sáng tự nhiên. Để dùng, đăng nhập → Phòng → thêm/sửa → Chọn ảnh → chọn file trong thư mục này → Lưu. Ảnh chỉ là tài nguyên để nhập qua luồng quản lý phòng; không tự seed phòng hoặc thay dữ liệu đang dùng.
+
 | Thư mục | Vai trò |
 | --- | --- |
 | Models | Loại phòng, ApplicationUser của Identity và phiên đăng nhập |
