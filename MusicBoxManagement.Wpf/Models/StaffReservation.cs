@@ -37,5 +37,6 @@ namespace MusicBoxManagement.Wpf.Models
     {
         public List<StaffReservation> Items { get; internal set; }
         public bool CanCancel { get; internal set; }
+        public bool CanCreate { get; internal set; }
     }
 }

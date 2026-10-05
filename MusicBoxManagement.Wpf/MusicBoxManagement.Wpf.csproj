@@ -83,6 +83,8 @@
     <Page Include="Views\GuestLookupWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\GuestLookupWindow.xaml.cs"><DependentUpon>GuestLookupWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\GuestBookingService.cs" />
+    <Compile Include="Services\IBookingService.cs" />
+    <Compile Include="Services\StaffBookingService.cs" />
     <Compile Include="ViewModels\GuestBookingViewModel.cs" />
     <Page Include="Views\GuestBookingWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\GuestBookingWindow.xaml.cs"><DependentUpon>GuestBookingWindow.xaml</DependentUpon></Compile>

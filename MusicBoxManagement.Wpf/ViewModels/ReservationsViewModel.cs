@@ -13,8 +13,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
     {
         private readonly StaffReservationService service;
         private readonly LoginSession session;
+        private readonly IClock clock;
         private StaffReservation selected;
-        private bool busy, canView, canCancel, confirming;
+        private bool busy, canView, canCancel, canCreate, confirming;
         private string reason, message;
         public ObservableCollection<StaffReservation> Items { get; } = new ObservableCollection<StaffReservation>();
         public string[] StatusOptions { get; } = { "Tất cả", "Confirmed", "CheckedIn", "Completed", "Cancelled", "NoShow" };
@@ -35,13 +36,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanSelect => !busy && !confirming && canView;
         public bool CanClose => !busy;
         public bool CanCancel => !busy && !confirming && canView && canCancel && Selected != null && Selected.IsCancellable;
+        public bool CanCreate => !busy && !confirming && canView && canCreate;
         public bool CanConfirm => !busy && confirming && canView && canCancel && Selected != null;
         public bool IsConfirming => confirming;
         public event PropertyChangedEventHandler PropertyChanged;
         public ReservationsViewModel(StaffReservationService service, LoginSession session) : this(service, session, new SystemClock()) { }
         public ReservationsViewModel(StaffReservationService service, LoginSession session, IClock clock)
         {
-            this.service = service; this.session = session;
+            this.service = service; this.session = session; this.clock = clock;
             FromDate = clock.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;
             ToDate = FromDate.Value.AddDays(30); message = "Đang tải danh sách booking…";
         }
@@ -50,7 +52,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             var from = FromDate; var to = ToDate; var phone = PhoneQuery; var state = StatusQuery;
             var result = await Task.Run(() => service.Search(session, from, to, phone, state == "Tất cả" ? null : state));
             Items.Clear(); foreach (var item in result.Items) Items.Add(item);
-            Selected = null; canView = true; canCancel = result.CanCancel;
+            Selected = null; canView = true; canCancel = result.CanCancel; canCreate = result.CanCreate;
         }
         public async Task SearchAsync()
         {
@@ -67,6 +69,28 @@ namespace MusicBoxManagement.Wpf.ViewModels
             SetStatus("Nhập lý do và xác nhận hủy booking #" + Selected.ReservationId + ".");
         }
         public void KeepBooking() { if (busy) return; confirming = false; Reason = null; AccessChanged(); SetStatus("Đã giữ booking, chưa lưu thay đổi."); }
+        public async Task<GuestBookingViewModel> PrepareBookingAsync()
+        {
+            if (!CanCreate) return null; Busy(true);
+            try { return await Task.Run(() => new GuestBookingViewModel(service.ForBooking(session), clock, true)); }
+            catch (UnauthorizedAccessException) { Revoke(); }
+            catch (Exception) { SetStatus("Không mở được form đặt hộ. Hãy tải lại danh sách."); }
+            finally { Busy(false); }
+            return null;
+        }
+        public async Task AfterBookingAsync(int? createdId)
+        {
+            if (!createdId.HasValue) { await SearchAsync(); return; }
+            // Make the saved row visible even when the old filter was Cancelled or another phone/date.
+            FromDate = ToDate = null; PhoneQuery = null; StatusQuery = "Tất cả";
+            foreach (var property in new[] { nameof(FromDate), nameof(ToDate), nameof(PhoneQuery), nameof(StatusQuery) }) Notify(property);
+            Busy(true);
+            try { await ReloadAsync(); foreach (var item in Items) if (item.ReservationId == createdId.Value) { Selected = item; break; }
+                SetStatus("Đã đặt hộ booking #" + createdId + ". Danh sách đã được tải lại."); }
+            catch (UnauthorizedAccessException) { Revoke(); SetStatus("Đã đặt hộ booking #" + createdId + ", nhưng không còn quyền xem. Hãy đóng cửa sổ."); }
+            catch (Exception) { Clear(); SetStatus("Đã đặt hộ booking #" + createdId + ", nhưng chưa tải lại được danh sách. Hãy tải lại."); }
+            finally { Busy(false); }
+        }
         public async Task<bool> ConfirmCancelAsync()
         {
             if (!CanConfirm) return false;
@@ -87,10 +111,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
             }
             Busy(false); return cancelled;
         }
-        private void Clear() { canView = canCancel = confirming = false; Items.Clear(); Selected = null; }
+        private void Clear() { canView = canCancel = canCreate = confirming = false; Items.Clear(); Selected = null; }
         private void Revoke() { Clear(); SetStatus("Bạn không còn quyền thực hiện thao tác hoặc phiên đã hết hiệu lực. Hãy đóng cửa sổ hoặc tải lại để kiểm tra quyền."); }
         private void Busy(bool value) { busy = value; Notify(nameof(IsBusy)); AccessChanged(); }
-        private void AccessChanged() { foreach (var property in new[] { nameof(CanSearch), nameof(CanSelect), nameof(CanClose), nameof(CanCancel), nameof(CanConfirm), nameof(IsConfirming) }) Notify(property); }
+        private void AccessChanged() { foreach (var property in new[] { nameof(CanSearch), nameof(CanSelect), nameof(CanClose), nameof(CanCancel), nameof(CanCreate), nameof(CanConfirm), nameof(IsConfirming) }) Notify(property); }
         private void SetStatus(string value) { message = value; Notify(nameof(Status)); }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }

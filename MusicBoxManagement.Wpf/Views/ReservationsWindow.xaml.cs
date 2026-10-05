@@ -8,6 +8,7 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class ReservationsWindow : Window
     {
         private readonly ReservationsViewModel viewModel;
+        private bool openingBooking;
         public ReservationsWindow(StaffReservationService service, LoginSession session)
             : this(new ReservationsViewModel(service, session)) { }
         public ReservationsWindow(ReservationsViewModel viewModel)
@@ -20,5 +21,16 @@ namespace MusicBoxManagement.Wpf.Views
         private void Cancel_Click(object sender, RoutedEventArgs args) => viewModel.RequestCancel();
         private void Keep_Click(object sender, RoutedEventArgs args) => viewModel.KeepBooking();
         private async void Confirm_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmCancelAsync();
+        private async void Create_Click(object sender, RoutedEventArgs args)
+        {
+            if (openingBooking) return; openingBooking = true;
+            try
+            {
+                var draft = await viewModel.PrepareBookingAsync(); if (draft == null) return;
+                new GuestBookingWindow(draft.Service, draft) { Owner = this }.ShowDialog();
+                await viewModel.AfterBookingAsync(draft.LastCreatedReservationId);
+            }
+            finally { openingBooking = false; }
+        }
     }
 }

@@ -7,7 +7,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class GuestBookingService
+    public sealed class GuestBookingService : IBookingService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;
@@ -24,8 +24,13 @@ namespace MusicBoxManagement.Wpf.Services
         {
             database.Initialize();
             using (var connection = database.OpenConnection())
+                return ReadRooms(connection, null);
+        }
+        internal static List<PublicRoom> ReadRooms(SQLiteConnection connection, SQLiteTransaction transaction)
+        {
             using (var command = connection.CreateCommand())
             {
+                command.Transaction = transaction;
                 command.CommandText = @"SELECT r.RoomId,r.RoomCode,r.Name,t.Name,t.Capacity,t.PricePerHour,t.Amenities,r.Description,r.ImageUrl
 FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.IsActive=1 ORDER BY r.RoomCode;";
                 var rooms = new List<PublicRoom>();
@@ -43,11 +48,16 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.IsActive=1 OR
             noShows.ProcessExpired();
             using (var connection=database.OpenConnection())
             using (var transaction=connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                return PreviewAt(connection,transaction,room,phone,start,duration,clock.UtcNow);
+        }
+        internal ReservationAvailability PreviewAt(SQLiteConnection connection, SQLiteTransaction transaction,
+            int room, string phone, DateTimeOffset start, int duration, DateTimeOffset now)
+        {
             using (var command=connection.CreateCommand())
             {
                 command.Transaction=transaction; command.CommandText="SELECT CustomerId FROM Customers WHERE PhoneNumber=@phone;";
                 command.Parameters.AddWithValue("@phone",phone); var customer=command.ExecuteScalar();
-                return availability.CheckReservationAt(connection,transaction,room,customer==null?(int?)null:Convert.ToInt32(customer),start,duration,clock.UtcNow);
+                return availability.CheckReservationAt(connection,transaction,room,customer==null?(int?)null:Convert.ToInt32(customer),start,duration,now);
             }
         }
         public Reservation Create(ReservationRequest request) => reservations.CreateGuest(request);

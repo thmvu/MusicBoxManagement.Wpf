@@ -5,7 +5,7 @@
  <Window.Resources><BooleanToVisibilityConverter x:Key="BoolVisibility"/></Window.Resources>
  <Grid Margin="28">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <DockPanel><Button DockPanel.Dock="Right" Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/><TextBlock Text="Booking nội bộ" FontSize="28" FontWeight="SemiBold"/></DockPanel>
+  <DockPanel><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="CreateButton" Content="Đặt hộ" Click="Create_Click" IsEnabled="{Binding CanCreate}" Margin="0,0,8,0"/><Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/></StackPanel><TextBlock Text="Booking nội bộ" FontSize="28" FontWeight="SemiBold"/></DockPanel>
   <StackPanel Grid.Row="1" Margin="0,16,0,20" IsEnabled="{Binding CanSearch}">
    <TextBlock Text="Xem booking và hủy Confirmed còn hạn trước check-in. Hủy bắt buộc nhập lý do." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,0,0,12"/>
    <WrapPanel>

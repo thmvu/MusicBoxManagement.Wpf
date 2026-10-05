@@ -11,12 +11,13 @@ namespace MusicBoxManagement.Wpf.Views
 {
     public partial class GuestBookingWindow : Window
     {
-        private readonly GuestBookingService service;
+        private readonly IBookingService service;
         private readonly GuestBookingViewModel viewModel;
-        public GuestBookingWindow(GuestBookingService service) : this(service, new GuestBookingViewModel(service)) { }
-        public GuestBookingWindow(GuestBookingService service, GuestBookingViewModel viewModel)
+        public GuestBookingWindow(IBookingService service) : this(service, new GuestBookingViewModel(service)) { }
+        public GuestBookingWindow(IBookingService service, GuestBookingViewModel viewModel)
         {
             InitializeComponent();this.service=service;this.viewModel=viewModel;DataContext=viewModel;
+            Title="Music Box — "+viewModel.FormTitle;
             Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};
         }
         private async void Window_Loaded(object sender,RoutedEventArgs e)=>await viewModel.RefreshAsync();

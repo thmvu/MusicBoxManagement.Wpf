@@ -25,6 +25,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningLookup;
         private readonly StaffReservationService reservations;
         private bool isOpeningReservations;
+        private bool isOpeningStaffBooking;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
@@ -111,6 +112,7 @@ namespace MusicBoxManagement.Wpf.Views
                 ServicesButton.Visibility = access.Permissions.ContainsKey("Service.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 CustomersButton.Visibility = access.Permissions.ContainsKey("Customer.View") ? Visibility.Visible : Visibility.Collapsed;
                 ReservationsButton.Visibility = access.Permissions.ContainsKey("Reservation.View") ? Visibility.Visible : Visibility.Collapsed;
+                StaffBookingButton.Visibility = access.Permissions.ContainsKey("Reservation.Create") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
                 BackToStaffButton.Visibility = Visibility.Collapsed;
                 ModeText.Text = "Nhân viên: " + access.Role;
@@ -155,6 +157,7 @@ namespace MusicBoxManagement.Wpf.Views
             ServicesButton.Visibility = Visibility.Collapsed;
             CustomersButton.Visibility = Visibility.Collapsed;
             ReservationsButton.Visibility = Visibility.Collapsed;
+            StaffBookingButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
             StaffIdentity.Text = "";
             ModeText.Text = "Chế độ Khách";
@@ -223,6 +226,21 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền quản lý dịch vụ hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được dịch vụ. Hãy thử lại.", "Music Box"); }
             finally { isOpeningServices = false; ServicesButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+
+        private async void ShowStaffBooking_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningStaffBooking) return; isOpeningStaffBooking = true; StaffBookingButton.IsEnabled = false;
+            try
+            {
+                var currentSession = session;
+                var route = await Task.Run(() => reservations.ForBooking(currentSession));
+                if (session != currentSession) return;
+                new GuestBookingWindow(route, new GuestBookingViewModel(route, new SystemClock(), true)) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền đặt hộ hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Không mở được form đặt hộ. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningStaffBooking = false; StaffBookingButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private async void ShowReservations_Click(object sender, RoutedEventArgs e)

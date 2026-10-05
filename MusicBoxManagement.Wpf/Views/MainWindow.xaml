@@ -129,6 +129,7 @@
                 <Button x:Name="ServicesButton" Content="Dịch vụ" Click="ShowServices_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
                 <Button x:Name="CustomersButton" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="ReservationsButton" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed" Margin="0,0,8,0" />
+                <Button x:Name="StaffBookingButton" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed" Margin="0,0,8,0" />
                 </WrapPanel>
             </StackPanel>
             <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"

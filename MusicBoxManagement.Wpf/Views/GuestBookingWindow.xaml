@@ -8,9 +8,9 @@
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <Button x:Name="RefreshButton" Content="Làm mới phòng" Click="Refresh_Click" IsEnabled="{Binding CanInput}"/>
                 <Button x:Name="NewButton" Content="Đặt lượt mới" Click="New_Click" IsEnabled="{Binding CanReset}" Margin="8,0,0,0"/>
-                <Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanReset}" Margin="8,0,0,0"/>
+                <Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/>
             </StackPanel>
-            <TextBlock Text="Đặt phòng" FontSize="28" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding FormTitle}" FontSize="28" FontWeight="SemiBold"/>
         </DockPanel>
         <TextBlock Grid.Row="1" Text="Giờ Việt Nam · Mở cửa 09:00–12:00 và 13:00–23:00 · Không thu cọc" Foreground="#5C6873" Margin="0,12,0,20" TextWrapping="Wrap"/>
         <Grid Grid.Row="2">

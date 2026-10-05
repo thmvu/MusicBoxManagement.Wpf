@@ -14,7 +14,12 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class GuestBookingViewModel : INotifyPropertyChanged
     {
-        private readonly GuestBookingService service;
+        private readonly IBookingService service;
+        private readonly bool staffMode;
+        private bool accessDenied;
+        internal IBookingService Service => service;
+        public string FormTitle => staffMode ? "Đặt hộ khách hàng" : "Đặt phòng";
+        public int? LastCreatedReservationId { get; private set; }
         private PublicRoom selectedRoom;
         private DateTime? date;
         private string time, fullName, phone, status, preview;
@@ -32,16 +37,17 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string FullName { get => fullName; set { fullName=value; Changed(); } }
         public string PhoneNumber { get => phone; set { phone=value; Changed(); } }
         public bool IsBusy => busy;
-        public bool CanReset => !busy;
-        public bool CanInput => !busy && !saved;
+        public bool CanClose => !busy;
+        public bool CanReset => !busy && !accessDenied;
+        public bool CanInput => !busy && !saved && !accessDenied;
         public bool CanBook => CanInput && SelectedRoom!=null;
         public string Status => status;
         public string PreviewText => preview;
         public event PropertyChangedEventHandler PropertyChanged;
-        public GuestBookingViewModel(GuestBookingService service) : this(service,new SystemClock()) { }
-        public GuestBookingViewModel(GuestBookingService service,IClock clock)
+        public GuestBookingViewModel(IBookingService service) : this(service,new SystemClock()) { }
+        public GuestBookingViewModel(IBookingService service,IClock clock, bool staffMode = false)
         {
-            this.service=service; var now=clock.UtcNow.ToOffset(BookingHours.VietnamOffset); FirstDate=now.Date; date=FirstDate;
+            this.service=service; this.staffMode=staffMode; var now=clock.UtcNow.ToOffset(BookingHours.VietnamOffset); FirstDate=now.Date; date=FirstDate;
             time=Slots.FirstOrDefault(slot=> FirstDate.Add(TimeSpan.Parse(slot,CultureInfo.InvariantCulture))>=now.DateTime);
             if(time==null){date=FirstDate.AddDays(1);time="09:00";}
             preview="Nhập SĐT để kiểm tra cả lịch phòng và lịch của bạn.";
@@ -53,6 +59,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if(!CanInput)return; SetBusy(true);
             try { var id=SelectedRoom?.RoomId; var rooms=await Task.Run(()=>service.ListRooms()); Rooms.Clear();foreach(var room in rooms)Rooms.Add(room);
                 SelectedRoom=Rooms.FirstOrDefault(r=>r.RoomId==id)??Rooms.FirstOrDefault(); SetStatus(Rooms.Count==0?"Chưa có phòng đang mở để đặt. Vui lòng liên hệ nhân viên.":"Chọn phòng, ngày/giờ và nhập thông tin đặt phòng."); }
+            catch(UnauthorizedAccessException error){ShowError(error);}
             catch(Exception){Rooms.Clear();SelectedRoom=null;SetStatus("Không tải được phòng. Hãy thử làm mới.");}
             finally{SetBusy(false);}
         }
@@ -73,21 +80,22 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> SubmitAsync()
         {
             if(!CanBook)return false; SetBusy(true);
-            try{var input=Request();var roomCode=SelectedRoom.RoomCode;var result=await Task.Run(()=>service.Create(input));saved=true;
-                preview="Đã xác nhận, không thu cọc. Bạn cần đến nhận phòng trước "+result.StartTime.AddMinutes(15).ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+".";Notify(nameof(PreviewText));
-                SetStatus("Đặt phòng thành công — mã #"+result.ReservationId+", "+roomCode+", "+result.StartTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+" đến "+result.EndTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm")+". Trạng thái: Confirmed (đã xác nhận).");return true;}
+            try{var input=Request();var roomCode=SelectedRoom.RoomCode;var result=await Task.Run(()=>service.Create(input));saved=true;LastCreatedReservationId=result.ReservationId;Notify(nameof(LastCreatedReservationId));
+                preview="Đã xác nhận, không thu cọc. "+(staffMode?"Khách":"Bạn")+" cần đến nhận phòng trước "+result.StartTime.AddMinutes(15).ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+".";Notify(nameof(PreviewText));
+                SetStatus((staffMode?"Đặt hộ":"Đặt phòng")+" thành công — mã #"+result.ReservationId+", "+roomCode+", "+result.StartTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+" đến "+result.EndTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm")+". Trạng thái: Confirmed (đã xác nhận).");return true;}
             catch(Exception error){ShowError(error);return false;}
             finally{SetBusy(false);}
         }
-        public void StartNew(){if(busy)return;saved=false;FullName=PhoneNumber=null;SetStatus("Nhập thông tin cho lượt đặt mới.");SetBusy(false);}
+        public void StartNew(){if(!CanReset)return;saved=false;FullName=PhoneNumber=null;SetStatus("Nhập thông tin cho lượt đặt mới.");SetBusy(false);}
         private void ShowError(Exception error)
         {
             preview="Hãy kiểm tra lại thông tin hoặc chọn khoảng giờ khác.";Notify(nameof(PreviewText));
-            if(error is ArgumentException || error is InvalidOperationException)SetStatus(error.Message);
+            if(error is UnauthorizedAccessException){accessDenied=true;Rooms.Clear();SelectedRoom=null;FullName=PhoneNumber=null;preview="Hãy đóng form và kiểm tra lại quyền hoặc đăng nhập lại.";Notify(nameof(PreviewText));SetStatus("Không còn quyền đặt hộ hoặc phiên đã hết hiệu lực. Thay đổi chưa được lưu.");}
+            else if(error is ArgumentException || error is InvalidOperationException)SetStatus(error.Message);
             else if(error is SQLiteException sqlite && (sqlite.ResultCode==SQLiteErrorCode.Busy || sqlite.ResultCode==SQLiteErrorCode.Locked))SetStatus("Dữ liệu đang bận. Hãy thử lại sau.");
             else SetStatus("Không xử lý được đặt phòng. Hãy thử lại hoặc liên hệ nhân viên.");
         }
-        private void SetBusy(bool value){busy=value;foreach(var p in new[]{nameof(IsBusy),nameof(CanReset),nameof(CanInput),nameof(CanBook)})Notify(p);}
+        private void SetBusy(bool value){busy=value;foreach(var p in new[]{nameof(IsBusy),nameof(CanClose),nameof(CanReset),nameof(CanInput),nameof(CanBook)})Notify(p);}
         private void SetStatus(string value){status=value;Notify(nameof(Status));}
         private void Notify([CallerMemberName]string property=null)=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(property));
     }

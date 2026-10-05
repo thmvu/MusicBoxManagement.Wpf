@@ -64,10 +64,15 @@ ORDER BY b.StartTime,b.ReservationId;";
                         IsCancellable = state == "Confirmed" && now < start.AddMinutes(15) && reader.IsDBNull(12)
                     });
                 }
-                return new StaffReservationSearch { Items = items, CanCancel = access.Permissions.ContainsKey("Reservation.Cancel") };
+                return new StaffReservationSearch { Items = items, CanCancel = access.Permissions.ContainsKey("Reservation.Cancel"), CanCreate = access.Permissions.ContainsKey("Reservation.Create") };
             }
         }
         public void Cancel(LoginSession session, int reservationId, string reason) => reservations.CancelStaff(session, reservationId, reason);
+        public StaffBookingService ForBooking(LoginSession session)
+        {
+            permissions.Demand(session, "Reservation.Create");
+            return new StaffBookingService(database, session, clock);
+        }
         private static string DayUtc(DateTime date) => new DateTimeOffset(DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified), BookingHours.VietnamOffset)
             .ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
         private static DateTimeOffset Parse(string value) => DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture);
