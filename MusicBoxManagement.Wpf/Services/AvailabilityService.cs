@@ -35,10 +35,14 @@ namespace MusicBoxManagement.Wpf.Services
         // Reuse inside the caller's BeginWriteTransaction, before inserting a booking.
         public ReservationAvailability CheckReservation(SQLiteConnection connection, SQLiteTransaction transaction,
             int roomId, int? customerId, DateTimeOffset start, int durationMinutes)
+        { return CheckReservationAt(connection, transaction, roomId, customerId, start, durationMinutes, clock.UtcNow); }
+
+        internal ReservationAvailability CheckReservationAt(SQLiteConnection connection, SQLiteTransaction transaction,
+            int roomId, int? customerId, DateTimeOffset start, int durationMinutes, DateTimeOffset now)
         {
             if (transaction == null || transaction.Connection != connection)
                 throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
-            var now = clock.UtcNow.ToUniversalTime();
+            now = now.ToUniversalTime();
             var result = new ReservationAvailability { CheckedAt = now };
             try { result.EndTime = BookingHours.ValidateReservation(start, durationMinutes, now); }
             catch (ArgumentException error) { result.Reason = error.Message; return result; }

@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng, danh mục dịch vụ và tìm/thêm/sửa khách hàng nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa triển khai luồng đặt phòng, phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, sửa loại phòng, thêm/sửa/thay ảnh/đổi loại/khóa mở phòng, dịch vụ, khách hàng nội bộ và service tạo đặt phòng/NoShow; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có giao diện đặt/tra cứu phòng, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -158,4 +158,18 @@ Kết quả kiểm tra chỉ là xem trước. Service đặt phòng tương lai
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availability.ps1
+```
+
+## Bước 5b.1 — lưu booking và NoShow
+
+Đã có service tạo đặt phòng cho Guest/Staff; chưa thêm form đặt phòng nên hiện chưa dùng thao tác này từ giao diện. Staff cần quyền `Reservation.Create`; đường Guest riêng không cần tài khoản. Cả hai dùng cùng quy tắc giờ/phòng/khách/overlap và tạo **Confirmed ngay**, không thu cọc.
+
+SĐT chuẩn hóa tìm Customer cũ, giữ nguyên tên đã lưu; chưa có thì tạo Customer cùng booking và nhật ký trong transaction. Nếu lỗi/trùng lịch, hoàn tác cả khách mới. Hai lượt đồng thời đặt cùng phòng hoặc cùng khách ở hai phòng khác nhau chỉ một lượt thành công. Staff đặt hộ không cần mở màn hình quản trị khách để tìm-tạo khách của booking.
+
+`NoShowService` chuyển Confirmed đã hết hạn 15 phút thành NoShow và ghi log System; không chuyển booking đã có session/CheckedIn. WPF chạy tác vụ khi khởi động và mỗi phút, xử lý ở luồng nền, dừng timer khi thoát. Khi app đóng không có worker; lần mở sau xử lý tồn đọng. Tạo booking cũng xử lý NoShow trong transaction. Lịch trống vẫn loại booking hết hạn ngay cả khi worker chậm; không cam kết chuyển status đúng từng giây.
+
+Build Debug/Release và chín bộ kiểm tra đạt, tất cả bằng dữ liệu tạm. Xem [báo cáo 5b.1](docs/Step5b1_Reservations.md). Tiếp theo form chọn phòng/ngày/giờ, rồi lookup/hủy và calendar.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Reservations.ps1
 ```

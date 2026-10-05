@@ -19,6 +19,8 @@ using MusicBoxManagement.Wpf.Views;
 public static class MusicBoxAuthenticationUiChecks
 {
     private const string Password = "MusicBox-Ui-Test!";
+    private sealed class WorkerClock : IClock
+    { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,3,15,0,TimeSpan.Zero); } } }
     private static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
     private static T Field<T>(Window window, string name) { return (T)window.FindName(name); }
     private static void Click(Button button) { button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
@@ -61,6 +63,7 @@ public static class MusicBoxAuthenticationUiChecks
             "<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
             "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" + resources.InnerXml + "</ResourceDictionary>");
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
+        VerifyNoShowWorker(Path.Combine(testDirectory, "worker.db"));
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
@@ -486,7 +489,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/auth, rooms/types/images, services, customer normalization/search/create/edit/cancel/validation. Rendered seventeen views.");
+            Console.WriteLine("PASS WPF UI: NoShow worker startup/retry, Guest/auth, rooms/types/images, services, customers. Rendered seventeen views.");
         }
         finally
         {
@@ -494,6 +497,27 @@ public static class MusicBoxAuthenticationUiChecks
             window.Close();
             application.Shutdown();
             Directory.Delete(testDirectory, true);
+        }
+    }
+
+    private static void VerifyNoShowWorker(string file)
+    {
+        var db = new SqliteDatabase(file); db.Initialize();
+        Action<string> sql = statement => { using (var c=db.OpenConnection()) using(var cmd=c.CreateCommand()) { cmd.CommandText=statement;cmd.ExecuteNonQuery(); } };
+        Func<string,object> value = statement => { using(var c=db.OpenConnection()) using(var cmd=c.CreateCommand()) { cmd.CommandText=statement;return cmd.ExecuteScalar(); } };
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('WORKER','Worker',1,'test.png',1,'test');
+INSERT INTO Customers(FullName,PhoneNumber) VALUES('Worker','0912345678');
+INSERT INTO Reservations(CustomerId,RoomId,StartTime,EndTime,Status,CreatedAt) VALUES(1,1,'2026-10-05T03:00:00.0000000+00:00','2026-10-05T04:00:00.0000000+00:00','Confirmed','test');
+CREATE TRIGGER FailWorkerAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Reservation.NoShow' BEGIN SELECT RAISE(ABORT,'test failure'); END;");
+        using(var worker=new NoShowWorker(db,new WorkerClock()))
+        {
+            var run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+            Assert((string)value("SELECT Status FROM Reservations;")=="Confirmed", "Worker failure left status changed.");
+            sql("DROP TRIGGER FailWorkerAudit;");
+            run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+            Assert((string)value("SELECT Status FROM Reservations;")=="NoShow", "Worker startup/retry did not process expired booking.");
+            run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Reservation.NoShow';"))==1,"Worker rerun duplicated audit.");
         }
     }
 }

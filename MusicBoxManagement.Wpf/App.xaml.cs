@@ -10,6 +10,7 @@ namespace MusicBoxManagement.Wpf
 {
     public partial class App : Application
     {
+        private NoShowWorker noShowWorker;
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -21,6 +22,11 @@ namespace MusicBoxManagement.Wpf
             MainWindow = new MainWindow(new MainViewModel(roomTypes),
                 new AuthenticationService(database), new PermissionService(database), roomTypes, new RoomService(database), new ServiceCatalogService(database), new CustomerService(database));
             MainWindow.Show();
+            noShowWorker = new NoShowWorker(database);
+            _ = noShowWorker.StartAsync();
         }
+
+        protected override void OnExit(ExitEventArgs e)
+        { noShowWorker?.Dispose(); base.OnExit(e); }
     }
 }

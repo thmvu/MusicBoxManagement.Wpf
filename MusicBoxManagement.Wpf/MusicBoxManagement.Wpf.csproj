@@ -70,6 +70,10 @@
     <Compile Include="Views\ServicesWindow.xaml.cs"><DependentUpon>ServicesWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\IClock.cs" />
     <Compile Include="Services\BookingHours.cs" />
+    <Compile Include="Models\Reservation.cs" />
+    <Compile Include="Services\ReservationService.cs" />
+    <Compile Include="Services\NoShowService.cs" />
+    <Compile Include="Services\NoShowWorker.cs" />
     <Compile Include="Services\AvailabilityService.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Services\RoomService.cs" />
