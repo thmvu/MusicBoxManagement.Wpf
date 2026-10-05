@@ -20,7 +20,7 @@ namespace MusicBoxManagement.Wpf
             var database = new SqliteDatabase(SqliteDatabase.DefaultPath);
             var roomTypes = new RoomTypeService(database);
             MainWindow = new MainWindow(new MainViewModel(roomTypes),
-                new AuthenticationService(database), new PermissionService(database), roomTypes, new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database));
+                new AuthenticationService(database), new PermissionService(database), roomTypes, new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database), new StaffReservationService(database));
             MainWindow.Show();
             noShowWorker = new NoShowWorker(database);
             _ = noShowWorker.StartAsync();

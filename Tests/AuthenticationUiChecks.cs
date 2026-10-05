@@ -70,7 +70,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database), new StaffReservationService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -82,9 +82,11 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Guest saw room management.");
             Assert(Field<Button>(window, "ServicesButton").Visibility == Visibility.Collapsed, "Guest saw service management.");
             Assert(Field<Button>(window, "CustomersButton").Visibility == Visibility.Collapsed, "Guest saw customer management.");
+            Assert(Field<Button>(window, "ReservationsButton").Visibility == Visibility.Collapsed, "Guest saw internal booking data.");
             Image(window, outputDirectory, "guest");
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
+            VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             driver.Tick += (sender,args) => {
                 var form=application.Windows.OfType<GuestBookingWindow>().FirstOrDefault();
@@ -142,6 +144,21 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(() => Field<Grid>(window, "StaffPanel").Visibility == Visibility.Visible || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
+            Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Visible,"Admin did not see internal booking entry.");
+            var reservationStage=0;
+            driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var catalog=application.Windows.OfType<ReservationsWindow>().FirstOrDefault();if(catalog==null)return;
+                try
+                {
+                    var vm=(ReservationsViewModel)catalog.DataContext;if(vm.IsBusy)return;
+                    Assert(vm.Items.Count==0 && vm.Status.Contains("Tìm thấy"),"Main internal booking entry loaded wrong data.");
+                    Image(catalog,outputDirectory,"staff-booking-empty");reservationStage=1;driver.Stop();catalog.Close();
+                }
+                catch(Exception error){driverError=error;driver.Stop();catalog.Close();}
+            };
+            driver.Start();Click(Field<Button>(window,"ReservationsButton"));
+            PumpUntil(()=>reservationStage==1 || driverError!=null);driver.Stop();if(driverError!=null)throw driverError;
             // This window contains both the list and the real add/edit form.
             var serviceStage = 0;
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
@@ -520,7 +537,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest lookup/cancel/keep/stale boundary/privacy/main entry, booking/preview/conflict/confirmation/duplicate guard, NoShow, auth, rooms/types/images, services, customers. Rendered twenty-five views.");
+            Console.WriteLine("PASS WPF UI: Staff booking list/details/filters/reasons/cancel/readonly/revocation/main entry, Guest lookup/booking, NoShow, auth, rooms/types/images, services, customers. Rendered thirty views.");
         }
         finally
         {
@@ -550,6 +567,55 @@ CREATE TRIGGER FailWorkerAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Reserv
             run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
             Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Reservation.NoShow';"))==1,"Worker rerun duplicated audit.");
         }
+    }
+
+    private static void VerifyStaffReservations(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var setup=auth.SetupAdminAsync("admin","Admin thử nghiệm",Password);PumpUntil(()=>setup.IsCompleted);var admin=setup.GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,object> value=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return cmd.ExecuteScalar();}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('P01','Phòng nội bộ',1,'test.png',1,'test');
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'reader','reader','READER',PasswordHash,'reader','Nhân viên chỉ xem',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('reader','Staff');
+DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Reservation.Cancel');");
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero)};var create=new ReservationService(db,clock);
+        foreach(var hour in new[]{10,13})create.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,5,hour,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Khách đã đặt",PhoneNumber="0912345678"});
+        var service=new StaffReservationService(db,clock);var vm=new ReservationsViewModel(service,admin,clock);var form=new ReservationsWindow(vm);
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy);Assert(vm.Items.Count==2,"Internal booking list did not load.");
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=0;Assert(vm.CanCancel && vm.Details.Contains("0912345678"),"Staff below two hours/details failed.");
+            Image(form,outputDirectory,"staff-booking-list");
+            Field<TextBox>(form,"PhoneInput").Text="bad";Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Status.Contains("SĐT"),"Invalid staff phone filter accepted.");
+            Field<TextBox>(form,"PhoneInput").Text="+84 912.345-678";Field<ComboBox>(form,"StateInput").SelectedItem="Confirmed";
+            Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Items.Count==2,"Staff filters failed.");
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=0;Click(Field<Button>(form,"CancelButton"));Click(Field<Button>(form,"KeepButton"));
+            Assert(!vm.IsConfirming && Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations WHERE Status='Cancelled';"))==0,"Staff keep booking saved changes.");
+            Click(Field<Button>(form,"CancelButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.IsConfirming && vm.Status.Contains("Lý do"),"Missing reason was not rejected/left confirmation.");
+            Field<TextBox>(form,"ReasonInput").Text="Khách gọi đổi kế hoạch";Image(form,outputDirectory,"staff-booking-reason");
+            Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==1 && vm.Status.Contains("Đã hủy"),"Staff UI did not cancel below two hours.");
+            Field<ComboBox>(form,"StateInput").SelectedItem="Cancelled";Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=0;
+            Assert(!vm.CanCancel && vm.Details.Contains("Khách gọi đổi kế hoạch"),"Cancelled details/reason/repeat guard failed.");
+            Image(form,outputDirectory,"staff-booking-cancelled");
+        }
+        finally{form.Close();}
+        var login=auth.LoginAsync("reader",Password);PumpUntil(()=>login.IsCompleted);var reader=login.GetAwaiter().GetResult();
+        vm=new ReservationsViewModel(service,reader,clock);form=new ReservationsWindow(vm);
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy);Field<DataGrid>(form,"ReservationsTable").SelectedIndex=1;
+            Assert(vm.Items.Count==2 && !vm.CanCancel && vm.Details.Contains("Khách đã đặt"),"Read-only Staff could not view or could cancel.");
+            Image(form,outputDirectory,"staff-booking-readonly");
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Reservation.View');");
+            Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Selected==null && !vm.CanSelect,"Revoked view left private booking/customer details.");
+        }
+        finally{form.Close();}
     }
 
     private static void VerifyGuestLookup(string file,string outputDirectory)

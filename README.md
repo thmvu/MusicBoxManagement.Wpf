@@ -18,11 +18,11 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow và giao diện Khách đặt/tra cứu/hủy booking; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có UI đặt hộ nhân viên, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên xem/chi tiết/hủy booking; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có UI đặt hộ nhân viên, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
-Ảnh phòng AI minh họa Standard/VIP có sẵn tại [assets/rooms](assets/rooms/README.md), theo phong cách Canon 50mm f/1.8 và ánh sáng tự nhiên. Để dùng, đăng nhập → Phòng → thêm/sửa → Chọn ảnh → chọn file trong thư mục này → Lưu. Ảnh chỉ là tài nguyên để nhập qua luồng quản lý phòng; không tự seed phòng hoặc thay dữ liệu đang dùng.
+Có 5 ảnh phòng AI minh họa Standard/VIP tại [assets/rooms](assets/rooms/README.md), theo phong cách Canon 50mm f/1.8 và ánh sáng tự nhiên. Ba mẫu thêm gồm Standard sofa thẳng, VIP buổi tối và Standard tông gỗ sáng. Người dùng sẽ chọn/áp dụng sau. Để dùng, đăng nhập → Phòng → thêm/sửa → Chọn ảnh → chọn file trong thư mục này → Lưu. Ảnh chỉ là tài nguyên để nhập qua luồng quản lý phòng; không tự seed phòng hoặc thay dữ liệu đang dùng.
 
 | Thư mục | Vai trò |
 | --- | --- |
@@ -203,9 +203,25 @@ powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Auth
 
 Hủy chuyển trạng thái thành Cancelled, ghi lý do `Customer cancelled online` và nhật ký Guest cùng transaction; không xóa booking hoặc sửa lịch/phòng. Booking đã hủy không giữ chỗ nữa. Khi đổi SĐT khách ở màn hình nội bộ, các lần tra cứu/hủy dùng số mới; sửa ô SĐT trên màn hình Guest xóa ngay kết quả/selection cũ. Lookup xử lý NoShow tồn đọng và loại booking hết đúng +15 phút.
 
-Schema giữ v6. Debug/Release và 11 bộ kiểm tra đạt trên dữ liệu tạm; kiểm tra UI render 25 ảnh. Chi tiết [báo cáo 5c.1](docs/Step5c1_GuestLookup.md). Phần tra cứu phiên Active/tiền tạm tính/gia hạn/gọi món sẽ bổ sung ở bước vận hành khi có các service tương ứng; Guest Lookup chưa hoàn tất toàn bộ mục 22. Tiếp theo UI nhân viên đặt hộ/danh sách/chi tiết booking, rồi calendar ngày/tuần.
+Schema giữ v6. Debug/Release và 11 bộ kiểm tra đạt trên dữ liệu tạm tại bước 5c.1; kiểm tra UI render 25 ảnh. Chi tiết [báo cáo 5c.1](docs/Step5c1_GuestLookup.md). Phần tra cứu phiên Active/tiền tạm tính/gia hạn/gọi món sẽ bổ sung ở bước vận hành khi có các service tương ứng; Guest Lookup chưa hoàn tất toàn bộ mục 22. Danh sách/chi tiết/hủy nội bộ đã có ở bước 5c.2a bên dưới; UI đặt hộ và calendar ngày/tuần còn làm tiếp.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestLookup.ps1
+powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
+```
+
+## Bước 5c.2a — nhân viên xem và hủy booking
+
+1. Đăng nhập tài khoản có `Reservation.View`, bấm **Booking**. Guest không có nút này; Staff/Manager/Admin mặc định xem được.
+2. Chọn khoảng ngày (mặc định hôm nay..+30), SĐT đầy đủ nếu cần, trạng thái rồi **Tải danh sách**. Bỏ trống hai ngày để xem toàn bộ lịch sử booking. SĐT dùng chuẩn hóa 0/+84/84 chung; cả ngày đến được tính theo giờ Việt Nam.
+3. Chọn dòng để xem tên/SĐT khách, phòng, giờ bắt đầu/kết thúc, hạn nhận, người đặt/lúc tạo và lý do hủy nếu có. Cancelled/NoShow/CheckedIn/Completed vẫn xem được nội bộ.
+4. Có `Reservation.Cancel` và booking Confirmed còn hạn, chưa có phiên nguồn: **Hủy booking đã chọn** → nhập lý do → **Xác nhận hủy**. **Giữ booking**/đóng trước xác nhận không lưu. Staff được hủy trong vòng 2 giờ và trong grace trước khi nhận phòng; đúng StartTime+15 phút đã hết hạn.
+
+Hủy đọc lại quyền/trạng thái/giờ/nguồn session trong transaction với lý do và nhật ký Staff; không xóa booking hoặc sửa lịch/phòng. Mất quyền sau khi mở form bị chặn và xóa dữ liệu chi tiết cũ. Tài khoản chỉ có quyền xem vẫn lọc/xem được, không hủy. Nếu hủy đã lưu nhưng tải lại lỗi, màn hình vẫn báo đã hủy.
+
+Schema giữ v6. Build Debug/Release và 12 bộ kiểm tra đạt trên dữ liệu tạm, UI render 30 ảnh. Chi tiết [báo cáo 5c.2a](docs/Step5c2a_StaffReservations.md). Tiếp theo 5c.2b: **form nhân viên đặt hộ** qua CreateStaff; sau đó calendar ngày/tuần. Check-in/walk-in và phần phiên chưa có, không coi chi tiết booking là hoàn tất vận hành.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-StaffReservations.ps1
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```

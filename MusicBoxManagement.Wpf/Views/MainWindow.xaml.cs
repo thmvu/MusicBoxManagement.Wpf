@@ -23,12 +23,14 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningBooking;
         private readonly GuestReservationService guestLookup;
         private bool isOpeningLookup;
+        private readonly StaffReservationService reservations;
+        private bool isOpeningReservations;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
         private bool isOpeningRooms;
 
-        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers, GuestBookingService guestBooking, GuestReservationService guestLookup)
+        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers, GuestBookingService guestBooking, GuestReservationService guestLookup, StaffReservationService reservations)
         {
             InitializeComponent();
             this.viewModel = viewModel;
@@ -40,6 +42,7 @@ namespace MusicBoxManagement.Wpf.Views
             this.customers = customers;
             this.guestBooking = guestBooking;
             this.guestLookup = guestLookup;
+            this.reservations = reservations;
             DataContext = viewModel;
         }
 
@@ -107,6 +110,7 @@ namespace MusicBoxManagement.Wpf.Views
                 RoomsButton.Visibility = access.Permissions.ContainsKey("Room.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 ServicesButton.Visibility = access.Permissions.ContainsKey("Service.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 CustomersButton.Visibility = access.Permissions.ContainsKey("Customer.View") ? Visibility.Visible : Visibility.Collapsed;
+                ReservationsButton.Visibility = access.Permissions.ContainsKey("Reservation.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
                 BackToStaffButton.Visibility = Visibility.Collapsed;
                 ModeText.Text = "Nhân viên: " + access.Role;
@@ -150,6 +154,7 @@ namespace MusicBoxManagement.Wpf.Views
             RoomsButton.Visibility = Visibility.Collapsed;
             ServicesButton.Visibility = Visibility.Collapsed;
             CustomersButton.Visibility = Visibility.Collapsed;
+            ReservationsButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
             StaffIdentity.Text = "";
             ModeText.Text = "Chế độ Khách";
@@ -218,6 +223,22 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền quản lý dịch vụ hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được dịch vụ. Hãy thử lại.", "Music Box"); }
             finally { isOpeningServices = false; ServicesButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+
+        private async void ShowReservations_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningReservations) return;
+            isOpeningReservations = true; ReservationsButton.IsEnabled = false;
+            try
+            {
+                var currentSession = session;
+                await Task.Run(() => permissions.Demand(currentSession, "Reservation.View"));
+                if (session != currentSession) return;
+                new ReservationsWindow(reservations, currentSession) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem booking hoặc phiên đã hết hiệu lực.", "Music Box"); await RefreshAccessAsync(); }
+            catch (Exception) { MessageBox.Show(this, "Không mở được booking. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningReservations = false; ReservationsButton.IsEnabled = true; }
         }
 
         private async void ShowCustomers_Click(object sender, RoutedEventArgs e)

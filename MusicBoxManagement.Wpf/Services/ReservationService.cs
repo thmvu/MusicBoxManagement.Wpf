@@ -66,6 +66,34 @@ VALUES(@customer,@room,@start,@end,'Confirmed',@user,@now); SELECT last_insert_r
                     EndTime = result.EndTime.Value, Status = "Confirmed", CreatedByUserId = guest ? null : session.UserId, CreatedAt = now };
             }
         }
+        public void CancelStaff(LoginSession session, int reservationId, string reason)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
+            using (var command = connection.CreateCommand())
+            {
+                permissions.Demand(session, "Reservation.Cancel", connection, transaction);
+                var text = (reason ?? "").Trim();
+                if (text.Length < 1 || text.Length > 500) throw new ArgumentException("Lý do hủy bắt buộc, từ 1–500 ký tự.");
+                var now = clock.UtcNow.ToUniversalTime(); command.Transaction = transaction;
+                command.CommandText = @"SELECT StartTime,Status,EXISTS(SELECT 1 FROM RoomSessions s WHERE s.ReservationId=b.ReservationId)
+FROM Reservations b WHERE ReservationId=@id;";
+                command.Parameters.AddWithValue("@id", reservationId);
+                using (var reader = command.ExecuteReader())
+                {
+                    if (!reader.Read()) throw new InvalidOperationException("Không tìm thấy booking. Hãy tải lại danh sách.");
+                    var start = DateTimeOffset.ParseExact(reader.GetString(0), "O", CultureInfo.InvariantCulture);
+                    if (reader.GetString(1) != "Confirmed" || now >= start.AddMinutes(15) || reader.GetInt32(2) != 0)
+                        throw new InvalidOperationException("Booking đã đổi trạng thái hoặc hết hạn nhận phòng. Hãy tải lại danh sách.");
+                }
+                command.CommandText = "UPDATE Reservations SET Status='Cancelled',CancellationReason=@reason WHERE ReservationId=@id AND Status='Confirmed';";
+                command.Parameters.AddWithValue("@reason", text);
+                if (command.ExecuteNonQuery() != 1) throw new InvalidOperationException("Booking đã thay đổi. Hãy tải lại danh sách.");
+                AuditService.WriteStaff(connection, transaction, session.UserId, "Reservation.Cancel", "Reservation",
+                    reservationId.ToString(CultureInfo.InvariantCulture), text, now);
+                transaction.Commit();
+            }
+        }
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
     }
 }
