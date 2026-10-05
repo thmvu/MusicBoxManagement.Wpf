@@ -1,0 +1,38 @@
+<Window x:Class="MusicBoxManagement.Wpf.Views.GuestLookupWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="Music Box — Tra cứu đặt phòng" Width="1040" Height="590" MinWidth="920" MinHeight="500"
+ WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5">
+ <Window.Resources><BooleanToVisibilityConverter x:Key="BoolVisibility"/></Window.Resources>
+ <Grid Margin="28">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <DockPanel><Button DockPanel.Dock="Right" Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/><TextBlock Text="Tra cứu đặt phòng" FontSize="28" FontWeight="SemiBold"/></DockPanel>
+  <StackPanel Grid.Row="1" Margin="0,16,0,20">
+   <TextBlock Text="Nhập SĐT đã dùng để đặt. Chỉ hiện booking đã xác nhận còn hiệu lực." Foreground="#5C6873" TextWrapping="Wrap" Margin="0,0,0,10"/>
+   <DockPanel IsEnabled="{Binding CanSearch}"><Button x:Name="SearchButton" DockPanel.Dock="Right" Content="Tra cứu" Click="Search_Click" Margin="12,0,0,0"/><TextBox x:Name="PhoneInput" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Padding="8"/></DockPanel>
+  </StackPanel>
+  <DataGrid x:Name="ReservationsTable" Grid.Row="2" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsEnabled="{Binding CanSearch}"
+   AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column"
+   RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
+   <DataGrid.Resources>
+    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="8"/><Setter Property="Background" Value="#E9EEF0"/></Style>
+    <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="8,0"/></Style>
+   </DataGrid.Resources>
+   <DataGrid.Columns>
+    <DataGridTextColumn Header="Mã booking" Binding="{Binding ReservationId}" Width="100"/>
+    <DataGridTextColumn Header="Mã phòng" Binding="{Binding RoomCode}" Width="90"/>
+    <DataGridTextColumn Header="Phòng" Binding="{Binding RoomName}" Width="*" MinWidth="140"/>
+    <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartLabel}" Width="190"/>
+    <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndLabel}" Width="190"/>
+   </DataGrid.Columns>
+  </DataGrid>
+  <StackPanel Grid.Row="3" Margin="0,16,0,0">
+   <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+   <Button x:Name="CancelButton" Content="Hủy booking đã chọn" Click="Cancel_Click" IsEnabled="{Binding CanCancel}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+   <StackPanel Orientation="Horizontal" Visibility="{Binding IsConfirming, Converter={StaticResource BoolVisibility}}" Margin="0,12,0,0">
+    <Button x:Name="ConfirmButton" Content="Đồng ý hủy" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}"/>
+    <Button x:Name="KeepButton" Content="Giữ booking" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/>
+   </StackPanel>
+  </StackPanel>
+  <TextBlock x:Name="StatusText" Grid.Row="4" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,16,0,0"/>
+ </Grid>
+</Window>

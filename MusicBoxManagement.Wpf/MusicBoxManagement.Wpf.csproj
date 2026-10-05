@@ -72,6 +72,11 @@
     <Compile Include="Services\BookingHours.cs" />
     <Compile Include="Models\Reservation.cs" />
     <Compile Include="Models\PublicRoom.cs" />
+    <Compile Include="Models\GuestReservation.cs" />
+    <Compile Include="Services\GuestReservationService.cs" />
+    <Compile Include="ViewModels\GuestLookupViewModel.cs" />
+    <Page Include="Views\GuestLookupWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\GuestLookupWindow.xaml.cs"><DependentUpon>GuestLookupWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\GuestBookingService.cs" />
     <Compile Include="ViewModels\GuestBookingViewModel.cs" />
     <Page Include="Views\GuestBookingWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>

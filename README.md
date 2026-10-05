@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow và giao diện Khách đặt phòng; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có tra cứu/hủy booking Guest, UI đặt hộ nhân viên, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow và giao diện Khách đặt/tra cứu/hủy booking; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có UI đặt hộ nhân viên, luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
 
 ## Cấu trúc để học
 
@@ -185,9 +185,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Reservati
 
 SĐT 0/+84/84 dùng chung chuẩn hóa; số cũ giữ tên khách cũ. Nếu vừa xem trống nhưng có người đặt trước, lần xác nhận báo trùng và không ghi thêm khách/booking. Sửa lựa chọn hoặc thông tin sẽ bỏ kết quả preview cũ. Khi bận không đóng/gửi lặp; schema giữ v6 và các transaction của 5b.1.
 
-Chưa có màn hình Guest tra cứu/hủy sau khi đóng form, calendar ngày/tuần hoặc UI Staff đặt hộ. Đây là các phần kế tiếp, không bị bỏ khỏi scope. Chi tiết [báo cáo 5b.2](docs/Step5b2_GuestBooking.md).
+Guest tra cứu/hủy sau khi đóng form đã có ở bước 5c.1 bên dưới. Calendar ngày/tuần và UI Staff đặt hộ vẫn là các phần kế tiếp. Chi tiết [báo cáo 5b.2](docs/Step5b2_GuestBooking.md).
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestBooking.ps1
+powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
+```
+
+## Bước 5c.1 — Khách tra cứu và hủy booking
+
+1. Ở **chế độ Khách**, bấm **Tra cứu SĐT**, nhập SĐT đầy đủ rồi **Tra cứu**. Số dạng `0`, `+84`, `84` dùng cùng quy tắc chuẩn hóa với đặt phòng.
+2. Danh sách chỉ có booking **Confirmed còn hiệu lực** của SĐT hiện hành, gồm mã booking/phòng và giờ bắt đầu/kết thúc theo UTC+7. Không cần tài khoản/OTP/mã truy cập.
+3. Chọn dòng để xem điều kiện hủy. Trước hoặc **đúng mốc 2 giờ** đến giờ đặt, bấm **Hủy booking đã chọn** → **Đồng ý hủy**. **Giữ booking** hoặc đóng cửa sổ chưa xác nhận không ghi thay đổi.
+4. Còn dưới 2 giờ, màn hình hướng dẫn liên hệ cửa hàng. Dù kết quả tra cứu cũ còn cho phép hủy, lần xác nhận vẫn kiểm tra lại SĐT/trạng thái/giờ trong transaction ghi.
+
+Hủy chuyển trạng thái thành Cancelled, ghi lý do `Customer cancelled online` và nhật ký Guest cùng transaction; không xóa booking hoặc sửa lịch/phòng. Booking đã hủy không giữ chỗ nữa. Khi đổi SĐT khách ở màn hình nội bộ, các lần tra cứu/hủy dùng số mới; sửa ô SĐT trên màn hình Guest xóa ngay kết quả/selection cũ. Lookup xử lý NoShow tồn đọng và loại booking hết đúng +15 phút.
+
+Schema giữ v6. Debug/Release và 11 bộ kiểm tra đạt trên dữ liệu tạm; kiểm tra UI render 25 ảnh. Chi tiết [báo cáo 5c.1](docs/Step5c1_GuestLookup.md). Phần tra cứu phiên Active/tiền tạm tính/gia hạn/gọi món sẽ bổ sung ở bước vận hành khi có các service tương ứng; Guest Lookup chưa hoàn tất toàn bộ mục 22. Tiếp theo UI nhân viên đặt hộ/danh sách/chi tiết booking, rồi calendar ngày/tuần.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestLookup.ps1
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```

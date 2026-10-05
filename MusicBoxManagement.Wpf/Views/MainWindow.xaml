@@ -51,6 +51,7 @@
                 <TextBlock Text="Loại phòng" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="BookingButton" Content="Đặt phòng" Click="ShowBooking_Click" Margin="0,0,8,0" />
+                    <Button x:Name="LookupButton" Content="Tra cứu SĐT" Click="ShowLookup_Click" Margin="0,0,8,0" />
                     <Button x:Name="EditRoomTypeButton" Content="Sửa loại phòng" Visibility="Collapsed" IsEnabled="False" Click="EditRoomType_Click" Margin="0,0,8,0" />
                     <Button Content="Làm mới" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click" />
                     <Button x:Name="BackToStaffButton" Content="Nhân viên" Visibility="Collapsed" Click="RefreshAccess_Click" Margin="8,0,0,0" />

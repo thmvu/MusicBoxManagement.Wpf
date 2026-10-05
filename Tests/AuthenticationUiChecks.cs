@@ -23,6 +23,7 @@ public static class MusicBoxAuthenticationUiChecks
     { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,3,15,0,TimeSpan.Zero); } } }
     private sealed class BookingClock : IClock
     { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero); } } }
+    private sealed class LookupClock : IClock { public DateTimeOffset UtcNow {get;set;} }
     private static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
     private static T Field<T>(Window window, string name) { return (T)window.FindName(name); }
     private static void Click(Button button) { button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
@@ -69,7 +70,7 @@ public static class MusicBoxAuthenticationUiChecks
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
         var viewModel = new MainViewModel(new RoomTypeService(database));
-        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database));
+        var window = new MainWindow(viewModel, auth, new PermissionService(database), new RoomTypeService(database), new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database));
         DispatcherTimer driver = null;
         try
         {
@@ -83,6 +84,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "CustomersButton").Visibility == Visibility.Collapsed, "Guest saw customer management.");
             Image(window, outputDirectory, "guest");
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
+            VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             driver.Tick += (sender,args) => {
                 var form=application.Windows.OfType<GuestBookingWindow>().FirstOrDefault();
@@ -93,6 +95,22 @@ public static class MusicBoxAuthenticationUiChecks
                 Image(form,outputDirectory,"booking-empty");driver.Stop();form.Close();
             };
             driver.Start();Click(Field<Button>(window,"BookingButton"));driver.Stop();
+
+            var lookupStage=0;Exception lookupError=null;
+            driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var form=application.Windows.OfType<GuestLookupWindow>().FirstOrDefault();if(form==null)return;
+                try
+                {
+                    var vm=(GuestLookupViewModel)form.DataContext;
+                    if(lookupStage==0){Field<TextBox>(form,"PhoneInput").Text="0912345678";lookupStage=1;Click(Field<Button>(form,"SearchButton"));}
+                    else if(!vm.IsBusy){Assert(vm.Items.Count==0 && vm.Status.Contains("Không có"),"Main lookup entry returned wrong results.");Image(form,outputDirectory,"lookup-empty");lookupStage=2;driver.Stop();form.Close();}
+                }
+                catch(Exception error){lookupError=error;driver.Stop();form.Close();}
+            };
+            driver.Start();Click(Field<Button>(window,"LookupButton"));driver.Stop();
+            if(lookupError!=null)throw lookupError;
+            Assert(lookupStage==2 && Field<Button>(window,"LookupButton").IsEnabled,"Lookup did not open/reset from main window.");
 
             // Drive the component's real event handlers using synthetic fields.
             // No OS input, UI Automation, or user database is involved.
@@ -502,7 +520,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest booking/preview/conflict/confirmation/duplicate guard, NoShow, auth, rooms/types/images, services, customers. Rendered twenty-one views.");
+            Console.WriteLine("PASS WPF UI: Guest lookup/cancel/keep/stale boundary/privacy/main entry, booking/preview/conflict/confirmation/duplicate guard, NoShow, auth, rooms/types/images, services, customers. Rendered twenty-five views.");
         }
         finally
         {
@@ -532,6 +550,45 @@ CREATE TRIGGER FailWorkerAudit BEFORE INSERT ON AuditLog WHEN NEW.Action='Reserv
             run=worker.StartAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
             Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Reservation.NoShow';"))==1,"Worker rerun duplicated audit.");
         }
+    }
+
+    private static void VerifyGuestLookup(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);db.Initialize();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,object> value=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return cmd.ExecuteScalar();}};
+        sql("INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('P01','Phòng tra cứu',1,'test.png',1,'test');");
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero)};
+        var create=new ReservationService(db,clock);
+        foreach(var hour in new[]{10,13,15})create.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,5,hour,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Khách thử nghiệm",PhoneNumber="0912345678"});
+        var form=new GuestLookupWindow(new GuestReservationService(db,clock));var vm=(GuestLookupViewModel)form.DataContext;
+        try
+        {
+            form.Show();Field<TextBox>(form,"PhoneInput").Text="bad";Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Status.Contains("SĐT"),"Invalid phone lookup accepted.");
+            Field<TextBox>(form,"PhoneInput").Text="+84 912.345-678";Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==3,"Real lookup controls missed bookings.");
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=0;
+            Assert(!vm.CanCancel && vm.Details.Contains("liên hệ"),"Under two hours did not show contact store.");
+            Image(form,outputDirectory,"lookup-list");
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=1;Click(Field<Button>(form,"CancelButton"));
+            Assert(vm.IsConfirming && !vm.CanSearch,"Inline confirmation did not protect selection.");
+            Image(form,outputDirectory,"lookup-confirm");Click(Field<Button>(form,"KeepButton"));
+            Assert(!vm.IsConfirming && Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations WHERE Status='Cancelled';"))==0,"Keep booking wrote cancellation.");
+            Click(Field<Button>(form,"CancelButton"));clock.UtcNow=new DateTimeOffset(2026,10,5,4,0,0,TimeSpan.Zero);
+            Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("Đã hủy") && vm.Items.Count==1 && Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations WHERE Status='Cancelled';"))==1,"Exact boundary UI cancellation failed.");
+            Image(form,outputDirectory,"lookup-cancelled");
+            Field<DataGrid>(form,"ReservationsTable").SelectedIndex=0;Click(Field<Button>(form,"CancelButton"));
+            clock.UtcNow=new DateTimeOffset(2026,10,5,6,0,0,TimeSpan.Zero).AddTicks(1);
+            Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("liên hệ") && vm.Items.Count==1 && !vm.Items[0].CanCancel,"Stale confirmation bypassed time guard.");
+            Field<TextBox>(form,"PhoneInput").Text="0987654321";
+            Assert(vm.Items.Count==0 && vm.Selected==null && !vm.CanCancel,"Changing phone left old results.");
+            Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Status.Contains("Không có"),"Unknown phone returned others' bookings.");
+        }
+        finally{form.Close();}
     }
 
     private static void VerifyGuestBooking(string file,string outputDirectory)
