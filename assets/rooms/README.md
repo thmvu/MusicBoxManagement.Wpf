@@ -11,7 +11,27 @@ Cả hai là ảnh PNG ngang 1536×1024, dưới 5 MB (Standard 2.086.466 byte, 
 
 Đăng nhập nhân viên có Room.Manage → Phòng → thêm/sửa phòng → Chọn ảnh → chọn file tương ứng trong thư mục này → Lưu. RoomService kiểm tra/chuẩn hóa và sao chép ảnh vào Content/uploads/rooms cạnh database, ghi nhật ký theo luồng hiện có. Ảnh cũ sau thay vẫn được giữ theo bước 4b.2a. Khi sao lưu, giữ database và thư mục Content chứa ảnh.
 
-Tại thời điểm thực hiện, database mặc định trên môi trường này chỉ có schema v1/RoomTypes, chưa có bảng Rooms hoặc ảnh phòng để thay. Chưa thay ảnh trong database đang dùng; nếu có database khác cần xác định đường dẫn đó trước khi áp dụng. Bộ ảnh được lưu vào Git để dùng lại trên máy chạy đồ án.
+Bộ ảnh được lưu vào Git để dùng lại trên máy chạy đồ án. Người dùng đã chốt chọn và áp dụng ảnh sau; bước này chưa thay ảnh trong database đang dùng.
+
+## Thêm 3 mẫu để chọn sau
+
+- `standard-daylight-50mm.png`: sofa thẳng, góc phòng gọn, ánh sáng pha đèn ấm.
+- `vip-evening-50mm.png`: VIP hai dãy sofa, ánh sáng buổi tối từ đèn thực tế.
+- `standard-oak-50mm.png`: Standard tông gỗ sáng, sofa be và bàn tròn.
+
+Tạo bằng imagegen tích hợp ngày 05/10/2026; ảnh ngang 1536×1024, giữ phong cách Canon 50mm f/1.8. Cả ba dưới 5 MB, đã xem trực quan và kiểm tra nhập thành công qua RoomImages.ReadPng. Chỉ lưu tài nguyên để người dùng chọn sau, chưa áp dụng vào dữ liệu phòng.
+
+### Prompt — Standard sofa thẳng
+
+Use case: photorealistic-natural. Generate one 1536x1024 landscape photograph of an empty Standard private karaoke room for four guests in Vietnam, for a Music Box room catalogue. A simple gray fabric sofa, low wood table with two wireless microphones, wall-mounted dark TV, speakers and acoustic wall panels. Room context is the main subject. Different layout from an L-shaped dark karaoke booth: one straight sofa along the rear wall, a small side chair, table slightly off center, subtle soft daytime light entering from a partly open entrance mixing with a warm practical wall lamp. Realistic lived-in cushions, light fabric wear, a few minor scuffs, clean but not perfectly staged. Natural normal perspective from near the doorway, as if photographed on a Canon full-frame camera with 50mm f/1.8: seating area in focus, shallow but restrained depth of field, gently softened foreground and distant corners, readable room layout. Realistic light falloff, moderate contrast, restrained gray/wood colors and slight ISO grain. No people, no text or branding, no watermarks, no collage, no neon, no HDR, no ultra-wide lens, no CGI gloss or luxurious showroom perfection.
+
+### Prompt — VIP buổi tối
+
+Use case: photorealistic-natural. One 1536x1024 landscape photograph, no collage. Empty VIP private karaoke room for six people in Vietnam, suitable for a Music Box room listing. A believable evening interior with a deep charcoal sofa, two slightly uneven cushions, low walnut table with two wireless microphones, large dark wall-mounted television, good speakers, textured acoustic panels and matte wood surfaces. Arrange the seats on two sides with an open passage, frame from the entrance at normal eye level so room context is clear. Photograph in the style of a Canon full-frame camera with a normal 50mm prime at f/1.8: seating at mid distance in focus, subtle shallow depth of field and softly blurred doorway edge, natural proportions, no ultra-wide distortion. Night-time practical lighting from one warm shaded lamp and indirect warm ceiling lamps, no sunlight, realistic pools of light and shadow falloff, darker believable corners without losing room details. Natural white balance, subdued browns and grays, slight sensor grain, mild cushion wrinkles and small ordinary scuffs. Clean and comfortable, not a luxury palace or a perfect showroom. No people, no neon, no colorful lasers, no text or branding or watermark, no CGI, no HDR, no glossy render. Prioritize realistic lighting and room atmosphere over perfection.
+
+### Prompt — Standard gỗ sáng
+
+Use case: photorealistic-natural. Generate a single 1536x1024 landscape photograph of an empty compact Standard private karaoke room for four people in Vietnam. Focus on room context: a beige fabric bench with a couple of casually placed wrinkled cushions, light oak acoustic wall panels, compact low round wooden table holding two wireless microphones, dark wall-mounted TV, small proper speakers and wall air conditioner. Natural everyday interior, clean but with small scuffs and believable slightly worn fabric. Distinct light wood and pale warm gray room palette. Frame at natural eye level from a slightly angled doorway position, normal 50mm perspective, no ultra-wide distortion, enough background to understand seating and room equipment. Canon full-frame camera with a 50mm f/1.8 prime aesthetic: mid-distance seating and table in focus, gentle background softening and a slightly defocused foreground door edge, not an extreme blur close-up. Soft overcast daylight entering from the doorway balanced by a subtle warm ceiling lamp, plausible light sources, realistic shadows, natural white balance and restrained contrast with mild photographic grain. No people, no text, no logo or watermark, no collage, no neon, no excessive HDR, no CGI or perfect symmetrical showroom rendering. Emphasize believable lighting and quiet room atmosphere rather than perfection.
 
 ## Prompt gốc — Standard
 
