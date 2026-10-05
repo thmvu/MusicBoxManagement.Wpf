@@ -144,3 +144,18 @@ Schema giữ **v6**, dùng bảng Customers có từ v5. Hàm chuẩn hóa dùng
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Customers.ps1
 ```
+
+## Bước 5a — nền tảng giờ và phòng trống
+
+Đã có `BookingHours` và `AvailabilityService` dùng chung cho bước đặt phòng kế tiếp. Phần này chưa thêm nút/form đặt phòng và chưa ghi Reservation qua ứng dụng.
+
+- Tính ngày theo giờ Việt Nam UTC+7; nhận hôm nay đến +30 ngày, không đặt trong quá khứ.
+- Bắt đầu ở phút 00/30, không giây lẻ; thời lượng ban đầu 60/90/120/180 phút.
+- Nằm hoàn toàn trong ca 09:00–12:00 hoặc 13:00–23:00; được kết thúc đúng cuối ca.
+- Kiểm tra overlap cả phòng và khách; đặt sát nhau được. Confirmed còn hiệu lực và phiên Active nguồn booking giữ khoảng lịch; walk-in không chặn mọi booking tương lai. Đặt bắt đầu đúng now cần không có phiên Active ở phòng/khách.
+
+Kết quả kiểm tra chỉ là xem trước. Service đặt phòng tương lai phải kiểm tra quyền/khách rồi chạy lại cùng transaction ghi với INSERT và nhật ký. Chưa có worker ghi NoShow, nhưng Confirmed hết đúng 15 phút đã không giữ lịch. Xem [báo cáo 5a](docs/Step5a_Availability.md).
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availability.ps1
+```

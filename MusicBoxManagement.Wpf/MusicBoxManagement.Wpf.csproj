@@ -69,6 +69,8 @@
     <Page Include="Views\ServicesWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\ServicesWindow.xaml.cs"><DependentUpon>ServicesWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\IClock.cs" />
+    <Compile Include="Services\BookingHours.cs" />
+    <Compile Include="Services\AvailabilityService.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\RoomImages.cs" />
