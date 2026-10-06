@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có UI lịch Tuần/lịch Guest trống-bận, luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có lịch Guest trống-bận, luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -259,7 +259,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availabil
 
 ## Bước 5d.2 — lịch Ngày từ giao diện
 
-1. Đăng nhập tài khoản có `Calendar.View` → **Lịch ngày**. Guest không có nút nội bộ này; không cần thêm quyền xem booking hoặc quản lý phòng/khách.
+1. Đăng nhập tài khoản có `Calendar.View` → **Lịch phòng** (mặc định Ngày). Guest không có nút nội bộ này; không cần thêm quyền xem booking hoặc quản lý phòng/khách.
 2. Chọn ngày và phòng (hoặc tất cả), bấm **Tải lịch**. **Ngày trước / Hôm nay / Ngày sau** đổi ngày và tải lại. Chưa có phòng thì màn hình hướng dẫn thêm ở danh mục Phòng.
 3. Lưới giờ Việt Nam 09:00–23:00, ô 30 phút, đánh dấu nghỉ 12:00–13:00. Mỗi cột có mã/tên phòng và trạng thái **hiện tại**, còn khối lịch thuộc ngày đã chọn. Cuộn dọc xem giờ muộn, cuộn ngang xem thêm phòng.
 4. Chọn khối để xem mã booking/phiên, tên/SĐT, giờ thực tế/dự kiến/hạn trả và cảnh báo. Dự kiến dùng nền sáng/viền nét đứt; Completed màu xám; quá giờ viền nâu. Walk-in chưa chốt kết thúc, chỉ vẽ tới lúc tải và có hạn trả động. Các lượt chồng do phiên trước quá giờ được vẽ cạnh nhau.
@@ -272,3 +272,12 @@ Schema giữ v6. Debug/Release và 14 bộ kiểm tra đạt trên dữ liệu t
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Calendar.ps1
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
 ```
+
+## Bước 5d.3 — lịch Tuần
+
+1. Đăng nhập → **Lịch phòng**, chọn **Tuần**. Chuyển chế độ tự tải lại, giữ ngày/phòng đang chọn; mở cửa sổ mới vẫn mặc định Ngày.
+2. Chọn bất kỳ ngày nào trong tuần muốn xem rồi **Tải lịch**. Tuần bắt đầu thứ Hai, kết thúc Chủ nhật theo giờ Việt Nam; status ghi rõ ngày đầu/cuối. **Tuần trước/Tuần sau** dịch 7 ngày; **Hôm nay** giữ chế độ đang dùng.
+3. Có đủ 7 cột ngày, cùng trục 09–23/ô 30 phút/nghỉ 12–13. Cuộn ngang để xem các ngày cuối, lọc một phòng nếu nhiều lượt chồng nhau. Mỗi lượt có mã phòng, chọn/tooltip xem đầy đủ thông tin.
+4. Phiên giao qua nửa đêm vẽ phần giao với từng ngày trong tuần; phần trước/sau khung không bị đổi giờ gốc. Chi tiết vẫn có ngày và giờ thực tế tới giây. Trạng thái phòng hiện tại hiện riêng ở bên phải, không tô kín lịch tuần.
+
+Tuần dùng cùng CalendarService/quyền/NoShow-grace/giữ lịch với Ngày, chỉ đọc và tải lại thủ công. Không kéo-thả/sửa giờ hoặc giữ chỗ từ hình lịch. Schema v6; Debug/Release và 14 bộ kiểm tra đạt trên dữ liệu tạm, UI render 46 ảnh. Xem [báo cáo 5d.3](docs/Step5d3_CalendarWeek.md). Tiếp theo 5d.4 **lịch Guest một phòng chỉ trống/bận**, không có thông tin khách khác; service/UI vận hành vẫn chưa triển khai.

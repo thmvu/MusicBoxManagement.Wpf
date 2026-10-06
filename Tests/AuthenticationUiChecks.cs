@@ -573,7 +573,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Calendar Day/main entry/empty/filter/navigation/raw times/actual/expected/walk-in/overdue/locked history/selection/privacy, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered forty-two views.");
+            Console.WriteLine("PASS WPF UI: Calendar Day/Week/Monday/Sunday/week navigation/room filter/cross-day clipping/raw details/revocation, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered forty-six views.");
         }
         finally
         {
@@ -633,7 +633,40 @@ INSERT INTO RoomSessions(CustomerId,RoomId,ReservationId,ActualStartTime,Expecte
             form.Width=1050;form.Height=660;Image(form,outputDirectory,"calendar-day-history");
             Field<DatePicker>(form,"DateInput").SelectedDate=null;Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Status.Contains("Cần chọn ngày") && timeline.Children.OfType<Button>().Count()==0,"Invalid date left old rendering.");
             Click(Field<Button>(form,"TodayButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
-            Click(timeline.Children.OfType<Button>().Single());sql("DELETE FROM RolePermission WHERE RoleId='Staff';");
+            // Week edges and completed usage crossing midnight. The original timestamps must survive visual clipping.
+            sql(@"INSERT INTO Reservations VALUES
+(6,4,2,'2026-10-11T02:00:00.0000000+00:00','2026-10-11T03:00:00.0000000+00:00','Confirmed',NULL,NULL,'test'),
+(7,4,2,'2026-10-12T02:00:00.0000000+00:00','2026-10-12T03:00:00.0000000+00:00','Confirmed',NULL,NULL,'test');
+INSERT INTO RoomSessions(CustomerId,RoomId,ReservationId,ActualStartTime,ExpectedEndTime,ActualEndTime,HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status) VALUES
+(4,4,NULL,'2026-10-04T15:37:00.0000000+00:00',NULL,'2026-10-05T03:07:00.0000000+00:00',120000,'P04','STANDARD','Standard','Completed'),
+(4,4,NULL,'2026-10-05T15:37:00.0000000+00:00',NULL,'2026-10-06T03:07:00.0000000+00:00',120000,'P04','STANDARD','Standard','Completed');");
+            Field<RadioButton>(form,"WeekMode").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));PumpUntil(()=>!vm.IsBusy && vm.IsWeek && vm.Rooms.Count==1);
+            Assert(vm.Rooms[0].Range.Start.ToOffset(TimeSpan.FromHours(7)).Date==new DateTime(2026,10,5) && vm.Rooms[0].Range.End.ToOffset(TimeSpan.FromHours(7)).Date==new DateTime(2026,10,12),"Week UI range wrong.");
+            Assert(timeline.Children.OfType<Border>().Count()==7 && timeline.Children.OfType<TextBlock>().Count(t=>t.Text=="12:00–13:00 · Giờ nghỉ")==7,"Week did not draw seven columns/rest bands.");
+            Assert(timeline.Children.OfType<Button>().Count()==4,"Cross-day completed intervals omitted or drawn on every day.");
+            var clipped=timeline.Children.OfType<Button>().First(b=>((MusicBoxManagement.Wpf.Models.RoomScheduleEvent)b.Tag).Start.ToOffset(TimeSpan.FromHours(7)).Date==new DateTime(2026,10,4));
+            Assert(Math.Abs(Canvas.GetTop(clipped)-62)<0.01 && Math.Abs(clipped.Height-67*1.4)<0.01,"Week start usage not clipped to Monday 09:00–10:07.");
+            Click(clipped);Assert(vm.Details.Contains("22:37:00 04/10/2026") && vm.Details.Contains("10:07:00 05/10/2026"),"Clipping changed raw times/details.");
+            Image(form,outputDirectory,"calendar-week-history");
+            Field<ComboBox>(form,"RoomInput").SelectedItem=vm.RoomChoices.First();Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==4);
+            Assert(timeline.Children.OfType<Button>().Any(b=>((MusicBoxManagement.Wpf.Models.RoomScheduleEvent)b.Tag).ReservationId==6) && !timeline.Children.OfType<Button>().Any(b=>((MusicBoxManagement.Wpf.Models.RoomScheduleEvent)b.Tag).ReservationId==7),"Week excluded Sunday/included following Monday.");
+            Image(form,outputDirectory,"calendar-week-all");
+            Field<DatePicker>(form,"DateInput").SelectedDate=new DateTime(2026,10,11);Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==4);
+            Assert(vm.Status.Contains("05/10/2026") && vm.Status.Contains("11/10/2026"),"Sunday changed week range.");
+            Field<ComboBox>(form,"RoomInput").SelectedItem=vm.RoomChoices.Single(r=>r.RoomId==2);Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
+            var sunday=timeline.Children.OfType<Button>().Single(b=>((MusicBoxManagement.Wpf.Models.RoomScheduleEvent)b.Tag).ReservationId==6);
+            Assert(Math.Abs(Canvas.GetLeft(sunday)-(68+6*240+6))<0.01,"Sunday event placed in wrong column.");
+            Click(sunday);Field<ScrollViewer>(form,"TimelineScroll").ScrollToRightEnd();form.UpdateLayout();Image(form,outputDirectory,"calendar-week-sunday");
+            Click(Field<Button>(form,"NextButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1 && vm.Status.Contains("12/10/2026"));
+            Assert(vm.Rooms[0].Events.Single().ReservationId==7 && timeline.Children.OfType<Button>().Count()==1,"Next Week did not advance seven days/clear old events.");
+            Field<ScrollViewer>(form,"TimelineScroll").ScrollToLeftEnd();form.UpdateLayout();Image(form,outputDirectory,"calendar-week-next");
+            Click(Field<Button>(form,"PreviousButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1 && vm.Status.Contains("05/10/2026"));
+            Click(Field<Button>(form,"TodayButton"));PumpUntil(()=>!vm.IsBusy && vm.Date==new DateTime(2026,10,6) && vm.Rooms.Count==1);
+            Field<RadioButton>(form,"DayMode").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));PumpUntil(()=>!vm.IsBusy && vm.IsDay && vm.Rooms.Count==1);
+            Assert(timeline.Children.OfType<Border>().Count()==1 && vm.Rooms[0].Range.End-vm.Rooms[0].Range.Start==TimeSpan.FromDays(1),"Switch back to Day still shows Week.");
+            Field<ComboBox>(form,"RoomInput").SelectedItem=vm.RoomChoices.Single(r=>r.RoomId==4);Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
+            Field<RadioButton>(form,"WeekMode").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));PumpUntil(()=>!vm.IsBusy && vm.IsWeek && vm.Rooms.Count==1);
+            Click(timeline.Children.OfType<Button>().First());sql("DELETE FROM RolePermission WHERE RoleId='Staff';");
             Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Status.Contains("Không còn quyền"));
             Assert(vm.Rooms.Count==0 && vm.RoomChoices.Count==0 && timeline.Children.OfType<Button>().Count()==0 && !vm.Details.Contains("0901112223") && Field<Button>(form,"LoadButton").IsEnabled,"Revoked calendar retained private render/details or trapped controls.");
             Image(form,outputDirectory,"calendar-day-denied");

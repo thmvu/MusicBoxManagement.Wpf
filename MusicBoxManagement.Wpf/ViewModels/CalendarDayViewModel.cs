@@ -23,6 +23,12 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private DateTime? date;
         private CalendarRoomChoice room;
         private bool busy;
+        private bool week;
+        public bool IsWeek => week;
+        public bool IsDay => !week;
+        public string Heading => week ? "Lịch phòng · Tuần" : "Lịch phòng · Ngày";
+        public string PreviousLabel => week ? "Tuần trước" : "Ngày trước";
+        public string NextLabel => week ? "Tuần sau" : "Ngày sau";
         private string status, details = "Chọn một lượt trên lịch để xem chi tiết.";
         public ObservableCollection<CalendarRoomChoice> RoomChoices { get; } = new ObservableCollection<CalendarRoomChoice>();
         public ObservableCollection<RoomSchedule> Rooms { get; } = new ObservableCollection<RoomSchedule>();
@@ -32,6 +38,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanLoad => !busy;
         public string Status => status;
         public string Details => details;
+        public string CurrentRoomsStatus => string.Join("\n", Rooms.Select(r => r.RoomCode + ": " +
+            (r.CurrentStatus == "Inactive" ? "Đang khóa" : r.CurrentStatus == "Occupied" ? "Đang có khách" : r.CurrentStatus == "Reserved" ? "Tới lượt đặt" : "Đang trống")));
         public event PropertyChangedEventHandler PropertyChanged;
         public CalendarDayViewModel(CalendarService service, LoginSession session) : this(service, session, new SystemClock()) { }
         public CalendarDayViewModel(CalendarService service, LoginSession session, IClock clock)
@@ -46,14 +54,15 @@ namespace MusicBoxManagement.Wpf.ViewModels
             try
             {
                 if (!Date.HasValue) throw new ArgumentException("Cần chọn ngày xem lịch.");
-                var range = CalendarRange.Day(Date.Value); var chosen = SelectedRoom?.RoomId;
+                var range = week ? CalendarRange.Week(Date.Value) : CalendarRange.Day(Date.Value); var chosen = SelectedRoom?.RoomId;
                 var result = await Task.Run(() => service.Read(session, range));
                 RoomChoices.Clear(); RoomChoices.Add(new CalendarRoomChoice { Label = "Tất cả phòng" });
                 foreach (var item in result) RoomChoices.Add(new CalendarRoomChoice { RoomId = item.RoomId, Label = item.RoomCode + " — " + item.RoomName });
                 room = RoomChoices.FirstOrDefault(r => r.RoomId == chosen) ?? RoomChoices[0]; Notify(nameof(SelectedRoom));
                 foreach (var item in result.Where(r => !room.RoomId.HasValue || r.RoomId == room.RoomId.Value)) Rooms.Add(item);
+                Notify(nameof(CurrentRoomsStatus));
                 SetStatus(Rooms.Count == 0 ? "Chưa có phòng. Thêm phòng ở danh mục Phòng để xem lịch." :
-                    "Lịch ngày " + Date.Value.ToString("dd/MM/yyyy") + ". Trạng thái hiện tại lúc " + result[0].CheckedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy") + ". Làm mới để kiểm tra thay đổi.");
+                    (week ? "Tuần " + range.Start.ToOffset(BookingHours.VietnamOffset).ToString("dd/MM/yyyy") + " – " + range.End.AddDays(-1).ToOffset(BookingHours.VietnamOffset).ToString("dd/MM/yyyy") : "Lịch ngày " + Date.Value.ToString("dd/MM/yyyy")) + ". Trạng thái hiện tại lúc " + result[0].CheckedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy") + ". Làm mới để kiểm tra thay đổi.");
             }
             catch (UnauthorizedAccessException) { RoomChoices.Clear(); room = null; Notify(nameof(SelectedRoom)); SetStatus("Không còn quyền xem lịch hoặc phiên đã hết hiệu lực. Hãy đóng cửa sổ hoặc đăng nhập lại."); }
             catch (ArgumentException error) { SetStatus(error.Message); }
@@ -65,7 +74,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (busy) return;
             var current = Date ?? clock.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;
             if ((days < 0 && current.Year <= 2) || (days > 0 && current.Year >= 9998)) { Clear(); SetStatus("Ngày lịch không hợp lệ."); return; }
-            Date = current.AddDays(days); await LoadAsync();
+            Date = current.AddDays(week ? days * 7 : days); await LoadAsync();
+        }
+        public async Task ChangeModeAsync(bool isWeek)
+        {
+            if (busy || week == isWeek) return;
+            week = isWeek;
+            foreach (var property in new[] { nameof(IsWeek), nameof(IsDay), nameof(Heading), nameof(PreviousLabel), nameof(NextLabel) }) Notify(property);
+            Clear(); await LoadAsync();
         }
         public async Task TodayAsync() { if (busy) return; Date = clock.UtcNow.ToOffset(BookingHours.VietnamOffset).Date; await LoadAsync(); }
         public void Select(RoomSchedule schedule, RoomScheduleEvent item)
@@ -86,7 +102,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             return text;
         }
         private static string Time(DateTimeOffset value) => value.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy");
-        private void Clear() { Rooms.Clear(); details = "Chọn một lượt trên lịch để xem chi tiết."; Notify(nameof(Details)); SetStatus("Bấm Tải lịch để xem ngày/phòng đã chọn."); }
+        private void Clear() { Rooms.Clear(); Notify(nameof(CurrentRoomsStatus)); details = "Chọn một lượt trên lịch để xem chi tiết."; Notify(nameof(Details)); SetStatus("Bấm Tải lịch để xem ngày/phòng đã chọn."); }
         private void SetStatus(string value) { status = value; Notify(nameof(Status)); }
         private void Notify([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
