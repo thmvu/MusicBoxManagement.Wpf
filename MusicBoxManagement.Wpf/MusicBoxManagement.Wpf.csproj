@@ -92,6 +92,9 @@
     <Compile Include="Services\NoShowService.cs" />
     <Compile Include="Services\NoShowWorker.cs" />
     <Compile Include="Services\AvailabilityService.cs" />
+    <Compile Include="Services\ScheduleRules.cs" />
+    <Compile Include="Services\CalendarService.cs" />
+    <Compile Include="Models\RoomSchedule.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\RoomImages.cs" />

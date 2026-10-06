@@ -71,13 +71,7 @@ namespace MusicBoxManagement.Wpf.Services
                 command.Parameters.AddWithValue("@start", Utc(start));
                 command.Parameters.AddWithValue("@end", Utc(result.EndTime.Value));
                 command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
-                command.CommandText = @"SELECT RoomId FROM (
-SELECT RoomId,CustomerId,StartTime AS HoldStart,EndTime AS HoldEnd FROM Reservations
- WHERE Status='Confirmed' AND StartTime>@cutoff
-UNION ALL
-SELECT RoomId,CustomerId,ActualStartTime,ExpectedEndTime FROM RoomSessions
- WHERE Status='Active' AND ReservationId IS NOT NULL
-) WHERE (RoomId=@room OR CustomerId=@customer) AND @start<HoldEnd AND @end>HoldStart
+                command.CommandText = @"SELECT RoomId FROM (" + ScheduleRules.HoldsSql + @") WHERE (RoomId=@room OR CustomerId=@customer) AND @start<HoldEnd AND @end>HoldStart
 ORDER BY (RoomId=@room) DESC LIMIT 1;";
                 var conflict = command.ExecuteScalar();
                 if (conflict != null)

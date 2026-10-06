@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên đặt hộ/xem/chi tiết/hủy booking; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có luồng phiên sử dụng, gọi món, hóa đơn, calendar và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên đặt hộ/xem/chi tiết/hủy booking; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service lịch/trạng thái phòng, chưa có giao diện calendar, luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -239,4 +239,20 @@ Schema giữ v6. Debug/Release và 13 bộ kiểm tra đạt trên dữ liệu t
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-StaffBooking.ps1
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
+```
+
+## Bước 5d.1 — nền tảng lịch và trạng thái phòng
+
+Đã có CalendarService cho lịch nội bộ, cần quyền `Calendar.View` hiện hành; chưa thêm nút/màn hình lịch. CalendarRange.Day lấy ngày Việt Nam 00:00 đến trước 00:00 hôm sau; Week lấy thứ Hai đến trước thứ Hai kế tiếp. Đọc tất cả phòng hoặc lọc một Room, có cả phòng khóa để xem lịch sử.
+
+- Trạng thái hiện tại ưu tiên Inactive → Occupied → Reserved → Available. Chỉ Confirmed đang tới lượt và còn grace mới làm Reserved; booking ngày mai không đổi trạng thái hôm nay.
+- Khoảng giữ lịch dùng chung quy tắc với AvailabilityService. Phiên nguồn booking chỉ giữ tới ExpectedEndTime, CheckedIn không vẽ thêm booking cũ. Quá giờ cảnh báo nhưng không tự nới hold.
+- Dữ liệu thực tế giữ nguyên giây/phút: Active đến now, Completed đến ActualEndTime, không làm tròn theo ô 30 phút. Walk-in không giữ lịch tương lai; hạn trả phòng tính động theo ca và booking kế tiếp của phòng/khách.
+- Lịch là kết quả đọc tại một mốc thời gian, không giữ chỗ hoặc tự cập nhật NoShow. Mọi thao tác ghi vẫn kiểm tra lại trong transaction. Đây là dữ liệu nội bộ có thông tin khách, chưa phải đường lịch Guest.
+
+Schema giữ v6. Debug/Release và 14 bộ kiểm tra đạt trên database tạm; kiểm tra WPF cũ vẫn render 36 ảnh. Fixture session kiểm tra cách đọc lịch, chưa có service/UI check-in hoặc walk-in. Chi tiết [báo cáo 5d.1](docs/Step5d1_CalendarFoundation.md). Tiếp theo 5d.2 giao diện lịch **Ngày**, rồi **Tuần** và lịch Guest chỉ trống/bận, giữ đủ phạm vi plan.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Calendar.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availability.ps1
 ```
