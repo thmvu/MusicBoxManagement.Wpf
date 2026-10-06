@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có lịch Guest trống-bận, luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -280,4 +280,20 @@ powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Auth
 3. Có đủ 7 cột ngày, cùng trục 09–23/ô 30 phút/nghỉ 12–13. Cuộn ngang để xem các ngày cuối, lọc một phòng nếu nhiều lượt chồng nhau. Mỗi lượt có mã phòng, chọn/tooltip xem đầy đủ thông tin.
 4. Phiên giao qua nửa đêm vẽ phần giao với từng ngày trong tuần; phần trước/sau khung không bị đổi giờ gốc. Chi tiết vẫn có ngày và giờ thực tế tới giây. Trạng thái phòng hiện tại hiện riêng ở bên phải, không tô kín lịch tuần.
 
-Tuần dùng cùng CalendarService/quyền/NoShow-grace/giữ lịch với Ngày, chỉ đọc và tải lại thủ công. Không kéo-thả/sửa giờ hoặc giữ chỗ từ hình lịch. Schema v6; Debug/Release và 14 bộ kiểm tra đạt trên dữ liệu tạm, UI render 46 ảnh. Xem [báo cáo 5d.3](docs/Step5d3_CalendarWeek.md). Tiếp theo 5d.4 **lịch Guest một phòng chỉ trống/bận**, không có thông tin khách khác; service/UI vận hành vẫn chưa triển khai.
+Tuần dùng cùng CalendarService/quyền/NoShow-grace/giữ lịch với Ngày, chỉ đọc và tải lại thủ công. Không kéo-thả/sửa giờ hoặc giữ chỗ từ hình lịch. Schema v6; Debug/Release và 14 bộ kiểm tra đạt tại bước 5d.3 trên dữ liệu tạm, UI render 46 ảnh. Xem [báo cáo 5d.3](docs/Step5d3_CalendarWeek.md). Lịch Guest đã có ở 5d.4 bên dưới; service/UI vận hành vẫn chưa triển khai.
+
+## Bước 5d.4 — Khách xem trống/bận theo ngày
+
+1. Chế độ Khách → **Đặt phòng**, chọn phòng/ngày/thời lượng → **Xem trống/bận theo ngày**. Chưa cần nhập tên/SĐT. Form nhân viên đặt hộ cũng dùng được nút này theo quyền `Reservation.Create`.
+2. Danh sách có 28 giờ bắt đầu cách nhau 30 phút từ 09:00 đến 22:30. Ô **Có thể đặt** màu xanh nhạt; ô **Bận**, **Đã qua**, **Giờ nghỉ**, **Không đủ ca** không được chọn. Trạng thái tính cho cả khoảng theo thời lượng đang chọn, không chỉ 30 phút của ô.
+3. Chọn dòng trống → **Chọn giờ này** chỉ điền giờ vào form. Đóng hoặc xem/tải lại lịch không tạo booking/khách. Đổi ngày/phòng/thời lượng ở form và mở lại để xem lựa chọn khác.
+4. **Tải lại lịch** lấy snapshot mới; phòng bị khóa/lỗi sẽ xóa các ô cũ. Màn hình không hiển thị tên/SĐT, mã booking/phiên hoặc thông tin khách khác.
+
+Lịch kiểm tra **phòng**, chưa kiểm tra lịch riêng của bạn vì chưa có SĐT. Nhập tên/SĐT rồi Kiểm tra giờ/Xác nhận đặt như trước; submit vẫn kiểm tra cả phòng và khách trong transaction. Lịch không giữ chỗ, lịch trống có thể đổi khi người khác đặt trước. Walk-in/quá giờ không tự tô bận tương lai; bắt đầu đúng now vẫn bị chặn nếu phòng có Active.
+
+Schema v6; Debug/Release và 15 bộ kiểm tra đạt trên dữ liệu tạm, UI render 50 ảnh. Chi tiết [báo cáo 5d.4](docs/Step5d4_GuestCalendar.md). Tiếp theo 6a.1 nền tảng **check-in từ booking** theo quyền Session.CheckIn; chưa có luồng nhận phòng thực tế ở bước này.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestCalendar.ps1
+powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
+```

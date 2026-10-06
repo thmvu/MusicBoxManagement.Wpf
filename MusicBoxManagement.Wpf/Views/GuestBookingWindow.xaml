@@ -48,6 +48,7 @@
                         <ComboBox x:Name="TimeInput" ItemsSource="{Binding Slots}" SelectedItem="{Binding StartTimeText}" Padding="8"/>
                         <TextBlock Text="Thời lượng (phút)" Margin="0,12,0,6"/>
                         <ComboBox x:Name="DurationInput" ItemsSource="{Binding Durations}" SelectedItem="{Binding Duration}" Padding="8"/>
+                        <Button x:Name="CalendarButton" Content="Xem trống/bận theo ngày" Click="Calendar_Click" IsEnabled="{Binding CanBook}" Margin="0,12,0,0"/>
                         <TextBlock Text="Họ tên" Margin="0,12,0,6"/>
                         <TextBox x:Name="NameInput" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8"/>
                         <TextBlock Text="Số điện thoại" Margin="0,12,0,6"/>

@@ -77,6 +77,19 @@ namespace MusicBoxManagement.Wpf.ViewModels
             catch(Exception error){ShowError(error);}
             finally{SetBusy(false);}
         }
+        public async Task<GuestCalendarViewModel> PrepareCalendarAsync()
+        {
+            if (!CanBook) return null; SetBusy(true);
+            try
+            {
+                if (!SelectedDate.HasValue) throw new ArgumentException("Cần chọn ngày xem lịch.");
+                var roomId = SelectedRoom.RoomId; var day = SelectedDate.Value; var minutes = Duration;
+                var result = await Task.Run(() => service.ReadDay(roomId, day, minutes));
+                return new GuestCalendarViewModel(service, roomId, result);
+            }
+            catch (Exception error) { ShowError(error); return null; }
+            finally { SetBusy(false); }
+        }
         public async Task<bool> SubmitAsync()
         {
             if(!CanBook)return false; SetBusy(true);
@@ -87,6 +100,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             finally{SetBusy(false);}
         }
         public void StartNew(){if(!CanReset)return;saved=false;FullName=PhoneNumber=null;SetStatus("Nhập thông tin cho lượt đặt mới.");SetBusy(false);}
+        internal void RejectAccess() { ShowError(new UnauthorizedAccessException()); SetBusy(false); }
         private void ShowError(Exception error)
         {
             preview="Hãy kiểm tra lại thông tin hoặc chọn khoảng giờ khác.";Notify(nameof(PreviewText));

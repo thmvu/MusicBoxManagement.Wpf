@@ -91,6 +91,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyStaffBooking(Path.Combine(testDirectory,"staff-create.db"),outputDirectory);
             VerifyCalendarDay(Path.Combine(testDirectory,"calendar-day.db"),outputDirectory);
+            VerifyGuestCalendar(Path.Combine(testDirectory,"guest-calendar.db"),outputDirectory);
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             driver.Tick += (sender,args) => {
                 var form=application.Windows.OfType<GuestBookingWindow>().FirstOrDefault();
@@ -573,7 +574,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Calendar Day/Week/Monday/Sunday/week navigation/room filter/cross-day clipping/raw details/revocation, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered forty-six views.");
+            Console.WriteLine("PASS WPF UI: Guest anonymous calendar/busy/rest/duration/tomorrow/pick time/no writes/stale submit/locked refresh, internal Day/Week calendar, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty views.");
         }
         finally
         {
@@ -582,6 +583,68 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyGuestCalendar(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);db.Initialize();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,object> value=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return cmd.ExecuteScalar();}};
+        var imageUrl="Content/uploads/rooms/"+Guid.NewGuid().ToString("N")+".png";
+        var imagePath=Path.Combine(Path.GetDirectoryName(file),imageUrl.Replace('/',Path.DirectorySeparatorChar));Directory.CreateDirectory(Path.GetDirectoryName(imagePath));
+        var bitmap=BitmapSource.Create(2,2,96,96,PixelFormats.Bgra32,null,new byte[]{80,100,120,255,80,100,120,255,80,100,120,255,80,100,120,255},8);
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var stream=File.Create(imagePath))encoder.Save(stream);
+        sql("INSERT INTO Rooms(RoomId,RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES(1,'P01','Phòng demo',1,'"+imageUrl+"',1,'test'); INSERT INTO Customers VALUES(1,'Tên bí mật','0912345678');");
+        sql(@"INSERT INTO Reservations VALUES(1,1,1,'2026-10-06T06:00:00.0000000+00:00','2026-10-06T07:00:00.0000000+00:00','Confirmed',NULL,NULL,'test');");
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,6,2,0,0,TimeSpan.Zero)};var service=new GuestBookingService(db,clock);var vm=new GuestBookingViewModel(service,clock);var parent=new GuestBookingWindow(service,vm);
+        DispatcherTimer driver=null;Exception failure=null;
+        Action<int> open=scene=>{
+            var done=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(40)};
+            driver.Tick+=(sender,args)=>{
+                var child=Application.Current.Windows.OfType<GuestCalendarWindow>().FirstOrDefault();if(child==null)return;
+                try
+                {
+                    var model=(GuestCalendarViewModel)child.DataContext;Assert(model.Slots.Count==28,"Guest calendar not 28 half-hour rows.");
+                    Assert(Field<DataGrid>(child,"SlotsTable").Columns.Count==2 && !model.Title.Contains("Tên bí mật") && !model.Status.Contains("0912345678"),"Public UI exposed customer data.");
+                    if(scene==0)
+                    {
+                        Field<DataGrid>(child,"SlotsTable").SelectedItem=model.Slots.Single(s=>s.TimeLabel=="13:00");Assert(!Field<Button>(child,"ChooseButton").IsEnabled && model.Selected.State=="Busy","Busy row selectable.");
+                        Field<DataGrid>(child,"SlotsTable").SelectedItem=model.Slots.Single(s=>s.TimeLabel=="12:00");Assert(!model.CanChoose,"Rest row selectable.");
+                        Field<DataGrid>(child,"SlotsTable").ScrollIntoView(model.Slots.Single(s=>s.TimeLabel=="15:00"));child.UpdateLayout();Image(child,outputDirectory,"public-calendar");
+                        Field<DataGrid>(child,"SlotsTable").SelectedItem=model.Slots.Single(s=>s.TimeLabel=="15:00");Assert(model.CanChoose,"Free row not selectable.");driver.Stop();done=true;Click(Field<Button>(child,"ChooseButton"));
+                    }
+                    else if(scene==1)
+                    {
+                        Assert(model.Title.Contains("180 phút") && model.Slots.Single(s=>s.TimeLabel=="21:00").State=="Closed","Duration not reflected in UI calendar.");
+                        Field<DataGrid>(child,"SlotsTable").ScrollIntoView(model.Slots.Last());child.UpdateLayout();Image(child,outputDirectory,"public-calendar-duration");driver.Stop();done=true;child.Close();
+                    }
+                    else if(scene==2)
+                    {
+                        Assert(model.Slots.Single(s=>s.TimeLabel=="13:00").State=="Available" && model.Title.Contains("07/10/2026"),"Tomorrow uses today's holds.");Image(child,outputDirectory,"public-calendar-tomorrow");driver.Stop();done=true;child.Close();
+                    }
+                    else
+                    {
+                        driver.Stop();sql("UPDATE Rooms SET IsActive=0,InactiveReason='Private reason' WHERE RoomId=1;");Click(Field<Button>(child,"RefreshButton"));PumpUntil(()=>!model.IsBusy && model.Slots.Count==0);
+                        Assert(!model.CanChoose && model.CanClose && !model.Status.Contains("Private reason"),"Locked room kept selectable data/leaked reason.");Image(child,outputDirectory,"public-calendar-locked");done=true;child.Close();
+                    }
+                }
+                catch(Exception error){failure=error;driver.Stop();child.Close();}
+            };
+            driver.Start();Click(Field<Button>(parent,"CalendarButton"));PumpUntil(()=>done || failure!=null);driver.Stop();if(failure!=null)throw failure;
+        };
+        try
+        {
+            parent.Show();PumpUntil(()=>!vm.IsBusy && vm.CanBook);Assert(string.IsNullOrEmpty(vm.FullName) && string.IsNullOrEmpty(vm.PhoneNumber),"Fixture name/phone unexpectedly needed.");
+            open(0);Assert(vm.StartTimeText=="15:00" && Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==1 && Convert.ToInt64(value("SELECT COUNT(*) FROM Customers;"))==1,"Picking time wrote booking/customer or did not update parent.");
+            service.Create(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,6,15,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Other",PhoneNumber="0987654321"});
+            Field<TextBox>(parent,"NameInput").Text="Another";Field<TextBox>(parent,"PhoneInput").Text="0901234567";Click(Field<Button>(parent,"SubmitButton"));PumpUntil(()=>!vm.IsBusy && vm.Status.Contains("trùng"));
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Customers;"))==2,"Stale calendar submit left customer.");
+            Field<ComboBox>(parent,"DurationInput").SelectedItem=180;open(1);
+            Field<DatePicker>(parent,"DateInput").SelectedDate=new DateTime(2026,10,7);Field<ComboBox>(parent,"DurationInput").SelectedItem=60;open(2);
+            Field<DatePicker>(parent,"DateInput").SelectedDate=new DateTime(2026,10,6);open(3);
+            Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==2 && Convert.ToInt64(value("SELECT COUNT(*) FROM AspNetUsers;"))==0,"Public calendar required login or wrote reservation.");
+        }
+        finally{if(driver!=null)driver.Stop();parent.Close();}
     }
 
     private static void VerifyCalendarDay(string file,string outputDirectory)

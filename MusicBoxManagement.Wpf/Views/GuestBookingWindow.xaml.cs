@@ -23,6 +23,19 @@ namespace MusicBoxManagement.Wpf.Views
         private async void Window_Loaded(object sender,RoutedEventArgs e)=>await viewModel.RefreshAsync();
         private async void Refresh_Click(object sender,RoutedEventArgs e)=>await viewModel.RefreshAsync();
         private async void Preview_Click(object sender,RoutedEventArgs e)=>await viewModel.PreviewAsync();
+        private bool openingCalendar;
+        private async void Calendar_Click(object sender, RoutedEventArgs e)
+        {
+            if (openingCalendar) return; openingCalendar = true;
+            try
+            {
+                var model = await viewModel.PrepareCalendarAsync(); if (model == null) return;
+                var form = new GuestCalendarWindow(model) { Owner = this }; form.ShowDialog();
+                if (model.AccessDenied) viewModel.RejectAccess();
+                if (form.ChosenTime != null && viewModel.CanInput) viewModel.StartTimeText = form.ChosenTime;
+            }
+            finally { openingCalendar = false; }
+        }
         private async void Submit_Click(object sender,RoutedEventArgs e)=>await viewModel.SubmitAsync();
         private async void New_Click(object sender,RoutedEventArgs e){viewModel.StartNew();await viewModel.RefreshAsync();}
         private void Room_Changed(object sender,SelectionChangedEventArgs e)

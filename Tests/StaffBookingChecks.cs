@@ -33,6 +33,8 @@ INSERT INTO Customers(FullName,PhoneNumber) VALUES('Tên đã lưu','0912345678'
             Assert(route.ListRooms().Count==2 && list.ForBooking(staff)!=null,"Create-only staff could not load public room metadata/open form.");
             Reject<UnauthorizedAccessException>(()=>list.Search(staff));
             var denied=new StaffBookingService(db,null,clock);
+            Assert(route.ReadDay(1,new DateTime(2026,10,5),60).Slots.Count==28,"Create-only anonymous day read incorrectly requires Calendar.View.");
+            Reject<UnauthorizedAccessException>(()=>denied.ReadDay(1,new DateTime(2026,10,5),60));
             Reject<UnauthorizedAccessException>(()=>denied.ListRooms());Reject<UnauthorizedAccessException>(()=>denied.Preview(Request(1,13,"0912345678")));Reject<UnauthorizedAccessException>(()=>denied.Create(Request(1,13,"0912345678")));
             Assert(route.Preview(Request(1,13,"+84 912.345-678")).CanBook && Count(db,"SELECT COUNT(*) FROM Reservations;")==0 && Count(db,"SELECT COUNT(*) FROM Customers;")==1,"Staff preview wrote data or required Customer CRUD.");
             var first=route.Create(Request(1,13,"84912345678"));
@@ -52,7 +54,10 @@ INSERT INTO Customers(FullName,PhoneNumber) VALUES('Tên đã lưu','0912345678'
             Assert(!vm.SubmitAsync().GetAwaiter().GetResult() && Count(db,"SELECT COUNT(*) FROM Reservations;")==2,"Shared Staff form duplicated saved booking.");
             vm.StartNew();Assert(vm.FullName==null && vm.PhoneNumber==null && vm.CanInput && vm.LastCreatedReservationId.HasValue,"New draft retained guest data/lost saved ID.");
             vm.StartTimeText="17:00";vm.FullName="Chưa lưu";vm.PhoneNumber="0900000000";vm.PreviewAsync().GetAwaiter().GetResult();
+            var staffCalendar=new GuestCalendarViewModel(route,1,route.ReadDay(1,new DateTime(2026,10,5),60));
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Reservation.Create');");
+            Reject<UnauthorizedAccessException>(()=>route.ReadDay(1,new DateTime(2026,10,5),60));
+            staffCalendar.RefreshAsync().GetAwaiter().GetResult();Assert(staffCalendar.AccessDenied && staffCalendar.Slots.Count==0 && !staffCalendar.CanChoose && staffCalendar.CanClose,"Staff calendar fell back to Guest/retained data after revocation.");
             Assert(!vm.SubmitAsync().GetAwaiter().GetResult() && vm.Rooms.Count==0 && vm.FullName==null && vm.PhoneNumber==null && !vm.CanInput && vm.CanClose,"Revoked Create fell back to Guest/retained fields or prevented closing.");
             vm.StartNew();Assert(!vm.CanBook,"New draft bypassed revoked permission.");
             Reject<UnauthorizedAccessException>(()=>route.ListRooms());Reject<UnauthorizedAccessException>(()=>route.Preview(Request(1,17,"0900000000")));Reject<UnauthorizedAccessException>(()=>list.ForBooking(staff));

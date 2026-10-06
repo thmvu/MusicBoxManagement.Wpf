@@ -61,6 +61,7 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.IsActive=1 OR
             }
         }
         public Reservation Create(ReservationRequest request) => reservations.CreateGuest(request);
+        public PublicRoomDay ReadDay(int roomId, DateTime date, int durationMinutes) => new GuestCalendarService(database, clock).Read(roomId, date, durationMinutes);
         // Reuse the validated local image-path helper, without querying protected management data.
         public string GetImagePath(string imageUrl) => new RoomService(database).GetImagePath(imageUrl);
     }

@@ -46,6 +46,15 @@ namespace MusicBoxManagement.Wpf.Services
             }
         }
         public Reservation Create(ReservationRequest request) => reservations.CreateStaff(session, request);
+        public PublicRoomDay ReadDay(int roomId, DateTime date, int durationMinutes)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                permissions.Demand(session, "Reservation.Create", connection, transaction);
+                return GuestCalendarService.ReadAt(database, connection, transaction, roomId, date, durationMinutes, clock.UtcNow);
+            }
+        }
         public string GetImagePath(string imageUrl) => catalog.GetImagePath(imageUrl);
     }
 }
