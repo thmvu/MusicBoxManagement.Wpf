@@ -84,11 +84,13 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "CustomersButton").Visibility == Visibility.Collapsed, "Guest saw customer management.");
             Assert(Field<Button>(window, "ReservationsButton").Visibility == Visibility.Collapsed, "Guest saw internal booking data.");
             Assert(Field<Button>(window, "StaffBookingButton").Visibility == Visibility.Collapsed, "Guest saw Staff create route.");
+            Assert(Field<Button>(window, "CalendarButton").Visibility == Visibility.Collapsed, "Guest saw internal calendar.");
             Image(window, outputDirectory, "guest");
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyStaffBooking(Path.Combine(testDirectory,"staff-create.db"),outputDirectory);
+            VerifyCalendarDay(Path.Combine(testDirectory,"calendar-day.db"),outputDirectory);
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             driver.Tick += (sender,args) => {
                 var form=application.Windows.OfType<GuestBookingWindow>().FirstOrDefault();
@@ -147,6 +149,15 @@ public static class MusicBoxAuthenticationUiChecks
             driver.Stop();
             if (driverError != null) throw driverError;
             Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Visible,"Admin did not see internal booking entry.");
+            Assert(Field<Button>(window,"CalendarButton").Visibility==Visibility.Visible,"Admin did not see calendar entry.");
+            var calendarOpened=false;
+            driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var form=application.Windows.OfType<CalendarDayWindow>().FirstOrDefault();if(form==null)return;
+                var vm=(CalendarDayViewModel)form.DataContext;if(vm.IsBusy || !vm.Status.Contains("Chưa có phòng"))return;
+                Assert(vm.Rooms.Count==0,"Main calendar empty database wrong.");Image(form,outputDirectory,"calendar-empty");calendarOpened=true;driver.Stop();form.Close();
+            };
+            driver.Start();Click(Field<Button>(window,"CalendarButton"));PumpUntil(()=>calendarOpened && Field<Button>(window,"CalendarButton").IsEnabled);driver.Stop();
             var reservationStage=0;
             driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
@@ -163,7 +174,7 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(()=>reservationStage==1 || driverError!=null);driver.Stop();if(driverError!=null)throw driverError;
             // Create and View are independent: the shortcut must remain for a Create-only role.
             Action<string> staffEntrySql=statement=>{using(var c=database.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
-            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff'; DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Reservation.View');");
+            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff'; DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View'));");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Collapsed && Field<Button>(window,"StaffBookingButton").Visibility==Visibility.Visible,"Create-only shortcut required View.");
             var staffCreateStage=0;
@@ -181,7 +192,8 @@ public static class MusicBoxAuthenticationUiChecks
             driver.Start();Click(Field<Button>(window,"StaffBookingButton"));
             PumpUntil(()=>driverError!=null || (staffCreateStage==1 && Field<Button>(window,"StaffBookingButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled));
             driver.Stop();if(driverError!=null)throw driverError;
-            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin'; INSERT OR IGNORE INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Reservation.View';");
+            Assert(Field<Button>(window,"CalendarButton").Visibility==Visibility.Collapsed,"Missing Calendar.View still exposed main calendar button.");
+            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin'; INSERT OR IGNORE INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View');");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             // This window contains both the list and the real add/edit form.
             var serviceStage = 0;
@@ -561,7 +573,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Staff create/preview/conflict/creator/duplicate/reset/revocation/parent refresh/Create-only shortcut, internal list/cancel, Guest lookup/booking, NoShow, auth and catalogs. Rendered thirty-six views.");
+            Console.WriteLine("PASS WPF UI: Calendar Day/main entry/empty/filter/navigation/raw times/actual/expected/walk-in/overdue/locked history/selection/privacy, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered forty-two views.");
         }
         finally
         {
@@ -570,6 +582,63 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyCalendarDay(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var setup=auth.SetupAdminAsync("admin","Admin lịch",Password);PumpUntil(()=>setup.IsCompleted);var admin=setup.GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        sql(@"INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive)
+SELECT 'calendar','calendar','CALENDAR',PasswordHash,'calendar','Nhân viên lịch',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('calendar','Staff');
+DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT PermissionId FROM Permission WHERE Code<>'Calendar.View');
+INSERT INTO Rooms(RoomId,RoomCode,Name,RoomTypeId,ImageUrl,IsActive,InactiveReason,CreatedAt) VALUES
+(1,'P01','Standard',1,'test.png',1,NULL,'test'),(2,'P02','VIP',2,'test.png',1,NULL,'test'),(3,'P03','Walk-in',1,'test.png',1,NULL,'test'),(4,'P04','Phòng khóa',1,'test.png',0,'Kiểm tra','test');
+INSERT INTO Customers VALUES(1,'Nguyễn An','0912345678'),(2,'Trần Bình','0987654321'),(3,'Lê Minh','0901234567'),(4,'Khách lịch sử','0901112223');
+INSERT INTO Reservations VALUES
+(1,1,1,'2026-10-06T03:30:00.0000000+00:00','2026-10-06T04:30:00.0000000+00:00','CheckedIn',NULL,NULL,'test'),
+(2,4,1,'2026-10-06T06:30:00.0000000+00:00','2026-10-06T07:30:00.0000000+00:00','Confirmed',NULL,NULL,'test'),
+(3,2,2,'2026-10-06T06:00:00.0000000+00:00','2026-10-06T07:30:00.0000000+00:00','CheckedIn',NULL,NULL,'test'),
+(4,3,2,'2026-10-06T09:00:00.0000000+00:00','2026-10-06T10:00:00.0000000+00:00','Confirmed',NULL,NULL,'test'),
+(5,4,2,'2026-10-07T02:00:00.0000000+00:00','2026-10-07T03:00:00.0000000+00:00','Confirmed',NULL,NULL,'test');
+INSERT INTO RoomSessions(CustomerId,RoomId,ReservationId,ActualStartTime,ExpectedEndTime,ActualEndTime,HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status) VALUES
+(1,1,1,'2026-10-06T03:37:00.0000000+00:00','2026-10-06T04:37:00.0000000+00:00',NULL,120000,'P01','STANDARD','Standard','Active'),
+(2,2,3,'2026-10-06T06:07:00.0000000+00:00','2026-10-06T07:37:00.0000000+00:00',NULL,200000,'P02','VIP','VIP','Active'),
+(3,3,NULL,'2026-10-06T06:17:00.0000000+00:00',NULL,NULL,120000,'P03','STANDARD','Standard','Active'),
+(4,4,NULL,'2026-10-06T03:37:00.0000000+00:00',NULL,'2026-10-06T04:27:00.0000000+00:00',120000,'P04','STANDARD','Standard','Completed');");
+        var login=auth.LoginAsync("calendar",Password);PumpUntil(()=>login.IsCompleted);var staff=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,6,6,37,0,TimeSpan.Zero)};
+        var vm=new CalendarDayViewModel(new CalendarService(db,clock),staff,clock);var form=new CalendarDayWindow(vm);
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==4);
+            var timeline=Field<Canvas>(form,"Timeline");Assert(timeline.Children.OfType<Button>().Count()==6,"Timeline omitted/doubled events or Calendar-only requires unrelated rights.");
+            Assert(timeline.Children.OfType<TextBlock>().Any(t=>t.Text=="12:00–13:00 · Giờ nghỉ"),"Rest marker missing.");
+            var button=timeline.Children.OfType<Button>().First(b=>((MusicBoxManagement.Wpf.Models.RoomScheduleEvent)b.Tag).IsOverdue);
+            Assert(Math.Abs(Canvas.GetTop(button)-(62+97*1.4))<0.01,"Actual 10:37 rounded to a calendar slot.");
+            Click(button);Assert(vm.Details.Contains("10:37:00") && vm.Details.Contains("QUÁ GIỜ") && Field<TextBlock>(form,"DetailsText").Text.Contains("0912345678"),"Event click/details binding failed.");
+            Image(form,outputDirectory,"calendar-day-all");
+            Field<ComboBox>(form,"RoomInput").SelectedItem=vm.RoomChoices.Single(r=>r.RoomId==3);
+            Assert(vm.Rooms.Count==0 && !vm.Details.Contains("0912345678"),"Filter change retained old calendar/details.");
+            Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
+            button=timeline.Children.OfType<Button>().Single();Click(button);Assert(vm.Details.Contains("16:00:00") && vm.Details.Contains("chưa chốt"),"Walk-in customer deadline/details lost.");
+            Image(form,outputDirectory,"calendar-day-walkin");
+            Click(Field<Button>(form,"NextButton"));PumpUntil(()=>!vm.IsBusy && vm.Date==new DateTime(2026,10,7) && vm.Rooms.Count==1);
+            Assert(timeline.Children.OfType<Button>().Count()==0 && vm.Rooms[0].CurrentStatus=="Occupied","Current occupied filled tomorrow calendar.");
+            Image(form,outputDirectory,"calendar-day-tomorrow");
+            Click(Field<Button>(form,"PreviousButton"));PumpUntil(()=>!vm.IsBusy && vm.Date==new DateTime(2026,10,6) && vm.Rooms.Count==1);
+            Field<ComboBox>(form,"RoomInput").SelectedItem=vm.RoomChoices.Single(r=>r.RoomId==4);Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
+            Click(timeline.Children.OfType<Button>().Single());Assert(vm.Details.Contains("11:27:00") && vm.Rooms[0].CurrentStatus=="Inactive","Locked completed history failed.");
+            form.Width=1050;form.Height=660;Image(form,outputDirectory,"calendar-day-history");
+            Field<DatePicker>(form,"DateInput").SelectedDate=null;Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Status.Contains("Cần chọn ngày") && timeline.Children.OfType<Button>().Count()==0,"Invalid date left old rendering.");
+            Click(Field<Button>(form,"TodayButton"));PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);
+            Click(timeline.Children.OfType<Button>().Single());sql("DELETE FROM RolePermission WHERE RoleId='Staff';");
+            Click(Field<Button>(form,"LoadButton"));PumpUntil(()=>!vm.IsBusy && vm.Status.Contains("Không còn quyền"));
+            Assert(vm.Rooms.Count==0 && vm.RoomChoices.Count==0 && timeline.Children.OfType<Button>().Count()==0 && !vm.Details.Contains("0901112223") && Field<Button>(form,"LoadButton").IsEnabled,"Revoked calendar retained private render/details or trapped controls.");
+            Image(form,outputDirectory,"calendar-day-denied");
+        }
+        finally{form.Close();auth.Logout(admin);}
     }
 
     private static void VerifyNoShowWorker(string file)

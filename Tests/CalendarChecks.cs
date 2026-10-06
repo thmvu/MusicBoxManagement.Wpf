@@ -5,6 +5,7 @@ using System.Linq;
 using MusicBoxManagement.Wpf.Data;
 using MusicBoxManagement.Wpf.Models;
 using MusicBoxManagement.Wpf.Services;
+using MusicBoxManagement.Wpf.ViewModels;
 
 public static class MusicBoxCalendarChecks
 {
@@ -89,7 +90,18 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT Permi
             Assert(service.Read(staff, day, 4).Single().Events.Single().ReturnBy == At(6, 23, 0), "Walk-in shift deadline failed.");
             clock.UtcNow = At(6, 23, 1); Assert(service.Read(staff, day, 4).Single().Events.Single().IsOverdue, "Walk-in close warning missing.");
             Assert((string)Sql(db, "SELECT Status FROM Reservations WHERE ReservationId=2;") == "Confirmed" && Convert.ToInt64(Sql(db, "SELECT COUNT(*) FROM AuditLog WHERE Action='Reservation.NoShow';")) == 0, "Calendar read unexpectedly wrote NoShow/audit.");
+            clock.UtcNow = At(6, 13, 37);
+            var vm = new CalendarDayViewModel(service, staff, clock);
+            vm.LoadAsync().GetAwaiter().GetResult(); Assert(vm.Rooms.Count == 7 && vm.RoomChoices.Count == 8 && vm.CanLoad, "VM did not load all room choices/calendar.");
+            vm.Select(vm.Rooms[2], vm.Rooms[2].Events[0]); Assert(vm.Details.Contains("QUÁ GIỜ") && vm.Details.Contains("10:37:00"), "VM details lost actual time/warning.");
+            vm.SelectedRoom = vm.RoomChoices.Single(r => r.RoomId == 3); Assert(vm.Rooms.Count == 0 && !vm.Details.Contains("Customer"), "Changing filter left private details/old schedule.");
+            vm.LoadAsync().GetAwaiter().GetResult(); Assert(vm.Rooms.Count == 1 && vm.Rooms[0].RoomId == 3, "VM room filter ignored.");
+            vm.MoveAsync(1).GetAwaiter().GetResult(); Assert(vm.Date == new DateTime(2026,10,7) && vm.Rooms[0].Events.Count == 0, "VM next day used current occupied to fill tomorrow.");
+            vm.TodayAsync().GetAwaiter().GetResult(); Assert(vm.Date == new DateTime(2026,10,6), "VM today not Vietnam date.");
+            vm.Date = null; vm.LoadAsync().GetAwaiter().GetResult(); Assert(vm.Status.Contains("Cần chọn ngày") && vm.Rooms.Count == 0, "Missing date leaves old data.");
+            vm.Date = new DateTime(2026,10,6); vm.LoadAsync().GetAwaiter().GetResult(); vm.Select(vm.Rooms[0], vm.Rooms[0].Events[0]);
             Sql(db, "DELETE FROM RolePermission WHERE RoleId='Staff';"); Reject<UnauthorizedAccessException>(() => service.Read(staff, day));
+            vm.LoadAsync().GetAwaiter().GetResult(); Assert(vm.Rooms.Count == 0 && vm.RoomChoices.Count == 0 && !vm.Details.Contains("Customer") && vm.CanLoad && vm.Status.Contains("Không còn quyền"), "VM revocation retained private data or trapped Close/Retry.");
             auth.Logout(admin); Reject<UnauthorizedAccessException>(() => service.Read(admin, day));
             Assert(Convert.ToInt64(Sql(db, "PRAGMA user_version;")) == 6, "Schema changed.");
             Console.WriteLine("PASS Calendar: Vietnam Day/Week, protected live Calendar.View, current status, exact grace, holds/actual/expected/walk-in/completed/overdue, dynamic return deadline, locked history and read-only temporary SQLite.");

@@ -68,6 +68,11 @@ ORDER BY b.StartTime,b.ReservationId;";
             }
         }
         public void Cancel(LoginSession session, int reservationId, string reason) => reservations.CancelStaff(session, reservationId, reason);
+        public CalendarService ForCalendar(LoginSession session)
+        {
+            permissions.Demand(session, "Calendar.View");
+            return new CalendarService(database, clock);
+        }
         public StaffBookingService ForBooking(LoginSession session)
         {
             permissions.Demand(session, "Reservation.Create");

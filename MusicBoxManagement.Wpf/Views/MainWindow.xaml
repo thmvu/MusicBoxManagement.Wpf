@@ -130,6 +130,7 @@
                 <Button x:Name="CustomersButton" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="ReservationsButton" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="StaffBookingButton" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed" Margin="0,0,8,0" />
+                <Button x:Name="CalendarButton" Content="Lịch ngày" Click="ShowCalendar_Click" Visibility="Collapsed" Margin="0,0,8,0" />
                 </WrapPanel>
             </StackPanel>
             <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
