@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Chưa có luồng phiên sử dụng, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service nhận phòng từ booking; chưa có UI nhận phòng, walk-in, gia hạn, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -296,4 +296,14 @@ Schema v6; Debug/Release và 15 bộ kiểm tra đạt trên dữ liệu tạm, 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestCalendar.ps1
 powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
+```
+
+## Bước 6a.1 — service nhận phòng từ booking
+
+Có RoomSessionService.CheckIn theo quyền Session.CheckIn hiện hành. Nhận sớm khi đủ khoảng trống, giờ thực tế giữ nguyên giây/ticks; dự kiến trả sau đầy đủ thời lượng booking. Kiểm tra grace/ca/Room và Customer/overlap bỏ nguồn trong transaction, chốt giá và loại phòng lúc nhận; session, CheckedIn và nhật ký Staff cùng commit. Nhận lặp trả phiên đã lưu, không tạo phiên hoặc log thứ hai.
+
+Schema v6, Debug/Release và 16 bộ kiểm tra đạt trên database tạm, gồm NoShow/check-in cả hai thứ tự writer, hủy/khóa phòng, snapshot và rollback. UI cũ render 50 ảnh. **Chưa có nút nhận phòng trên UI**; tiếp theo 6a.2 thêm thao tác ở chi tiết booking. Chi tiết [báo cáo 6a.1](docs/Step6a1_CheckIn.md).
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-CheckIn.ps1
 ```

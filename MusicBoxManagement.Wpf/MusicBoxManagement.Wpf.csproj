@@ -71,6 +71,8 @@
     <Compile Include="Services\IClock.cs" />
     <Compile Include="Services\BookingHours.cs" />
     <Compile Include="Models\Reservation.cs" />
+    <Compile Include="Models\RoomSession.cs" />
+    <Compile Include="Services\RoomSessionService.cs" />
     <Compile Include="Models\PublicRoom.cs" />
     <Compile Include="Models\PublicRoomDay.cs" />
     <Compile Include="Services\GuestCalendarService.cs" />

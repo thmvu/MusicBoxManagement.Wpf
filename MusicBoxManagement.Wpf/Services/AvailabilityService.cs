@@ -80,6 +80,40 @@ ORDER BY (RoomId=@room) DESC LIMIT 1;";
             result.CanBook = true; result.Reason = "Khoảng giờ hợp lệ; cần kiểm tra lại khi lưu đặt phòng.";
             return result;
         }
+        internal ReservationAvailability CheckCheckInAt(SQLiteConnection connection, SQLiteTransaction transaction,
+            int roomId, int customerId, int reservationId, DateTimeOffset now, DateTimeOffset end)
+        {
+            if (transaction == null || transaction.Connection != connection)
+                throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
+            var result = new ReservationAvailability { CheckedAt = now, EndTime = end };
+            try { BookingHours.ValidateSessionInterval(now, end); }
+            catch (ArgumentException error) { result.Reason = error.Message; return result; }
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.Parameters.AddWithValue("@room", roomId);
+                command.Parameters.AddWithValue("@customer", customerId);
+                command.CommandText = "SELECT IsActive FROM Rooms WHERE RoomId=@room;";
+                var active = command.ExecuteScalar();
+                if (active == null || Convert.ToInt32(active) != 1)
+                { result.Reason = "Phòng không tồn tại hoặc đang khóa, không nhận phòng được."; return result; }
+                command.CommandText = "SELECT RoomId FROM RoomSessions WHERE Status='Active' AND (RoomId=@room OR CustomerId=@customer) ORDER BY (RoomId=@room) DESC LIMIT 1;";
+                var occupied = command.ExecuteScalar();
+                if (occupied != null)
+                { result.Reason = Convert.ToInt32(occupied) == roomId ? "Phòng còn phiên Active, chưa thể nhận khách." : "Khách còn phiên Active, chưa thể nhận phòng."; return result; }
+                command.Parameters.AddWithValue("@source", reservationId);
+                command.Parameters.AddWithValue("@start", Utc(now));
+                command.Parameters.AddWithValue("@end", Utc(end));
+                command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
+                command.CommandText = "SELECT RoomId FROM (" + ScheduleRules.HoldsSql + @") WHERE ReservationId<>@source
+AND (RoomId=@room OR CustomerId=@customer) AND @start<HoldEnd AND @end>HoldStart ORDER BY (RoomId=@room) DESC LIMIT 1;";
+                var conflict = command.ExecuteScalar();
+                if (conflict != null)
+                { result.Reason = Convert.ToInt32(conflict) == roomId ? "Phòng có lịch trùng khoảng sử dụng thực tế dự kiến." : "Khách có lịch trùng khoảng sử dụng thực tế dự kiến."; return result; }
+            }
+            result.CanBook = true; result.Reason = "Đủ điều kiện nhận phòng.";
+            return result;
+        }
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
     }
 }
