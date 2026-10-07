@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service nhận phòng từ booking; chưa có UI nhận phòng, walk-in, gia hạn, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking; chưa có walk-in, gia hạn, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -307,3 +307,11 @@ Schema v6, Debug/Release và 16 bộ kiểm tra đạt trên database tạm, g�
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-CheckIn.ps1
 ```
+
+## Bước 6a.2 — UI nhận phòng
+
+Đăng nhập → Booking → chọn Confirmed còn hạn → Nhận phòng → xem giờ/giá tham khảo → Xác nhận nhận phòng. Cần Reservation.View để mở danh sách và Session.CheckIn để nhận; không cần quyền đặt/hủy hoặc Customer CRUD. Để sau chưa lưu. Service kiểm tra lại và chốt giờ thực tế/giá; kết quả hiện mã phiên, phòng/loại, giờ nhận/dự kiến trả và giá chốt. Gửi lặp/mất quyền/booking bị hủy đều được xử lý; lỗi tải lại sau commit vẫn báo đã nhận. Chi tiết [báo cáo 6a.2](docs/Step6a2_CheckInUi.md).
+
+Debug/Release build vào bin/VerifyDebug và bin/VerifyRelease vì bản Debug đang chạy trong Visual Studio. 7 bộ kiểm tra liên quan đạt trên dữ liệu tạm, UI 55 ảnh. Bản đang chạy chưa tự cập nhật; dừng phiên chạy rồi build/F5 lại để dùng thay đổi. Tiếp theo 6b.1 walk-in.
+
+Quản trị tài khoản và ma trận quyền có trong bước 8: Admin tạo/sửa/khóa, gán Staff/Manager/Admin và chỉnh quyền theo role. Người dùng đã chốt giữ RBAC theo role; dashboard hoạt động/doanh thu quán sẽ thay phần bảng/nút kiểm tra quyền tạm ở màn hình chính, không cần module khoản chi điện/thuê mặt bằng.

@@ -21,6 +21,8 @@ namespace MusicBoxManagement.Wpf.Views
         private void Cancel_Click(object sender, RoutedEventArgs args) => viewModel.RequestCancel();
         private void Keep_Click(object sender, RoutedEventArgs args) => viewModel.KeepBooking();
         private async void Confirm_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmCancelAsync();
+        private void CheckIn_Click(object sender, RoutedEventArgs args) => viewModel.RequestCheckIn();
+        private async void ConfirmCheckIn_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmCheckInAsync();
         private async void Create_Click(object sender, RoutedEventArgs args)
         {
             if (openingBooking) return; openingBooking = true;

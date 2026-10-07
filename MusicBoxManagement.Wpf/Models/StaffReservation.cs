@@ -20,6 +20,7 @@ namespace MusicBoxManagement.Wpf.Models
         public string CancellationReason { get; internal set; }
         public int? SessionId { get; internal set; }
         public bool IsCancellable { get; internal set; }
+        public long CurrentHourlyRate { get; internal set; }
         public string StartLabel => Local(StartTime);
         public string EndLabel => Local(EndTime);
         public string Details => "Booking #" + ReservationId + " — " + Status + "\n\n"
@@ -38,5 +39,6 @@ namespace MusicBoxManagement.Wpf.Models
         public List<StaffReservation> Items { get; internal set; }
         public bool CanCancel { get; internal set; }
         public bool CanCreate { get; internal set; }
+        public bool CanCheckIn { get; internal set; }
     }
 }

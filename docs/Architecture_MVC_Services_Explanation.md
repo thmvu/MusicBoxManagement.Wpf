@@ -220,7 +220,7 @@ Worker xử lý booking đến hạn, nhưng các thao tác khác không đượ
 
 Check-in sớm được phép nếu đủ chỗ cho toàn bộ thời lượng. Giờ nhận được giữ theo thời điểm thực tế, không ép vào slot 30 phút. Nếu bấm lại cùng booking sau khi phiên đã được tạo, service trả phiên cũ và không tạo phiên/log thứ hai.
 
-**Hiện trạng giao diện:** service đã có, nhưng chưa có nút/màn hình để nhân viên gọi check-in. Bước UI kế tiếp là đặt thao tác nhận phòng ở chi tiết booking. Walk-in, gia hạn, gọi món, tính tiền, checkout/hóa đơn và báo cáo chưa được triển khai.
+**Hiện trạng giao diện (07/10/2026):** đã có nút Nhận phòng và panel xác nhận/kết quả ở chi tiết booking. ViewModel gọi service, hiển thị giờ/giá chốt và tải lại danh sách; xem Step6a2_CheckInUi.md. Walk-in, gia hạn, gọi món, tính tiền, checkout/hóa đơn và báo cáo chưa được triển khai.
 
 ## 12. Transaction ghi nghiệp vụ: ví dụ check-in
 

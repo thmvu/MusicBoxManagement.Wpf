@@ -15,7 +15,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private readonly LoginSession session;
         private readonly IClock clock;
         private StaffReservation selected;
-        private bool busy, canView, canCancel, canCreate, confirming;
+        private bool busy, canView, canCancel, canCreate, canCheckIn, confirming, confirmingCheckIn;
+        private RoomSession lastCheckedIn;
+        private string checkInNotice;
         private string reason, message;
         public ObservableCollection<StaffReservation> Items { get; } = new ObservableCollection<StaffReservation>();
         public string[] StatusOptions { get; } = { "Tất cả", "Confirmed", "CheckedIn", "Completed", "Cancelled", "NoShow" };
@@ -26,17 +28,24 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public StaffReservation Selected
         {
             get => selected;
-            set { selected = value; confirming = false; Reason = null; Notify(); Notify(nameof(Details)); AccessChanged(); }
+            set { selected = value; confirming = confirmingCheckIn = false; lastCheckedIn = null; checkInNotice = null; Reason = null; Notify(); Notify(nameof(Details)); Notify(nameof(CheckInResult)); Notify(nameof(CheckInNotice)); AccessChanged(); }
         }
         public string Reason { get => reason; set { reason = value; Notify(); } }
         public string Details => Selected == null ? "Chọn booking để xem chi tiết." : Selected.Details;
         public string Status => message;
         public bool IsBusy => busy;
-        public bool CanSearch => !busy && !confirming;
-        public bool CanSelect => !busy && !confirming && canView;
+        public bool CanSearch => !busy && !confirming && !confirmingCheckIn;
+        public bool CanSelect => !busy && !confirming && !confirmingCheckIn && canView;
         public bool CanClose => !busy;
-        public bool CanCancel => !busy && !confirming && canView && canCancel && Selected != null && Selected.IsCancellable;
-        public bool CanCreate => !busy && !confirming && canView && canCreate;
+        public bool CanCancel => !busy && !confirming && !confirmingCheckIn && canView && canCancel && Selected != null && Selected.IsCancellable;
+        public bool CanCreate => !busy && !confirming && !confirmingCheckIn && canView && canCreate;
+        public bool CanCheckIn => !busy && !confirming && !confirmingCheckIn && canView && canCheckIn && Selected != null && Selected.IsCancellable;
+        public bool CanConfirmCheckIn => !busy && confirmingCheckIn && canView && canCheckIn && Selected != null;
+        public bool IsConfirmingCheckIn => confirmingCheckIn;
+        public string CheckInNotice => checkInNotice;
+        public string CheckInResult => lastCheckedIn == null ? "" : "Phiên #" + lastCheckedIn.RoomSessionId + " — " + lastCheckedIn.Status + "\nPhòng: " + lastCheckedIn.RoomCodeSnapshot + " — " + lastCheckedIn.RoomTypeNameSnapshot
+            + "\nNhận thực tế: " + Local(lastCheckedIn.ActualStartTime) + "\nDự kiến trả: " + Local(lastCheckedIn.ExpectedEndTime.Value)
+            + "\nGiá đã chốt: " + lastCheckedIn.HourlyRate.ToString("N0") + " đ/giờ";
         public bool CanConfirm => !busy && confirming && canView && canCancel && Selected != null;
         public bool IsConfirming => confirming;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -52,7 +61,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             var from = FromDate; var to = ToDate; var phone = PhoneQuery; var state = StatusQuery;
             var result = await Task.Run(() => service.Search(session, from, to, phone, state == "Tất cả" ? null : state));
             Items.Clear(); foreach (var item in result.Items) Items.Add(item);
-            Selected = null; canView = true; canCancel = result.CanCancel; canCreate = result.CanCreate;
+            Selected = null; canView = true; canCancel = result.CanCancel; canCreate = result.CanCreate; canCheckIn = result.CanCheckIn;
         }
         public async Task SearchAsync()
         {
@@ -68,7 +77,43 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (!CanCancel) return; confirming = true; AccessChanged();
             SetStatus("Nhập lý do và xác nhận hủy booking #" + Selected.ReservationId + ".");
         }
-        public void KeepBooking() { if (busy) return; confirming = false; Reason = null; AccessChanged(); SetStatus("Đã giữ booking, chưa lưu thay đổi."); }
+        public void KeepBooking() { if (busy) return; confirming = confirmingCheckIn = false; Reason = null; checkInNotice = null; Notify(nameof(CheckInNotice)); AccessChanged(); SetStatus("Đã giữ booking, chưa lưu thay đổi."); }
+        public void RequestCheckIn()
+        {
+            if (!CanCheckIn) return;
+            var now = clock.UtcNow;
+            confirmingCheckIn = true;
+            checkInNotice = "Nhận booking #" + Selected.ReservationId + " cho phòng " + Selected.RoomCode
+                + "?\nNếu nhận tại " + Local(now) + ", dự kiến trả " + Local(now.Add(Selected.EndTime - Selected.StartTime))
+                + ".\nGiá tham khảo: " + Selected.CurrentHourlyRate.ToString("N0") + " đ/giờ. Giờ thực tế và giá được chốt khi xác nhận; hệ thống kiểm tra lại lịch và hạn nhận.";
+            Notify(nameof(CheckInNotice)); AccessChanged(); SetStatus("Kiểm tra thông tin rồi bấm Xác nhận nhận phòng.");
+        }
+        public async Task<bool> ConfirmCheckInAsync()
+        {
+            if (!CanConfirmCheckIn) return false;
+            var id = Selected.ReservationId; Busy(true);
+            RoomSession saved = null;
+            try { saved = await Task.Run(() => service.CheckIn(session, id)); }
+            catch (UnauthorizedAccessException) { Revoke(); }
+            catch (InvalidOperationException error) { confirmingCheckIn = false; SetStatus(error.Message + " Hãy tải lại danh sách."); }
+            catch (SQLiteException error) { SetStatus(error.ResultCode == SQLiteErrorCode.Busy || error.ResultCode == SQLiteErrorCode.Locked
+                ? "Dữ liệu đang bận. Hãy thử lại sau." : "Không nhận được phòng. Thay đổi đã hoàn tác."); }
+            catch (Exception) { SetStatus("Không nhận được phòng. Hãy tải lại trước khi thử lại."); }
+            if (saved != null)
+            {
+                confirmingCheckIn = false;
+                try
+                {
+                    await ReloadAsync();
+                    foreach (var item in Items) if (item.ReservationId == id) { Selected = item; break; }
+                    lastCheckedIn = saved; Notify(nameof(CheckInResult));
+                    SetStatus("Đã nhận phòng booking #" + id + ", phiên #" + saved.RoomSessionId + ". Danh sách đã tải lại.");
+                }
+                catch (UnauthorizedAccessException) { Revoke(); SetStatus("Đã nhận phòng booking #" + id + ", nhưng không còn quyền xem. Hãy đóng cửa sổ."); }
+                catch (Exception) { Clear(); SetStatus("Đã nhận phòng booking #" + id + ", nhưng chưa tải lại được danh sách. Hãy tải lại."); }
+            }
+            Busy(false); return saved != null;
+        }
         public async Task<GuestBookingViewModel> PrepareBookingAsync()
         {
             if (!CanCreate) return null; Busy(true);
@@ -111,10 +156,11 @@ namespace MusicBoxManagement.Wpf.ViewModels
             }
             Busy(false); return cancelled;
         }
-        private void Clear() { canView = canCancel = canCreate = confirming = false; Items.Clear(); Selected = null; }
+        private void Clear() { canView = canCancel = canCreate = canCheckIn = confirming = confirmingCheckIn = false; Items.Clear(); Selected = null; }
         private void Revoke() { Clear(); SetStatus("Bạn không còn quyền thực hiện thao tác hoặc phiên đã hết hiệu lực. Hãy đóng cửa sổ hoặc tải lại để kiểm tra quyền."); }
         private void Busy(bool value) { busy = value; Notify(nameof(IsBusy)); AccessChanged(); }
-        private void AccessChanged() { foreach (var property in new[] { nameof(CanSearch), nameof(CanSelect), nameof(CanClose), nameof(CanCancel), nameof(CanCreate), nameof(CanConfirm), nameof(IsConfirming) }) Notify(property); }
+        private void AccessChanged() { foreach (var property in new[] { nameof(CanSearch), nameof(CanSelect), nameof(CanClose), nameof(CanCancel), nameof(CanCreate), nameof(CanConfirm), nameof(IsConfirming), nameof(CanCheckIn), nameof(CanConfirmCheckIn), nameof(IsConfirmingCheckIn) }) Notify(property); }
+        private static string Local(DateTimeOffset value) => value.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy");
         private void SetStatus(string value) { message = value; Notify(nameof(Status)); }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }

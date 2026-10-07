@@ -41,8 +41,9 @@ namespace MusicBoxManagement.Wpf.Services
                 var now = clock.UtcNow.ToUniversalTime(); command.Transaction = transaction;
                 command.CommandText = @"SELECT b.ReservationId,b.CustomerId,c.FullName,c.PhoneNumber,r.RoomCode,r.Name,
 b.StartTime,b.EndTime,b.Status,b.CancellationReason,b.CreatedAt,
-CASE WHEN b.CreatedByUserId IS NULL THEN 'Khách' ELSE u.FullName END,s.RoomSessionId
+CASE WHEN b.CreatedByUserId IS NULL THEN 'Khách' ELSE u.FullName END,s.RoomSessionId,t.PricePerHour
 FROM Reservations b JOIN Customers c ON c.CustomerId=b.CustomerId JOIN Rooms r ON r.RoomId=b.RoomId
+JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId
 LEFT JOIN AspNetUsers u ON u.Id=b.CreatedByUserId LEFT JOIN RoomSessions s ON s.ReservationId=b.ReservationId
 WHERE (@from IS NULL OR b.StartTime>=@from) AND (@to IS NULL OR b.StartTime<@to)
 AND (@phone IS NULL OR c.PhoneNumber=@phone) AND (@status IS NULL OR b.Status=@status)
@@ -61,13 +62,15 @@ ORDER BY b.StartTime,b.ReservationId;";
                         StartTime = start, EndTime = Parse(reader.GetString(7)), Status = state,
                         CancellationReason = reader.IsDBNull(9) ? null : reader.GetString(9), CreatedAt = Parse(reader.GetString(10)),
                         CreatedByName = reader.GetString(11), SessionId = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
+                        CurrentHourlyRate = reader.GetInt64(13),
                         IsCancellable = state == "Confirmed" && now < start.AddMinutes(15) && reader.IsDBNull(12)
                     });
                 }
-                return new StaffReservationSearch { Items = items, CanCancel = access.Permissions.ContainsKey("Reservation.Cancel"), CanCreate = access.Permissions.ContainsKey("Reservation.Create") };
+                return new StaffReservationSearch { Items = items, CanCancel = access.Permissions.ContainsKey("Reservation.Cancel"), CanCreate = access.Permissions.ContainsKey("Reservation.Create"), CanCheckIn = access.Permissions.ContainsKey("Session.CheckIn") };
             }
         }
         public void Cancel(LoginSession session, int reservationId, string reason) => reservations.CancelStaff(session, reservationId, reason);
+        public RoomSession CheckIn(LoginSession session, int reservationId) => new RoomSessionService(database, clock).CheckIn(session, reservationId);
         public CalendarService ForCalendar(LoginSession session)
         {
             permissions.Demand(session, "Calendar.View");

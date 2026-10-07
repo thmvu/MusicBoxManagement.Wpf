@@ -7,7 +7,7 @@
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <DockPanel><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="CreateButton" Content="Đặt hộ" Click="Create_Click" IsEnabled="{Binding CanCreate}" Margin="0,0,8,0"/><Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/></StackPanel><TextBlock Text="Booking nội bộ" FontSize="28" FontWeight="SemiBold"/></DockPanel>
   <StackPanel Grid.Row="1" Margin="0,16,0,20" IsEnabled="{Binding CanSearch}">
-   <TextBlock Text="Xem booking và hủy Confirmed còn hạn trước check-in. Hủy bắt buộc nhập lý do." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,0,0,12"/>
+   <TextBlock Text="Chọn booking còn hạn để nhận phòng hoặc hủy theo quyền. Nhận phòng giữ đủ thời lượng; hủy cần lý do." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,0,0,12"/>
    <WrapPanel>
     <StackPanel Margin="0,0,12,0"><TextBlock Text="Từ ngày"/><DatePicker x:Name="FromInput" SelectedDate="{Binding FromDate}" Width="145"/></StackPanel>
     <StackPanel Margin="0,0,12,0"><TextBlock Text="Đến ngày"/><DatePicker x:Name="ToInput" SelectedDate="{Binding ToDate}" Width="145"/></StackPanel>
@@ -40,9 +40,17 @@
     <StackPanel>
      <TextBlock Text="Chi tiết booking" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
      <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+     <TextBlock x:Name="CheckInResultText" Text="{Binding CheckInResult}" TextWrapping="Wrap" Margin="0,16,0,0" FontWeight="SemiBold"/>
     </StackPanel>
     </ScrollViewer>
-     <Button Grid.Row="1" x:Name="CancelButton" Content="Hủy booking đã chọn" Click="Cancel_Click" IsEnabled="{Binding CanCancel}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+     <StackPanel Grid.Row="1" Margin="0,12,0,0">
+      <Button x:Name="CheckInButton" Content="Nhận phòng" Click="CheckIn_Click" IsEnabled="{Binding CanCheckIn}" HorizontalAlignment="Left"/>
+      <Button x:Name="CancelButton" Content="Hủy booking đã chọn" Click="Cancel_Click" IsEnabled="{Binding CanCancel}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+      <StackPanel Visibility="{Binding IsConfirmingCheckIn, Converter={StaticResource BoolVisibility}}" Margin="0,12,0,0">
+       <TextBlock Text="{Binding CheckInNotice}" TextWrapping="Wrap"/>
+       <WrapPanel Margin="0,10,0,0"><Button x:Name="ConfirmCheckInButton" Content="Xác nhận nhận phòng" Click="ConfirmCheckIn_Click" IsEnabled="{Binding CanConfirmCheckIn}"/><Button x:Name="KeepCheckInButton" Content="Để sau" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/></WrapPanel>
+      </StackPanel>
+     </StackPanel>
      <StackPanel Grid.Row="2" Visibility="{Binding IsConfirming, Converter={StaticResource BoolVisibility}}" Margin="0,16,0,0">
       <TextBlock Text="Lý do hủy (bắt buộc)"/>
       <TextBox x:Name="ReasonInput" Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" Height="85" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding CanConfirm}" Padding="8" Margin="0,6,0,12"/>

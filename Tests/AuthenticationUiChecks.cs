@@ -89,6 +89,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
+            VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyStaffBooking(Path.Combine(testDirectory,"staff-create.db"),outputDirectory);
             VerifyCalendarDay(Path.Combine(testDirectory,"calendar-day.db"),outputDirectory);
             VerifyGuestCalendar(Path.Combine(testDirectory,"guest-calendar.db"),outputDirectory);
@@ -574,7 +575,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest anonymous calendar/busy/rest/duration/tomorrow/pick time/no writes/stale submit/locked refresh, internal Day/Week calendar, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty views.");
+            Console.WriteLine("PASS WPF UI: check-in confirmation/keep/actual/snapshot/duplicate/stale/permission/refresh, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty-five views.");
         }
         finally
         {
@@ -825,6 +826,51 @@ INSERT INTO Customers(FullName,PhoneNumber) VALUES('Tên khách đã lưu','0912
             Image(parent,outputDirectory,"staff-create-parent");
         }
         finally{if(driver!=null)driver.Stop();parent.Close();}
+    }
+
+    private static void VerifyCheckInUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var setup=auth.SetupAdminAsync("admin","Admin thử nghiệm",Password);PumpUntil(()=>setup.IsCompleted);var admin=setup.GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('P01','Nhận phòng',1,'test.png',1,'test'),('P02','Phòng khác',2,'test.png',1,'test');
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'receiver','receiver','RECEIVER',PasswordHash,'receiver','Nhân viên nhận phòng',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('receiver','Staff');
+DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId NOT IN(SELECT PermissionId FROM Permission WHERE Code IN('Reservation.View','Session.CheckIn'));");
+        var login=auth.LoginAsync("receiver",Password);PumpUntil(()=>login.IsCompleted);var staff=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,5,9,0,0,TimeSpan.FromHours(7))};var create=new ReservationService(db,clock);
+        Func<int,int,string,MusicBoxManagement.Wpf.Models.Reservation> book=(room,hour,phone)=>create.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=room,StartTime=new DateTimeOffset(2026,10,5,hour,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Khách nhận phòng",PhoneNumber=phone});
+        var first=book(1,13,"0901111111");var stale=book(1,16,"0902222222");book(2,13,"0903333333");var after=book(2,16,"0904444444");
+        clock.UtcNow=new DateTimeOffset(2026,10,5,13,7,12,TimeSpan.FromHours(7));
+        var service=new StaffReservationService(db,clock);var vm=new ReservationsViewModel(service,staff,clock);var form=new ReservationsWindow(vm);
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy);vm.Selected=vm.Items.First(x=>x.ReservationId==first.ReservationId);
+            Assert(vm.CanCheckIn && !vm.CanCancel && !vm.CanCreate,"Check-in UI required unrelated permissions.");Image(form,outputDirectory,"checkin-list");
+            Click(Field<Button>(form,"CheckInButton"));Assert(vm.IsConfirmingCheckIn && !vm.CanSelect && !vm.CanSearch && vm.CheckInNotice.Contains("13:07:12") && vm.CheckInNotice.Contains("14:07:12"),"Check-in confirmation rounded time/failed to lock selection.");
+            Click(Field<Button>(form,"KeepCheckInButton"));Assert(!vm.IsConfirmingCheckIn && count("SELECT COUNT(*) FROM RoomSessions")==0,"Keep created session.");
+            Click(Field<Button>(form,"CheckInButton"));Image(form,outputDirectory,"checkin-confirm");
+            sql("UPDATE RoomTypes SET PricePerHour=150000 WHERE RoomTypeId=1;");
+            Click(Field<Button>(form,"ConfirmCheckInButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("Đã nhận") && vm.Selected.Status=="CheckedIn" && vm.CheckInResult.Contains("14:07:12") && vm.CheckInResult.Contains("150") && !vm.CanCheckIn,"Check-in result/refresh/current price incorrect.");
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle,new Action(()=>form.UpdateLayout()));
+            Image(form,outputDirectory,"checkin-result");Click(Field<Button>(form,"ConfirmCheckInButton"));Assert(count("SELECT COUNT(*) FROM RoomSessions")==1 && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.CheckIn'")==1,"Duplicate confirm created session/log.");
+            vm.Selected=vm.Items.First(x=>x.ReservationId==stale.ReservationId);Assert(vm.CheckInResult=="","Selection retained old session result.");
+            Click(Field<Button>(form,"CheckInButton"));create.CancelStaff(admin,stale.ReservationId,"Khách đổi kế hoạch");Click(Field<Button>(form,"ConfirmCheckInButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(!vm.IsConfirmingCheckIn && count("SELECT COUNT(*) FROM RoomSessions")==1 && vm.Status.Contains("Confirmed"),"Stale cancelled booking received session.");Image(form,outputDirectory,"checkin-stale");
+            vm.Selected=vm.Items.First(x=>x.ReservationId==after.ReservationId);Click(Field<Button>(form,"CheckInButton"));
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Session.CheckIn');");
+            Click(Field<Button>(form,"ConfirmCheckInButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Items.Count==0 && vm.Selected==null && vm.CheckInResult=="" && !vm.CanConfirmCheckIn,"Revoked permission retained customer/result/confirmation.");Image(form,outputDirectory,"checkin-revoked");
+            Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);vm.Selected=vm.Items.First(x=>x.ReservationId==after.ReservationId);Assert(!vm.CanCheckIn,"View-only account could receive room.");
+            sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckIn';");
+            Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);vm.Selected=vm.Items.First(x=>x.ReservationId==after.ReservationId);Click(Field<Button>(form,"CheckInButton"));
+            sql("CREATE TRIGGER FailCheckInRefresh BEFORE INSERT ON AuditLog WHEN NEW.Action='Reservation.NoShow' BEGIN SELECT RAISE(ABORT,'test refresh failure'); END;");
+            clock.UtcNow=new DateTimeOffset(2026,10,5,13,15,0,TimeSpan.FromHours(7));
+            Click(Field<Button>(form,"ConfirmCheckInButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Status.Contains("Đã nhận") && vm.Status.Contains("chưa tải") && count("SELECT COUNT(*) FROM RoomSessions")==2,"Post-commit refresh failure reported check-in failed.");
+        }
+        finally{form.Close();}
     }
 
     private static void VerifyStaffReservations(string file,string outputDirectory)
