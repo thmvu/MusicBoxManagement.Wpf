@@ -77,6 +77,48 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
             }
         }
 
+        public SessionExtensionCheck PreviewExtensionStaff(LoginSession actor, int sessionId, int minutes)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                permissions.Demand(actor, "Session.Extend", connection, transaction);
+                var current = ReadSession(connection, transaction, sessionId, false);
+                return availability.CheckExtensionAt(connection, transaction, current, minutes, clock.UtcNow);
+            }
+        }
+
+        // The observed end acts as a stale-form guard, not as the value to increment.
+        public RoomSession ExtendStaff(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
+            {
+                permissions.Demand(actor, "Session.Extend", connection, transaction);
+                var current = ReadSession(connection, transaction, sessionId, false);
+                if (current == null || current.Status != "Active" || !current.ReservationId.HasValue || !current.ExpectedEndTime.HasValue)
+                    throw new InvalidOperationException("Chỉ gia hạn phiên Active từ booking; khách trực tiếp không có gia hạn.");
+                if (current.ExpectedEndTime.Value != observedEnd)
+                    throw new InvalidOperationException("Giờ trả dự kiến đã thay đổi. Hãy tải lại phiên trước khi gia hạn.");
+                var now = clock.UtcNow.ToUniversalTime();
+                var check = availability.CheckExtensionAt(connection, transaction, current, minutes, now);
+                if (!check.CanExtend) throw new SessionExtensionException(check.Reason, check.MaximumEndTime);
+                using (var command = connection.CreateCommand())
+                {
+                    command.Transaction = transaction;
+                    command.CommandText = "UPDATE RoomSessions SET ExpectedEndTime=@end WHERE RoomSessionId=@id;";
+                    command.Parameters.AddWithValue("@id", sessionId);
+                    command.Parameters.AddWithValue("@end", Utc(check.NewEndTime));
+                    command.ExecuteNonQuery();
+                }
+                AuditService.WriteStaff(connection, transaction, actor.UserId, "Session.Extend", "RoomSession",
+                    sessionId.ToString(CultureInfo.InvariantCulture), "Gia hạn " + minutes + " phút từ " + Utc(current.ExpectedEndTime.Value) + " đến " + Utc(check.NewEndTime) + ".", now);
+                var result = ReadSession(connection, transaction, sessionId, false);
+                transaction.Commit();
+                return result;
+            }
+        }
+
         public List<PublicRoom> ListWalkInRooms(LoginSession actor)
         {
             using (var connection = database.OpenConnection())

@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
 using MusicBoxManagement.Wpf.Data;
+using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
@@ -142,6 +143,49 @@ AND (RoomId=@room OR CustomerId=@customer) ORDER BY (RoomId=@room) DESC LIMIT 1;
                 { result.Reason = Convert.ToInt32(booking) == roomId ? "Phòng có booking đã tới giờ và còn hạn; hãy nhận phòng từ booking hoặc xử lý booking trước." : "Khách có booking đã tới giờ và còn hạn; hãy xử lý booking trước."; return result; }
             }
             result.CanBook = true; result.Reason = "Đủ điều kiện nhận khách trực tiếp."; return result;
+        }
+        internal SessionExtensionCheck CheckExtensionAt(SQLiteConnection connection, SQLiteTransaction transaction,
+            RoomSession session, int minutes, DateTimeOffset now)
+        {
+            if (transaction == null || transaction.Connection != connection)
+                throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
+            if (minutes != 30 && minutes != 60) throw new ArgumentException("Mỗi lần gia hạn chỉ chọn 30 hoặc 60 phút.");
+            if (session == null || session.Status != "Active" || !session.ReservationId.HasValue || !session.ExpectedEndTime.HasValue)
+                throw new InvalidOperationException("Chỉ gia hạn phiên Active từ booking; khách trực tiếp không có gia hạn.");
+            now = now.ToUniversalTime();
+            var oldEnd = session.ExpectedEndTime.Value.ToUniversalTime();
+            var newEnd = oldEnd.AddMinutes(minutes);
+            var result = new SessionExtensionCheck { ExpectedEndTime = oldEnd, NewEndTime = newEnd,
+                MaximumEndTime = oldEnd, CheckedAt = now };
+            if (now > oldEnd) { result.Reason = "Phiên đã quá giờ dự kiến, không thể gia hạn. Nhân viên cần xử lý trực tiếp."; return result; }
+            BookingHours.ValidateSessionInterval(session.ActualStartTime, oldEnd);
+            var limit = BookingHours.GetOpenShiftEnd(session.ActualStartTime);
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.Parameters.AddWithValue("@room", session.RoomId);
+                command.Parameters.AddWithValue("@customer", session.CustomerId);
+                // ReservationId uniquely identifies the source session in HoldsSql.
+                // CheckedIn source bookings already do not hold the original interval.
+                command.Parameters.AddWithValue("@source", session.ReservationId.Value);
+                command.Parameters.AddWithValue("@oldEnd", Utc(oldEnd));
+                command.Parameters.AddWithValue("@shiftEnd", Utc(limit));
+                command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
+                command.CommandText = @"SELECT MIN(HoldStart) FROM (" + ScheduleRules.HoldsSql + @")
+WHERE ReservationId<>@source AND (RoomId=@room OR CustomerId=@customer)
+AND HoldEnd>@oldEnd AND HoldStart<@shiftEnd;";
+                var next = command.ExecuteScalar();
+                if (next != null && next != DBNull.Value)
+                {
+                    var start = DateTimeOffset.Parse((string)next, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                    limit = start < oldEnd ? oldEnd : start;
+                }
+            }
+            result.MaximumEndTime = limit;
+            result.CanExtend = newEnd <= limit;
+            result.Reason = result.CanExtend ? "Có thể gia hạn; lịch sẽ được kiểm tra lại khi lưu."
+                : "Không đủ thời gian gia hạn. Giới hạn sử dụng theo ca/lịch phòng và khách: " + limit.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy") + ".";
+            return result;
         }
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
     }

@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); chưa có gia hạn, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); đã có service gia hạn nội bộ; chưa có UI gia hạn, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -327,3 +327,7 @@ Schema v6, Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ li�
 ## Bước 6b.2 — nhận khách trực tiếp
 
 Menu trái có Khách trực tiếp theo Session.WalkIn: chọn phòng mở/tên/SĐT, xác nhận giá và giờ cần trả, nhận ngay qua service transaction. Không chọn thời lượng hoặc tạo booking. Khóa gửi lặp, xử lý mất quyền/stale; kết quả có Cập nhật giờ trả theo lịch hiện hành và Nhận lượt mới. Chi tiết trong [báo cáo 6b.2](docs/Step6b2_WalkInUi.md). Tiếp theo service gia hạn phiên.
+
+## Bước 6c.1 — service gia hạn
+
+Gia hạn phiên Active từ booking theo Session.Extend, mỗi lần +30/+60 trước hoặc đúng ExpectedEndTime. Preview chỉ đọc; lúc ghi kiểm tra lại quyền/giờ/ca/lịch Room và Customer trong transaction, chặn form cũ bằng observedEnd; giữ Reservation và snapshot giá, ghi audit cùng cập nhật. Chưa thêm UI hoặc đường Guest. Xem [báo cáo 6c.1](docs/Step6c1_Extension.md). Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ liệu tạm; UI cũ 63 ảnh. Tiếp theo 6c.2 danh sách/chi tiết phiên và UI gia hạn.
