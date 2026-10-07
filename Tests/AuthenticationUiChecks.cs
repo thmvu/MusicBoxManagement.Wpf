@@ -52,6 +52,49 @@ public static class MusicBoxAuthenticationUiChecks
         using (var stream = File.Create(Path.Combine(directory, name + ".png"))) encoder.Save(stream);
     }
 
+    private static void VerifyNavigationLayout(Window window, bool staff, string directory)
+    {
+        window.UpdateLayout();
+        var sidebar = Field<Border>(window, "Sidebar");
+        var panel = Field<Grid>(window, staff ? "StaffPanel" : "GuestPanel");
+        Assert(panel.TransformToAncestor(window).Transform(new Point()).X >= sidebar.ActualWidth,
+            "Content overlapped the sidebar.");
+        Assert(panel.ActualWidth > 650, "Main content was too narrow.");
+        Assert(Field<StackPanel>(window, "StaffNavigation").IsVisible == staff,
+            "Staff navigation visibility did not follow the session.");
+        Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
+            "Guest navigation visibility did not follow the session.");
+        var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
+            "ReservationsButton", "StaffBookingButton", "CalendarButton", "RefreshAccessButton" }
+            : new[] { "BookingButton", "LookupButton" };
+        double previousBottom = -1;
+        foreach (var name in names)
+        {
+            var button = Field<Button>(window, name);
+            var point = button.TransformToAncestor(sidebar).Transform(new Point());
+            Assert(button.IsVisible && point.X >= 0 && point.X + button.ActualWidth <= sidebar.ActualWidth,
+                "Navigation action escaped the sidebar: " + name);
+            Assert(point.Y >= previousBottom, "Navigation actions overlapped: " + name);
+            previousBottom = point.Y + button.ActualHeight;
+        }
+        var width = window.Width; var height = window.Height;
+        try
+        {
+            window.Width = window.MinWidth; window.Height = window.MinHeight;
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => frame.Continue = false));
+            Dispatcher.PushFrame(frame);
+            window.UpdateLayout();
+            Assert(panel.ActualWidth > 650, "Compact content was too narrow.");
+            var footer = Field<Button>(window, staff ? "LogoutButton" : "LoginButton");
+            var point = footer.TransformToAncestor(window).Transform(new Point());
+            Assert(footer.IsVisible && point.Y + footer.ActualHeight <= window.ActualHeight,
+                "Compact window hid the login/logout action.");
+            Image(window, directory, staff ? "staff-compact" : "guest-compact");
+        }
+        finally { window.Width = width; window.Height = height; window.UpdateLayout(); }
+    }
+
     public static void Run(string appXaml, string outputDirectory)
     {
         Directory.CreateDirectory(outputDirectory);
@@ -86,6 +129,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "StaffBookingButton").Visibility == Visibility.Collapsed, "Guest saw Staff create route.");
             Assert(Field<Button>(window, "CalendarButton").Visibility == Visibility.Collapsed, "Guest saw internal calendar.");
             Image(window, outputDirectory, "guest");
+            VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
@@ -299,6 +343,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Admin UI did not show all current permissions.");
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
             Image(window, outputDirectory, "staff");
+            VerifyNavigationLayout(window, true, outputDirectory);
 
             Assert(Field<Button>(window, "RoomTypesButton").Visibility == Visibility.Visible, "Admin did not receive the catalog action.");
             Click(Field<Button>(window, "RoomTypesButton"));
@@ -575,7 +620,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: check-in confirmation/keep/actual/snapshot/duplicate/stale/permission/refresh, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty-five views.");
+            Console.WriteLine("PASS WPF UI: sidebar and compact layout, check-in confirmation/keep/actual/snapshot/duplicate/stale/permission/refresh, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty-seven views.");
         }
         finally
         {

@@ -1,31 +1,84 @@
 <Window x:Class="MusicBoxManagement.Wpf.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Music Box — Quản lý phòng" Width="1180" Height="720"
+        Title="Music Box — Quản lý phòng" Width="1280" Height="760"
         MinWidth="960" MinHeight="560" WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI" FontSize="14" Language="vi-VN"
         Background="#F2F4F5" Loaded="Window_Loaded">
+    <Window.Resources>
+        <Style x:Key="SidebarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#F3F6F8"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ContentTemplate">
+                <Setter.Value><DataTemplate>
+                    <TextBlock Text="{Binding}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                </DataTemplate></Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value><ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                    </Border>
+                </ControlTemplate></Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#3B4B57"/></Trigger>
+                <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#445860"/></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="#A8C2B5"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="216" />
+            <ColumnDefinition Width="224" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Border Background="#26313B">
-            <Grid Margin="24,32">
+        <Border x:Name="Sidebar" Background="#26313B">
+            <Grid Margin="20,28,20,24">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel>
                     <TextBlock Text="Music Box" FontSize="26" FontWeight="SemiBold" Foreground="White" />
-                    <TextBlock Text="Quản lý phòng và dịch vụ" FontSize="12" Foreground="#C1CDD4" Margin="0,6,0,36" TextWrapping="Wrap" />
+                    <TextBlock Text="Quản lý phòng và dịch vụ" FontSize="12" Foreground="#C1CDD4" Margin="0,6,0,24" TextWrapping="Wrap" />
                 </StackPanel>
-                <Border Grid.Row="1" Background="#3B4B57" BorderBrush="#90A79C" BorderThickness="3,0,0,0" Padding="14,12">
-                    <TextBlock x:Name="CurrentAreaText" Text="Loại phòng" Foreground="White" FontWeight="SemiBold" />
-                </Border>
-                <StackPanel Grid.Row="3">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <TextBlock x:Name="CurrentAreaText" Text="Loại phòng" Foreground="#C1CDD4" FontSize="12" Margin="12,0,0,12" TextWrapping="Wrap"/>
+                        <StackPanel x:Name="GuestNavigation">
+                            <Button x:Name="BookingButton" Style="{StaticResource SidebarButton}" Content="Đặt phòng" Click="ShowBooking_Click"/>
+                            <Button x:Name="LookupButton" Style="{StaticResource SidebarButton}" Content="Tra cứu SĐT" Click="ShowLookup_Click"/>
+                        </StackPanel>
+                        <StackPanel x:Name="StaffNavigation" Visibility="Collapsed">
+                            <Button x:Name="RoomTypesButton" Style="{StaticResource SidebarButton}" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed"/>
+                            <Button x:Name="RoomsButton" Style="{StaticResource SidebarButton}" Content="Phòng" Click="ShowRooms_Click" Visibility="Collapsed"/>
+                            <Button x:Name="ServicesButton" Style="{StaticResource SidebarButton}" Content="Dịch vụ" Click="ShowServices_Click" Visibility="Collapsed"/>
+                            <Button x:Name="CustomersButton" Style="{StaticResource SidebarButton}" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed"/>
+                            <Button x:Name="ReservationsButton" Style="{StaticResource SidebarButton}" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed"/>
+                            <Button x:Name="StaffBookingButton" Style="{StaticResource SidebarButton}" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed"/>
+                            <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
+                            <Separator Background="#51616D" Margin="12,10,12,14"/>
+                            <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click"/>
+                        </StackPanel>
+                        <StackPanel x:Name="CatalogNavigation">
+                            <Button x:Name="EditRoomTypeButton" Style="{StaticResource SidebarButton}" Content="Sửa loại phòng" Visibility="Collapsed" IsEnabled="False" Click="EditRoomType_Click"/>
+                            <Button Style="{StaticResource SidebarButton}" Content="Làm mới danh mục" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click"/>
+                            <Button x:Name="BackToStaffButton" Style="{StaticResource SidebarButton}" Content="Về khu vực nhân viên" Visibility="Collapsed" Click="RefreshAccess_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                <StackPanel Grid.Row="2" Margin="0,16,0,0">
                     <Separator Background="#51616D" Margin="0,0,0,16" />
                     <TextBlock x:Name="ModeText" Text="Chế độ Khách" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,12" TextWrapping="Wrap" />
                     <Button x:Name="LoginButton" AutomationProperties.AutomationId="OpenLogin" Content="Đăng nhập nhân viên" IsEnabled="False"
@@ -36,27 +89,14 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <Grid x:Name="GuestPanel" Grid.Column="1" Margin="36,32,36,24">
+        <Grid x:Name="GuestPanel" Grid.Column="1" Margin="28,28,28,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Loại phòng" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BookingButton" Content="Đặt phòng" Click="ShowBooking_Click" Margin="0,0,8,0" />
-                    <Button x:Name="LookupButton" Content="Tra cứu SĐT" Click="ShowLookup_Click" Margin="0,0,8,0" />
-                    <Button x:Name="EditRoomTypeButton" Content="Sửa loại phòng" Visibility="Collapsed" IsEnabled="False" Click="EditRoomType_Click" Margin="0,0,8,0" />
-                    <Button Content="Làm mới" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click" />
-                    <Button x:Name="BackToStaffButton" Content="Nhân viên" Visibility="Collapsed" Click="RefreshAccess_Click" Margin="8,0,0,0" />
-                </StackPanel>
-            </Grid>
+            <TextBlock Text="Loại phòng" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center"/>
             <TextBlock Grid.Row="1" Text="Sức chứa, giá theo giờ và tiện ích của Standard và VIP."
                        Foreground="#5C6873" Margin="0,10,0,28" TextWrapping="Wrap" />
             <DataGrid x:Name="RoomTypesTable" Grid.Row="2" ItemsSource="{Binding RoomTypes}" AutoGenerateColumns="False" SelectionChanged="RoomType_SelectionChanged"
@@ -113,29 +153,20 @@
             </DataGrid>
             <TextBlock Grid.Row="3" Text="{Binding Status}" Foreground="#5C6873" Margin="0,18,0,0" TextWrapping="Wrap" />
         </Grid>
-        <Grid x:Name="StaffPanel" Grid.Column="1" Margin="36,32,36,24" Visibility="Collapsed">
+        <Grid x:Name="StaffPanel" Grid.Column="1" Margin="28,28,28,24" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <TextBlock Text="Khu vực nhân viên" FontSize="30" FontWeight="SemiBold" />
             <TextBlock x:Name="StaffIdentity" AutomationProperties.AutomationId="StaffIdentity" Grid.Row="1" Margin="0,10,0,18" TextWrapping="Wrap" />
-            <StackPanel Grid.Row="2" Margin="0,0,0,18">
-                <TextBlock Text="Quyền hiện hành" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,10" />
-                <WrapPanel>
-                <Button x:Name="RefreshAccessButton" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click" DockPanel.Dock="Right" />
-                <Button x:Name="RoomTypesButton" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
-                <Button x:Name="RoomsButton" Content="Phòng" Click="ShowRooms_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
-                <Button x:Name="ServicesButton" Content="Dịch vụ" Click="ShowServices_Click" Visibility="Collapsed" DockPanel.Dock="Right" Margin="0,0,8,0" />
-                <Button x:Name="CustomersButton" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed" Margin="0,0,8,0" />
-                <Button x:Name="ReservationsButton" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed" Margin="0,0,8,0" />
-                <Button x:Name="StaffBookingButton" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed" Margin="0,0,8,0" />
-                <Button x:Name="CalendarButton" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed" Margin="0,0,8,0" />
-                </WrapPanel>
+            <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                <TextBlock Text="Quyền của tài khoản" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBlock Text="Chọn chức năng trong menu bên trái để mở màn hình làm việc." Foreground="#5C6873" TextWrapping="Wrap"/>
             </StackPanel>
             <DataGrid x:Name="PermissionsTable" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                       CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
-                      RowHeight="36" ColumnHeaderHeight="36" Background="White" BorderBrush="#CAD3D8"
+                      RowHeight="40" ColumnHeaderHeight="42" Background="White" BorderBrush="#CAD3D8"
                       GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" AlternatingRowBackground="#F7F9FA">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader">
@@ -155,7 +186,7 @@
                 </DataGrid.Columns>
             </DataGrid>
             <TextBlock x:Name="AccessStatus" Grid.Row="4" Margin="0,18,0,0" TextWrapping="Wrap" Foreground="#5C6873"
-                       Text="Đã có đăng nhập và kiểm tra quyền. Các màn hình nghiệp vụ sẽ được triển khai ở các bước tiếp theo." />
+                       Text="Menu hiển thị các chức năng được phép sử dụng." />
         </Grid>
     </Grid>
 </Window>

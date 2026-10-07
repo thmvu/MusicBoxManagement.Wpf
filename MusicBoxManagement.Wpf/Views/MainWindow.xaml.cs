@@ -35,6 +35,8 @@ namespace MusicBoxManagement.Wpf.Views
         public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers, GuestBookingService guestBooking, GuestReservationService guestLookup, StaffReservationService reservations)
         {
             InitializeComponent();
+            Width = Math.Min(Width, SystemParameters.WorkArea.Width);
+            Height = Math.Min(Height, SystemParameters.WorkArea.Height);
             this.viewModel = viewModel;
             this.authentication = authentication;
             this.permissions = permissions;
@@ -120,12 +122,14 @@ namespace MusicBoxManagement.Wpf.Views
                 ModeText.Text = "Nhân viên: " + access.Role;
                 CurrentAreaText.Text = "Khu vực nhân viên";
                 StaffPanel.Visibility = Visibility.Visible;
+                StaffNavigation.Visibility = Visibility.Visible;
+                GuestNavigation.Visibility = CatalogNavigation.Visibility = Visibility.Collapsed;
                 GuestPanel.Visibility = Visibility.Collapsed;
                 BookingButton.Visibility = Visibility.Collapsed;
                 LookupButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Collapsed;
                 LogoutButton.Visibility = Visibility.Visible;
-                AccessStatus.Text = "Đã kiểm tra " + access.Permissions.Count + " quyền hiện hành. Các màn hình nghiệp vụ sẽ làm ở bước tiếp theo.";
+                AccessStatus.Text = "Tài khoản có " + access.Permissions.Count + " quyền hiện hành. Các chức năng được phép sử dụng nằm trong menu bên trái.";
             }
             catch (UnauthorizedAccessException error)
             {
@@ -166,6 +170,8 @@ namespace MusicBoxManagement.Wpf.Views
             ModeText.Text = "Chế độ Khách";
             CurrentAreaText.Text = "Loại phòng";
             StaffPanel.Visibility = Visibility.Collapsed;
+            StaffNavigation.Visibility = Visibility.Collapsed;
+            GuestNavigation.Visibility = CatalogNavigation.Visibility = Visibility.Visible;
             GuestPanel.Visibility = Visibility.Visible;
             BookingButton.Visibility = Visibility.Visible;
             LookupButton.Visibility = Visibility.Visible;
@@ -207,6 +213,7 @@ namespace MusicBoxManagement.Wpf.Views
         {
             if (session == null || !canEditRoomTypes) return;
             StaffPanel.Visibility = Visibility.Collapsed;
+            CatalogNavigation.Visibility = Visibility.Visible;
             GuestPanel.Visibility = Visibility.Visible;
             CurrentAreaText.Text = "Loại phòng";
             EditRoomTypeButton.Visibility = BackToStaffButton.Visibility = Visibility.Visible;
