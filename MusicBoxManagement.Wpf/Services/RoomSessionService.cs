@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
+using System.Collections.Generic;
 using MusicBoxManagement.Wpf.Data;
 using MusicBoxManagement.Wpf.Models;
 
@@ -76,6 +77,51 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
             }
         }
 
+        public List<PublicRoom> ListWalkInRooms(LoginSession actor)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                permissions.Demand(actor, "Session.WalkIn", connection, transaction);
+                return GuestBookingService.ReadRooms(connection, transaction);
+            }
+        }
+
+        public WalkInPreview PreviewWalkIn(LoginSession actor, WalkInRequest request)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            using (var command = connection.CreateCommand())
+            {
+                permissions.Demand(actor, "Session.WalkIn", connection, transaction);
+                if (request == null) throw new ArgumentException("Cần chọn phòng và nhập thông tin khách.");
+                var name = (request.FullName ?? "").Trim();
+                if (name.Length < 1 || name.Length > 100) throw new ArgumentException("Họ tên từ 1–100 ký tự.");
+                var phone = PhoneNumberNormalizer.Normalize(request.PhoneNumber);
+                var now = clock.UtcNow.ToUniversalTime();
+                command.Transaction = transaction;
+                command.CommandText = "SELECT CustomerId FROM Customers WHERE PhoneNumber=@phone;";
+                command.Parameters.AddWithValue("@phone", phone);
+                var found = command.ExecuteScalar(); var customerId = found == null ? 0 : Convert.ToInt32(found);
+                var check = availability.CheckWalkInAt(connection, transaction, request.RoomId, customerId, now);
+                var result = new WalkInPreview { CanReceive = check.CanBook, Reason = check.Reason, CheckedAt = now };
+                if (check.CanBook)
+                {
+                    result.ReturnBy = ScheduleRules.WalkInReturnBy(connection, transaction, request.RoomId, customerId, now, now);
+                    command.CommandText = "SELECT t.PricePerHour FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;";
+                    command.Parameters.AddWithValue("@room", request.RoomId);
+                    result.HourlyRate = Convert.ToInt64(command.ExecuteScalar());
+                }
+                return result;
+            }
+        }
+
+        // WalkIn-only staff may refresh their own receipt, without reading other sessions.
+        public WalkInResult ReadWalkInReceipt(LoginSession actor, int sessionId)
+        {
+            return ReadWalkInCore(actor, sessionId, true);
+        }
+
         public WalkInResult CreateWalkIn(LoginSession actor, WalkInRequest request)
         {
             using (var connection = database.OpenConnection())
@@ -127,10 +173,26 @@ SELECT last_insert_rowid();";
 
         public WalkInResult ReadWalkIn(LoginSession actor, int sessionId)
         {
+            return ReadWalkInCore(actor, sessionId, false);
+        }
+
+        private WalkInResult ReadWalkInCore(LoginSession actor, int sessionId, bool ownReceipt)
+        {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
             {
-                permissions.Demand(actor, "Session.View", connection, transaction);
+                permissions.Demand(actor, ownReceipt ? "Session.WalkIn" : "Session.View", connection, transaction);
+                if (ownReceipt)
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.Transaction = transaction;
+                        command.CommandText = "SELECT COUNT(*) FROM AuditLog WHERE Action='Session.WalkIn' AND EntityId=@id AND UserId=@user AND ActorType='Staff' AND EntityName='RoomSession';";
+                        command.Parameters.AddWithValue("@id", sessionId.ToString(CultureInfo.InvariantCulture));
+                        command.Parameters.AddWithValue("@user", actor.UserId);
+                        if (Convert.ToInt64(command.ExecuteScalar()) == 0) throw new UnauthorizedAccessException("Không có quyền đọc kết quả nhận khách của nhân viên khác.");
+                    }
+                }
                 var now = clock.UtcNow.ToUniversalTime();
                 var current = ReadSession(connection, transaction, sessionId, false);
                 if (current == null || current.Status != "Active" || current.ReservationId.HasValue)

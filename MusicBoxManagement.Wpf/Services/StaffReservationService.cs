@@ -20,6 +20,11 @@ namespace MusicBoxManagement.Wpf.Services
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
             permissions = new PermissionService(database); reservations = new ReservationService(database, clock);
         }
+        public RoomSessionService ForWalkIn(LoginSession session)
+        {
+            permissions.Demand(session, "Session.WalkIn");
+            return new RoomSessionService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession session, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

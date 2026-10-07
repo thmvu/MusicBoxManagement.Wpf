@@ -65,7 +65,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -128,12 +128,14 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "ReservationsButton").Visibility == Visibility.Collapsed, "Guest saw internal booking data.");
             Assert(Field<Button>(window, "StaffBookingButton").Visibility == Visibility.Collapsed, "Guest saw Staff create route.");
             Assert(Field<Button>(window, "CalendarButton").Visibility == Visibility.Collapsed, "Guest saw internal calendar.");
+            Assert(Field<Button>(window, "WalkInButton").Visibility == Visibility.Collapsed, "Guest saw walk-in operation.");
             Image(window, outputDirectory, "guest");
             VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
+            VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
             VerifyStaffBooking(Path.Combine(testDirectory,"staff-create.db"),outputDirectory);
             VerifyCalendarDay(Path.Combine(testDirectory,"calendar-day.db"),outputDirectory);
             VerifyGuestCalendar(Path.Combine(testDirectory,"guest-calendar.db"),outputDirectory);
@@ -344,6 +346,14 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
             Image(window, outputDirectory, "staff");
             VerifyNavigationLayout(window, true, outputDirectory);
+            var walkInOpened=false;
+            driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            driver.Tick += (sender,args) => {
+                var entry = application.Windows.OfType<WalkInWindow>().FirstOrDefault(); if(entry==null)return;
+                var walk = (WalkInViewModel)entry.DataContext; if(walk.IsBusy || string.IsNullOrEmpty(walk.Status))return;
+                Assert(walk.Rooms.Count==0 && !walk.CanReceive,"Main walk-in entry did not open the protected empty form.");walkInOpened=true;driver.Stop();entry.Close();
+            };
+            driver.Start();Click(Field<Button>(window,"WalkInButton"));PumpUntil(()=>walkInOpened && Field<Button>(window,"WalkInButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled);driver.Stop();
 
             Assert(Field<Button>(window, "RoomTypesButton").Visibility == Visibility.Visible, "Admin did not receive the catalog action.");
             Click(Field<Button>(window, "RoomTypesButton"));
@@ -620,7 +630,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: sidebar and compact layout, check-in confirmation/keep/actual/snapshot/duplicate/stale/permission/refresh, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered fifty-seven views.");
+            Console.WriteLine("PASS WPF UI: WalkIn/confirmation/stale/current price/duplicate/dynamic receipt/revocation, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered sixty-three views.");
         }
         finally
         {
@@ -629,6 +639,52 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyWalkInUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var setup=auth.SetupAdminAsync("admin","Admin thử nghiệm",Password);PumpUntil(()=>setup.IsCompleted);var admin=setup.GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('W01','Phòng trực tiếp',1,'test.png',1,'test'),('W02','Phòng khóa',2,'test.png',1,'test');
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'walk','walk','WALK',PasswordHash,'walk','Nhân viên nhận trực tiếp',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('walk','Staff');
+DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId NOT IN(SELECT PermissionId FROM Permission WHERE Code='Session.WalkIn');");
+        sql("UPDATE Rooms SET IsActive=0,InactiveReason='Bảo trì' WHERE RoomId=2;");
+        var login=auth.LoginAsync("walk",Password);PumpUntil(()=>login.IsCompleted);var staff=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,7,13,37,12,TimeSpan.FromHours(7)).AddTicks(1234)};
+        var service=new StaffReservationService(db,clock).ForWalkIn(staff);var vm=new WalkInViewModel(service,staff);var form=new WalkInWindow(vm);
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Rooms.Count==1);Assert(vm.CanReceive,"WalkIn-only account could not use form.");Image(form,outputDirectory,"walkin-form");
+            vm.FullName="Khách trực tiếp";vm.PhoneNumber="bad";Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);Assert(!vm.IsConfirming && count("SELECT COUNT(*) FROM Customers")==0,"Invalid phone reached confirmation.");
+            vm.PhoneNumber="+84 901.111-111";Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.CanConfirm && !vm.CanInput && vm.Details.Contains("23:00:00"),"Confirmation/deadline/input lock failed.");Image(form,outputDirectory,"walkin-confirm");
+            Click(Field<Button>(form,"KeepButton"));Assert(!vm.IsConfirming && count("SELECT COUNT(*) FROM RoomSessions")==0,"Keep created session.");
+            Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);sql("UPDATE Rooms SET IsActive=0,InactiveReason='Bảo trì' WHERE RoomId=1;");Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);Assert(count("SELECT COUNT(*) FROM RoomSessions")==0 && count("SELECT COUNT(*) FROM Customers")==0 && !vm.IsConfirming,"Stale locked room created data.");Image(form,outputDirectory,"walkin-stale");
+            sql("UPDATE Rooms SET IsActive=1 WHERE RoomId=1;");Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);sql("UPDATE RoomTypes SET PricePerHour=150000 WHERE RoomTypeId=1;");
+            Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.CreatedSessionId.HasValue && vm.CanNew && !vm.CanReceive && vm.Details.Contains("13:37:12") && vm.Details.Contains("150"),"Committed actual/snapshot/result guard failed.");
+            Assert(count("SELECT COUNT(*) FROM RoomSessions")==1 && count("SELECT COUNT(*) FROM Reservations")==0 && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.WalkIn'")==1,"Duplicate UI submit wrote twice or fake booking.");Image(form,outputDirectory,"walkin-result");
+            new ReservationService(db,clock).CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,7,18,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Khách đặt sau",PhoneNumber="0902222222"});
+            Click(Field<Button>(form,"RefreshButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Details.Contains("18:00:00"),"Receipt did not update dynamic deadline.");Image(form,outputDirectory,"walkin-deadline");
+            Click(Field<Button>(form,"NewButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.FullName==null && vm.PhoneNumber==null && vm.CreatedSessionId==null && vm.Details==null,"New walk-in retained prior customer/receipt.");
+            vm.FullName="Khách bị chặn";vm.PhoneNumber="0903333333";Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);Assert(!vm.IsConfirming && vm.Status.Contains("Active"),"Preview ignored occupied room.");
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff';");Click(Field<Button>(form,"RefreshButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Rooms.Count==0 && vm.FullName==null && vm.PhoneNumber==null && !vm.CanReceive && vm.CanClose,"Revoked access retained private data or blocked closing.");Image(form,outputDirectory,"walkin-revoked");
+            form.Close();
+            sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.WalkIn'; DELETE FROM RoomSessions; UPDATE Reservations SET Status='Cancelled'; UPDATE Rooms SET IsActive=0,InactiveReason='Bảo trì';");
+            vm=new WalkInViewModel(service,staff);form=new WalkInWindow(vm);form.Show();PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Rooms.Count==0 && !vm.CanReceive && vm.Status.Contains("Chưa có phòng"),"Empty catalog allowed receive.");
+            sql("UPDATE Rooms SET IsActive=1 WHERE RoomId=1;");Click(Field<Button>(form,"RefreshButton"));PumpUntil(()=>!vm.IsBusy);
+            vm.FullName="Mất quyền lúc xác nhận";vm.PhoneNumber="0904444444";Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.CanConfirm,"Permission fixture failed to prepare.");sql("DELETE FROM RolePermission WHERE RoleId='Staff';");Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(count("SELECT COUNT(*) FROM RoomSessions")==0 && vm.PhoneNumber==null && vm.Details==null && !vm.CanConfirm && vm.CanClose,"Revoked confirmation wrote/retained private data.");form.Close();
+            sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.WalkIn'; CREATE TRIGGER revoke_after_walk AFTER INSERT ON AuditLog WHEN NEW.Action='Session.WalkIn' BEGIN DELETE FROM RolePermission WHERE RoleId='Staff'; END;");
+            vm=new WalkInViewModel(service,staff);form=new WalkInWindow(vm);form.Show();PumpUntil(()=>!vm.IsBusy);
+            vm.FullName="Đã nhận trước mất quyền";vm.PhoneNumber="0905555555";Click(Field<Button>(form,"ReceiveButton"));PumpUntil(()=>!vm.IsBusy);Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(count("SELECT COUNT(*) FROM RoomSessions")==1 && vm.CreatedSessionId.HasValue && vm.Status.Contains("Đã nhận khách thành công") && !vm.CanReceive && vm.Details==null && vm.CanClose,"Post-commit refresh denial lost committed result or retained private data.");
+        }
+        finally{form.Close();}
     }
 
     private static void VerifyGuestCalendar(string file,string outputDirectory)
