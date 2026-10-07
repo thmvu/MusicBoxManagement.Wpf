@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); đã có service gia hạn nội bộ; chưa có UI gia hạn, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); đã có service và UI gia hạn nội bộ; chưa có gia hạn Guest, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -331,3 +331,7 @@ Menu trái có Khách trực tiếp theo Session.WalkIn: chọn phòng mở/tên
 ## Bước 6c.1 — service gia hạn
 
 Gia hạn phiên Active từ booking theo Session.Extend, mỗi lần +30/+60 trước hoặc đúng ExpectedEndTime. Preview chỉ đọc; lúc ghi kiểm tra lại quyền/giờ/ca/lịch Room và Customer trong transaction, chặn form cũ bằng observedEnd; giữ Reservation và snapshot giá, ghi audit cùng cập nhật. Chưa thêm UI hoặc đường Guest. Xem [báo cáo 6c.1](docs/Step6c1_Extension.md). Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ liệu tạm; UI cũ 63 ảnh. Tiếp theo 6c.2 danh sách/chi tiết phiên và UI gia hạn.
+
+## Bước 6c.2 — phiên sử dụng và giao diện gia hạn
+
+Đăng nhập → Phiên sử dụng → lọc Active/Completed/Tất cả hoặc SĐT → chọn phiên. Session.View độc lập Reservation.View; chi tiết dùng snapshot giá/phòng và giờ thực tế, walk-in hiện giờ cần trả động. Phiên từ booking đủ điều kiện với Session.Extend có thể chọn 30/60 phút, xem trước và xác nhận gia hạn. Chặn gửi lặp/stale/mất quyền, tải lại giờ mới và giữ thông báo thành công khi refresh lỗi sau commit. Chi tiết [báo cáo 6c.2](docs/Step6c2_SessionsExtensionUi.md). Debug/Release và 14 bộ kiểm tra liên quan đạt, UI 69 ảnh trên dữ liệu tạm. Tiếp theo Guest Lookup Active và gia hạn theo SĐT; gọi món/tiền tạm tính và checkout vẫn theo plan.

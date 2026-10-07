@@ -65,7 +65,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -129,6 +129,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "StaffBookingButton").Visibility == Visibility.Collapsed, "Guest saw Staff create route.");
             Assert(Field<Button>(window, "CalendarButton").Visibility == Visibility.Collapsed, "Guest saw internal calendar.");
             Assert(Field<Button>(window, "WalkInButton").Visibility == Visibility.Collapsed, "Guest saw walk-in operation.");
+            Assert(Field<Button>(window, "SessionsButton").Visibility == Visibility.Collapsed, "Guest saw private sessions.");
             Image(window, outputDirectory, "guest");
             VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
@@ -136,6 +137,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
+            VerifySessionsUi(Path.Combine(testDirectory,"sessions-ui.db"),outputDirectory);
             VerifyStaffBooking(Path.Combine(testDirectory,"staff-create.db"),outputDirectory);
             VerifyCalendarDay(Path.Combine(testDirectory,"calendar-day.db"),outputDirectory);
             VerifyGuestCalendar(Path.Combine(testDirectory,"guest-calendar.db"),outputDirectory);
@@ -354,6 +356,14 @@ public static class MusicBoxAuthenticationUiChecks
                 Assert(walk.Rooms.Count==0 && !walk.CanReceive,"Main walk-in entry did not open the protected empty form.");walkInOpened=true;driver.Stop();entry.Close();
             };
             driver.Start();Click(Field<Button>(window,"WalkInButton"));PumpUntil(()=>walkInOpened && Field<Button>(window,"WalkInButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled);driver.Stop();
+            var sessionsOpened=false;
+            driver=new DispatcherTimer {Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var entry=application.Windows.OfType<SessionsWindow>().FirstOrDefault();if(entry==null)return;
+                var model=(SessionsViewModel)entry.DataContext;if(model.IsBusy || !model.Status.Contains("Tìm thấy"))return;
+                Assert(model.Items.Count==0 && !model.CanExtend,"Main Sessions empty route wrong.");sessionsOpened=true;driver.Stop();entry.Close();
+            };
+            driver.Start();Click(Field<Button>(window,"SessionsButton"));PumpUntil(()=>sessionsOpened && Field<Button>(window,"SessionsButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled);driver.Stop();
 
             Assert(Field<Button>(window, "RoomTypesButton").Visibility == Visibility.Visible, "Admin did not receive the catalog action.");
             Click(Field<Button>(window, "RoomTypesButton"));
@@ -630,7 +640,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: WalkIn/confirmation/stale/current price/duplicate/dynamic receipt/revocation, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered sixty-three views.");
+            Console.WriteLine("PASS WPF UI: Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered sixty-nine views.");
         }
         finally
         {
@@ -639,6 +649,49 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifySessionsUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var setup=auth.SetupAdminAsync("admin","Admin thử",Password);PumpUntil(()=>setup.IsCompleted);var admin=setup.GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('S1','Phiên booking',1,'test.png',1,'test'),('S2','Walk-in',2,'test.png',1,'test'),('S3','Lịch sử',1,'test.png',1,'test');
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'sessions','sessions','SESSIONS',PasswordHash,'sessions','Nhân viên phiên',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('sessions','Staff');DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId NOT IN(SELECT PermissionId FROM Permission WHERE Code IN('Session.View','Session.Extend'));");
+        var login=auth.LoginAsync("sessions",Password);PumpUntil(()=>login.IsCompleted);var actor=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,7,9,0,0,TimeSpan.FromHours(7))};var bookings=new ReservationService(db,clock);var sessions=new RoomSessionService(db,clock);
+        var source=bookings.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Khách phiên",PhoneNumber="0901111111",StartTime=new DateTimeOffset(2026,10,7,13,0,0,TimeSpan.FromHours(7)),DurationMinutes=60});
+        var history=bookings.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=3,FullName="Khách lịch sử",PhoneNumber="0903333333",StartTime=source.StartTime,DurationMinutes=60});
+        clock.UtcNow=source.StartTime.AddMinutes(7).AddSeconds(12).AddTicks(1234);var first=sessions.CheckIn(admin,source.ReservationId);sessions.CheckIn(admin,history.ReservationId);
+        sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=2,FullName="Khách trực tiếp",PhoneNumber="0902222222"});
+        sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='2026-10-07T07:07:12.0001234+00:00' WHERE RoomId=3;");
+        var service=new StaffSessionService(db,clock);var vm=new SessionsViewModel(service,actor);var form=new SessionsWindow(vm);
+        Action load=()=>{Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action select=()=>{vm.Selected=vm.Items.First(i=>i.Session.RoomSessionId==first.RoomSessionId);};
+        Action prepare=()=>{Click(Field<Button>(form,"ExtendButton"));PumpUntil(()=>!vm.IsBusy);};
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Items.Count==2);select();Assert(vm.CanExtend && vm.Details.Contains("13:07:12"),"Session UI needed unrelated permission or rounded time.");Image(form,outputDirectory,"sessions-list");
+            prepare();Assert(vm.CanConfirm && !vm.CanSearch && !vm.CanSelect && vm.Notice.Contains("14:37:12"),"Extension confirmation/input lock incorrect.");Image(form,outputDirectory,"sessions-confirm");
+            Click(Field<Button>(form,"KeepButton"));Assert(!vm.IsConfirming && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==0,"Keep wrote extension.");prepare();
+            sql("UPDATE RoomTypes SET PricePerHour=555000 WHERE RoomTypeId=1;");Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("Đã gia hạn") && vm.Details.Contains("14:37:12") && vm.Notice.Contains("120") && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==1,"Extension result/reload/snapshot/duplicate failed.");Image(form,outputDirectory,"sessions-result");
+            prepare();sessions.ExtendStaff(admin,first.RoomSessionId,vm.Selected.Session.ExpectedEndTime.Value,30);Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Items.Count==0 && vm.Selected==null && vm.Status.Contains("thay đổi") && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==2,"Stale confirmation added a second extension.");load();select();
+            prepare();bookings.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Khách sau",PhoneNumber="0904444444",StartTime=new DateTimeOffset(2026,10,7,15,30,0,TimeSpan.FromHours(7)),DurationMinutes=60});
+            Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Status.Contains("15:30:00") && vm.Items.Count==0 && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==2,"New booking conflict ignored or limit missing.");Image(form,outputDirectory,"sessions-conflict");load();
+            vm.Selected=vm.Items.First(i=>!i.Session.ReservationId.HasValue);Assert(!vm.CanExtend && vm.Details.Contains("không có thời lượng"),"WalkIn had extension.");
+            vm.PhoneQuery="+84 901.111-111";Assert(vm.Items.Count==0 && vm.Selected==null && vm.Notice==null,"Phone change retained private result.");load();Assert(vm.Items.Count==1,"Normalized phone search failed.");
+            vm.StatusQuery="Completed";load();Assert(vm.Items.Count==0,"Status/phone filters combined incorrectly.");vm.PhoneQuery=null;load();vm.Selected=vm.Items[0];Assert(!vm.CanExtend && vm.Details.Contains("Trả thực tế"),"Completed session offered extension.");Image(form,outputDirectory,"sessions-history");
+            vm.StatusQuery="Active";load();select();vm.Minutes=60;prepare();Assert(!vm.IsConfirming && vm.Notice.Contains("15:30:00"),"60-minute preview did not show limit.");vm.Minutes=30;
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Session.Extend');");prepare();Assert(vm.Items.Count==0 && vm.Notice==null,"Lost Extend retained private confirmation.");load();select();Assert(!vm.CanExtend && vm.CanSelect,"View-only could extend or could not view.");
+            sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.Extend'; UPDATE Reservations SET Status='Cancelled' WHERE Status='Confirmed';");load();select();prepare();
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Session.View');");Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.Items.Count==0 && vm.Selected==null && !vm.CanConfirm && vm.CanClose && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==2,"Lost View confirm wrote data/retained PII.");Image(form,outputDirectory,"sessions-revoked");
+            sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.View'; CREATE TRIGGER revoke_session_view AFTER INSERT ON AuditLog WHEN NEW.Action='Session.Extend' BEGIN DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Session.View'); END;");load();select();prepare();Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("Đã gia hạn thành công") && vm.Items.Count==0 && vm.Selected==null && vm.Notice==null && !vm.CanConfirm && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'")==3,"Post-commit refresh failure lost success or retained PII.");
+        }
+        finally{form.Close();}
     }
 
     private static void VerifyWalkInUi(string file,string outputDirectory)

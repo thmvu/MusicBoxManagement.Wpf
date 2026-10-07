@@ -25,6 +25,11 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(session, "Session.WalkIn");
             return new RoomSessionService(database, clock);
         }
+        public StaffSessionService ForSessions(LoginSession session)
+        {
+            permissions.Demand(session, "Session.View");
+            return new StaffSessionService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession session, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

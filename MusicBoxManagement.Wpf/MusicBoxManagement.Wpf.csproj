@@ -73,6 +73,11 @@
     <Compile Include="Models\Reservation.cs" />
     <Compile Include="Models\RoomSession.cs" />
     <Compile Include="Models\SessionExtension.cs" />
+    <Compile Include="Models\StaffSession.cs" />
+    <Compile Include="Services\StaffSessionService.cs" />
+    <Compile Include="ViewModels\SessionsViewModel.cs" />
+    <Page Include="Views\SessionsWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\SessionsWindow.xaml.cs"><DependentUpon>SessionsWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\WalkIn.cs" />
     <Compile Include="ViewModels\WalkInViewModel.cs" />
     <Page Include="Views\WalkInWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>

@@ -78,11 +78,16 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
         }
 
         public SessionExtensionCheck PreviewExtensionStaff(LoginSession actor, int sessionId, int minutes)
+        { return PreviewExtensionCore(actor, sessionId, minutes, false); }
+        internal SessionExtensionCheck PreviewViewedExtension(LoginSession actor, int sessionId, int minutes)
+        { return PreviewExtensionCore(actor, sessionId, minutes, true); }
+        private SessionExtensionCheck PreviewExtensionCore(LoginSession actor, int sessionId, int minutes, bool requireView)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
             {
                 permissions.Demand(actor, "Session.Extend", connection, transaction);
+                if (requireView) permissions.Demand(actor, "Session.View", connection, transaction);
                 var current = ReadSession(connection, transaction, sessionId, false);
                 return availability.CheckExtensionAt(connection, transaction, current, minutes, clock.UtcNow);
             }
@@ -90,11 +95,18 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
 
         // The observed end acts as a stale-form guard, not as the value to increment.
         public RoomSession ExtendStaff(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
+        { return ExtendStaffCore(actor, sessionId, observedEnd, minutes, false); }
+
+        internal RoomSession ExtendViewedStaff(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
+        { return ExtendStaffCore(actor, sessionId, observedEnd, minutes, true); }
+
+        private RoomSession ExtendStaffCore(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes, bool requireView)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
             {
                 permissions.Demand(actor, "Session.Extend", connection, transaction);
+                if (requireView) permissions.Demand(actor, "Session.View", connection, transaction);
                 var current = ReadSession(connection, transaction, sessionId, false);
                 if (current == null || current.Status != "Active" || !current.ReservationId.HasValue || !current.ExpectedEndTime.HasValue)
                     throw new InvalidOperationException("Chỉ gia hạn phiên Active từ booking; khách trực tiếp không có gia hạn.");
@@ -255,7 +267,13 @@ HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FRO
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read()) return null;
-                    return new RoomSession
+                    return ReadSessionRecord(reader);
+                }
+            }
+        }
+        internal static RoomSession ReadSessionRecord(SQLiteDataReader reader)
+        {
+            return new RoomSession
                     {
                         RoomSessionId = reader.GetInt32(0), CustomerId = reader.GetInt32(1), RoomId = reader.GetInt32(2),
                         ReservationId = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3), ActualStartTime = Parse(reader.GetString(4)),
@@ -264,8 +282,6 @@ HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FRO
                         HourlyRate = reader.GetInt64(7), RoomCodeSnapshot = reader.GetString(8), RoomTypeCodeSnapshot = reader.GetString(9),
                         RoomTypeNameSnapshot = reader.GetString(10), Status = reader.GetString(11)
                     };
-                }
-            }
         }
         private static DateTimeOffset Parse(string value) => DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
