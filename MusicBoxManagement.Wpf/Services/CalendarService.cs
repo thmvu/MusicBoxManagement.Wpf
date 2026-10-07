@@ -94,15 +94,8 @@ AND s.ActualStartTime<@to AND
                 }
                 foreach (var walkIn in walkIns)
                 {
-                    var local = walkIn.Item1.Start.ToOffset(BookingHours.VietnamOffset);
-                    var close = new DateTimeOffset(local.Date.AddHours(local.Hour < 12 ? 12 : 23), BookingHours.VietnamOffset).ToUniversalTime();
-                    command.CommandText = "SELECT MIN(StartTime) FROM Reservations WHERE Status='Confirmed' AND StartTime>@cutoff AND StartTime>=@walkStart AND (RoomId=@room OR CustomerId=@customer);";
-                    command.Parameters.AddWithValue("@walkStart", Utc(walkIn.Item1.Start));
-                    command.Parameters.AddWithValue("@customer", walkIn.Item2);
-                    var next = command.ExecuteScalar();
-                    if (next != null && next != DBNull.Value && Parse((string)next) < close) close = Parse((string)next);
+                    var close = ScheduleRules.WalkInReturnBy(connection, transaction, room.RoomId, walkIn.Item2, walkIn.Item1.Start, now);
                     walkIn.Item1.ReturnBy = close; walkIn.Item1.IsOverdue = now > close;
-                    command.Parameters.RemoveAt("@walkStart"); command.Parameters.RemoveAt("@customer");
                 }
             }
             events.Sort((left, right) => left.Start.CompareTo(right.Start));

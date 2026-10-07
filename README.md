@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking; chưa có walk-in, gia hạn, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking, service walk-in; chưa có UI walk-in, gia hạn, gọi món, hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -315,3 +315,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-CheckIn.p
 Debug/Release build vào bin/VerifyDebug và bin/VerifyRelease vì bản Debug đang chạy trong Visual Studio. 7 bộ kiểm tra liên quan đạt trên dữ liệu tạm, UI 55 ảnh. Bản đang chạy chưa tự cập nhật; dừng phiên chạy rồi build/F5 lại để dùng thay đổi. Tiếp theo 6b.1 walk-in.
 
 Quản trị tài khoản và ma trận quyền có trong bước 8: Admin tạo/sửa/khóa, gán Staff/Manager/Admin và chỉnh quyền theo role. Người dùng đã chốt giữ RBAC theo role; dashboard hoạt động/doanh thu quán sẽ thay phần bảng/nút kiểm tra quyền tạm ở màn hình chính, không cần module khoản chi điện/thuê mặt bằng.
+
+## Bước 6b.1 — service nhận khách trực tiếp
+
+RoomSessionService.CreateWalkIn theo Session.WalkIn nhận phòng/tên/SĐT, không chọn thời lượng hoặc tạo booking. Kiểm tra ca/phòng mở/Room và Customer không Active/booking đã tới giờ còn grace; lưu session Active, giờ thực tế/snapshot giá-phòng/customer/audit trong transaction. Giờ cần trả phòng tính động theo ca và booking kế tiếp của Room/Customer, không lưu thành ExpectedEndTime hoặc chặn booking tương lai vô hạn. ReadWalkIn theo Session.View chỉ đọc và cập nhật cảnh báo theo lịch hiện tại.
+
+Schema v6, Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ liệu tạm, UI cũ 55 ảnh. Chưa có nút/form walk-in; tiếp theo 6b.2 UI nhận khách trực tiếp. Chi tiết [báo cáo 6b.1](docs/Step6b1_WalkIn.md).

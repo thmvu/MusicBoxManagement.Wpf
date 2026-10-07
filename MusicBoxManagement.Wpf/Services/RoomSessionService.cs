@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
 using MusicBoxManagement.Wpf.Data;
@@ -28,7 +29,7 @@ namespace MusicBoxManagement.Wpf.Services
             {
                 permissions.Demand(actor, "Session.CheckIn", connection, transaction);
                 // A replay still needs current authorization, but never changes the old snapshot.
-                var existing = ReadSource(connection, transaction, reservationId);
+                var existing = ReadSession(connection, transaction, reservationId, true);
                 if (existing != null) { transaction.Commit(); return existing; }
                 var now = clock.UtcNow.ToUniversalTime();
                 int roomId, customerId;
@@ -66,7 +67,7 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
                     command.Parameters.AddWithValue("@end", Utc(candidateEnd));
                     command.ExecuteNonQuery();
                 }
-                var created = ReadSource(connection, transaction, reservationId);
+                var created = ReadSession(connection, transaction, reservationId, true);
                 AuditService.WriteStaff(connection, transaction, actor.UserId, "Session.CheckIn", "RoomSession",
                     created.RoomSessionId.ToString(CultureInfo.InvariantCulture),
                     "Nhận phòng " + created.RoomCodeSnapshot + " từ booking " + reservationId + "; dự kiến trả " + Utc(candidateEnd) + ".", now);
@@ -75,14 +76,78 @@ UPDATE Reservations SET Status='CheckedIn' WHERE ReservationId=@source AND Statu
             }
         }
 
-        private static RoomSession ReadSource(SQLiteConnection connection, SQLiteTransaction transaction, int reservationId)
+        public WalkInResult CreateWalkIn(LoginSession actor, WalkInRequest request)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = SqliteDatabase.BeginWriteTransaction(connection))
+            using (var command = connection.CreateCommand())
+            {
+                permissions.Demand(actor, "Session.WalkIn", connection, transaction);
+                if (request == null) throw new ArgumentException("Cần nhập thông tin khách trực tiếp.");
+                var roomId = request.RoomId;
+                var name = (request.FullName ?? "").Trim();
+                if (name.Length < 1 || name.Length > 100) throw new ArgumentException("Họ tên từ 1–100 ký tự.");
+                var phone = PhoneNumberNormalizer.Normalize(request.PhoneNumber);
+                var now = clock.UtcNow.ToUniversalTime();
+                BookingHours.GetOpenShiftEnd(now);
+                NoShowService.ProcessExpiredAt(connection, transaction, now);
+                command.Transaction = transaction;
+                command.Parameters.AddWithValue("@phone", phone);
+                command.CommandText = "SELECT CustomerId FROM Customers WHERE PhoneNumber=@phone;";
+                var found = command.ExecuteScalar();
+                int customerId;
+                if (found != null) customerId = Convert.ToInt32(found);
+                else
+                {
+                    command.Parameters.AddWithValue("@name", name);
+                    command.CommandText = "INSERT INTO Customers(FullName,PhoneNumber) VALUES(@name,@phone); SELECT last_insert_rowid();";
+                    customerId = Convert.ToInt32(command.ExecuteScalar());
+                    AuditService.WriteStaff(connection, transaction, actor.UserId, "Customer.Create", "Customer",
+                        customerId.ToString(CultureInfo.InvariantCulture), "Tạo khách hàng từ nhận khách trực tiếp.", now);
+                }
+                var check = availability.CheckWalkInAt(connection, transaction, roomId, customerId, now);
+                if (!check.CanBook) throw new InvalidOperationException(check.Reason);
+                command.Parameters.Clear();
+                command.CommandText = @"INSERT INTO RoomSessions(CustomerId,RoomId,ActualStartTime,HourlyRate,
+RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status)
+SELECT @customer,r.RoomId,@now,t.PricePerHour,r.RoomCode,t.Code,t.Name,'Active'
+FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;
+SELECT last_insert_rowid();";
+                command.Parameters.AddWithValue("@customer", customerId); command.Parameters.AddWithValue("@room", roomId);
+                command.Parameters.AddWithValue("@now", Utc(now));
+                var id = Convert.ToInt32(command.ExecuteScalar());
+                var created = ReadSession(connection, transaction, id, false);
+                var returnBy = ScheduleRules.WalkInReturnBy(connection, transaction, roomId, customerId, now, now);
+                AuditService.WriteStaff(connection, transaction, actor.UserId, "Session.WalkIn", "RoomSession",
+                    id.ToString(CultureInfo.InvariantCulture), "Nhận khách trực tiếp phòng " + created.RoomCodeSnapshot + "; cần trả trước " + Utc(returnBy) + ".", now);
+                transaction.Commit();
+                return new WalkInResult { Session = created, ReturnBy = returnBy, CheckedAt = now };
+            }
+        }
+
+        public WalkInResult ReadWalkIn(LoginSession actor, int sessionId)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                permissions.Demand(actor, "Session.View", connection, transaction);
+                var now = clock.UtcNow.ToUniversalTime();
+                var current = ReadSession(connection, transaction, sessionId, false);
+                if (current == null || current.Status != "Active" || current.ReservationId.HasValue)
+                    throw new InvalidOperationException("Không tìm thấy phiên khách trực tiếp đang sử dụng.");
+                return new WalkInResult { Session = current, CheckedAt = now,
+                    ReturnBy = ScheduleRules.WalkInReturnBy(connection, transaction, current.RoomId, current.CustomerId, current.ActualStartTime, now) };
+            }
+        }
+
+        private static RoomSession ReadSession(SQLiteConnection connection, SQLiteTransaction transaction, int id, bool byReservation)
         {
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
                 command.CommandText = @"SELECT RoomSessionId,CustomerId,RoomId,ReservationId,ActualStartTime,ExpectedEndTime,ActualEndTime,
-HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FROM RoomSessions WHERE ReservationId=@source;";
-                command.Parameters.AddWithValue("@source", reservationId);
+HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FROM RoomSessions WHERE " + (byReservation ? "ReservationId" : "RoomSessionId") + "=@id;";
+                command.Parameters.AddWithValue("@id", id);
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read()) return null;

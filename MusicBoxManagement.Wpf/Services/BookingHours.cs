@@ -26,6 +26,18 @@ namespace MusicBoxManagement.Wpf.Services
         }
 
         // Actual arrival keeps its seconds/ticks and is not subject to booking slots.
+        public static DateTimeOffset GetOpenShiftEnd(DateTimeOffset now)
+        {
+            var local = now.ToOffset(VietnamOffset);
+            var time = local.TimeOfDay;
+            if (time >= TimeSpan.FromHours(9) && time < TimeSpan.FromHours(12))
+                return new DateTimeOffset(local.Date.AddHours(12), VietnamOffset).ToUniversalTime();
+            if (time >= TimeSpan.FromHours(13) && time < TimeSpan.FromHours(23))
+                return new DateTimeOffset(local.Date.AddHours(23), VietnamOffset).ToUniversalTime();
+            throw new ArgumentException("Chỉ nhận khách trực tiếp trong ca 09:00–12:00 hoặc 13:00–23:00.");
+        }
+
+        // Actual session intervals do not have to start on a booking slot.
         public static void ValidateSessionInterval(DateTimeOffset start, DateTimeOffset end)
         {
             var localStart = start.ToOffset(VietnamOffset);

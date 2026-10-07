@@ -114,6 +114,35 @@ AND (RoomId=@room OR CustomerId=@customer) AND @start<HoldEnd AND @end>HoldStart
             result.CanBook = true; result.Reason = "Đủ điều kiện nhận phòng.";
             return result;
         }
+        internal ReservationAvailability CheckWalkInAt(SQLiteConnection connection, SQLiteTransaction transaction,
+            int roomId, int customerId, DateTimeOffset now)
+        {
+            if (transaction == null || transaction.Connection != connection)
+                throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
+            var result = new ReservationAvailability { CheckedAt = now };
+            try { BookingHours.GetOpenShiftEnd(now); }
+            catch (ArgumentException error) { result.Reason = error.Message; return result; }
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.Parameters.AddWithValue("@room", roomId); command.Parameters.AddWithValue("@customer", customerId);
+                command.CommandText = "SELECT IsActive FROM Rooms WHERE RoomId=@room;";
+                var active = command.ExecuteScalar();
+                if (active == null || Convert.ToInt32(active) != 1)
+                { result.Reason = "Phòng không tồn tại hoặc đang khóa, không nhận khách trực tiếp được."; return result; }
+                command.CommandText = "SELECT RoomId FROM RoomSessions WHERE Status='Active' AND (RoomId=@room OR CustomerId=@customer) ORDER BY (RoomId=@room) DESC LIMIT 1;";
+                var occupied = command.ExecuteScalar();
+                if (occupied != null)
+                { result.Reason = Convert.ToInt32(occupied) == roomId ? "Phòng còn phiên Active, chưa thể nhận khách." : "Khách còn phiên Active, chưa thể nhận phòng."; return result; }
+                command.Parameters.AddWithValue("@now", Utc(now)); command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
+                command.CommandText = @"SELECT RoomId FROM Reservations WHERE Status='Confirmed' AND StartTime>@cutoff AND StartTime<=@now
+AND (RoomId=@room OR CustomerId=@customer) ORDER BY (RoomId=@room) DESC LIMIT 1;";
+                var booking = command.ExecuteScalar();
+                if (booking != null)
+                { result.Reason = Convert.ToInt32(booking) == roomId ? "Phòng có booking đã tới giờ và còn hạn; hãy nhận phòng từ booking hoặc xử lý booking trước." : "Khách có booking đã tới giờ và còn hạn; hãy xử lý booking trước."; return result; }
+            }
+            result.CanBook = true; result.Reason = "Đủ điều kiện nhận khách trực tiếp."; return result;
+        }
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
     }
 }
