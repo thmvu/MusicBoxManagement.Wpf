@@ -102,7 +102,7 @@ INSERT INTO AspNetUserRoles VALUES('manager','Manager');");
             Reject<UnauthorizedAccessException>(() => catalog.Search(staff));
             Reject<UnauthorizedAccessException>(() => catalog.Save(staff, null, New("0909999999")));
             auth.Logout(manager); Reject<UnauthorizedAccessException>(() => catalog.Search(manager));
-            Assert(new CustomerService(new SqliteDatabase(file)).Search(admin).Items.Count == 3 && Count(db, "PRAGMA user_version;") == 6 &&
+            Assert(new CustomerService(new SqliteDatabase(file)).Search(admin).Items.Count == 3 && Count(db, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion &&
                 Count(db, "SELECT COUNT(*) FROM AuditLog WHERE EntityName='Customer' AND ActorType<>'Staff';") == 0, "Persistence/schema/audit actor incorrect.");
             Console.WriteLine("PASS Customers: phone normalization, search, separate live permissions, unique/concurrent phones, stale edits, history IDs, audit rollback and persistence on temporary SQLite.");
         }

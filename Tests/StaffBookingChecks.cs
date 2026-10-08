@@ -71,7 +71,7 @@ INSERT INTO Customers(FullName,PhoneNumber) VALUES('Tên đã lưu','0912345678'
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Reservation.View');");
             parent.AfterBookingAsync(draft.LastCreatedReservationId).GetAwaiter().GetResult();Assert(parent.Items.Count==0 && parent.Status.Contains("Đã đặt hộ") && parent.Status.Contains("không còn quyền"),"Successful booking misreported after losing View.");
             auth.Logout(staff);Reject<UnauthorizedAccessException>(()=>route.Create(Request(1,17,"0900000000")));
-            Assert(Count(db,"PRAGMA user_version;")==6,"Staff form changed schema.");
+            Assert(Count(db,"PRAGMA user_version;")== SqliteDatabase.CurrentSchemaVersion,"Staff form changed schema.");
             Console.WriteLine("PASS Staff booking: Create-only/no unrelated CRUD, protected catalog/preview, phone overlap, Staff creator/audit, stale room/permission, atomic rollback, shared form duplicate/reset/privacy and parent refresh on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();if(File.Exists(file))File.Delete(file);}

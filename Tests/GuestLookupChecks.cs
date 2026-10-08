@@ -58,7 +58,7 @@ public static class MusicBoxGuestLookupChecks
             clock.UtcNow=other.StartTime.AddMinutes(15).AddTicks(-1);Assert(service.Lookup("0987654321").Items.Count==1,"Grace ended early.");
             clock.UtcNow=other.StartTime.AddMinutes(15);Assert(service.Lookup("0987654321").Items.Count==0 && (string)Sql(db,"SELECT Status FROM Reservations WHERE ReservationId="+other.ReservationId)=="NoShow","Exact grace lookup did not process NoShow.");
             Reject(()=>service.Cancel("0987654321",other.ReservationId));
-            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM Reservations;"))==3 && Convert.ToInt64(Sql(db,"PRAGMA user_version;"))==6,"Cancellation deleted bookings/changed schema.");
+            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM Reservations;"))==3 && Convert.ToInt64(Sql(db,"PRAGMA user_version;"))== SqliteDatabase.CurrentSchemaVersion,"Cancellation deleted bookings/changed schema.");
             // A stale lookup must re-check status at write time.
             clock.UtcNow=new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero);
             var stale=create.CreateGuest(Request(2,17,"0987654321"));Assert(service.Lookup("0987654321").Items.Count==1,"Stale fixture lookup failed.");

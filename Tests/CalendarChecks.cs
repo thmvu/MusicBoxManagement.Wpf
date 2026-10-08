@@ -111,7 +111,7 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT Permi
             Sql(db, "DELETE FROM RolePermission WHERE RoleId='Staff';"); Reject<UnauthorizedAccessException>(() => service.Read(staff, day));
             vm.LoadAsync().GetAwaiter().GetResult(); Assert(vm.Rooms.Count == 0 && vm.RoomChoices.Count == 0 && !vm.Details.Contains("Customer") && vm.CanLoad && vm.Status.Contains("Không còn quyền"), "VM revocation retained private data or trapped Close/Retry.");
             auth.Logout(admin); Reject<UnauthorizedAccessException>(() => service.Read(admin, day));
-            Assert(Convert.ToInt64(Sql(db, "PRAGMA user_version;")) == 6, "Schema changed.");
+            Assert(Convert.ToInt64(Sql(db, "PRAGMA user_version;")) == SqliteDatabase.CurrentSchemaVersion, "Schema changed.");
             Console.WriteLine("PASS Calendar: Vietnam Day/Week, protected live Calendar.View, current status, exact grace, holds/actual/expected/walk-in/completed/overdue, dynamic return deadline, locked history and read-only temporary SQLite.");
         }
         finally { System.Data.SQLite.SQLiteConnection.ClearAllPools(); foreach (var suffix in new[] { "", "-wal", "-shm", "-journal" }) if (File.Exists(file + suffix)) File.Delete(file + suffix); }

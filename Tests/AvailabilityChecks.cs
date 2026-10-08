@@ -93,7 +93,7 @@ public static class MusicBoxAvailabilityChecks
             }
             using(var c=db.OpenConnection())
             { Reject(()=>service.CheckReservation(c,null,1,1,Time(13),60)); }
-            Assert(Convert.ToInt64(Sql(db,"PRAGMA user_version;"))==6,"Availability changed schema.");
+            Assert(Convert.ToInt64(Sql(db,"PRAGMA user_version;"))== SqliteDatabase.CurrentSchemaVersion,"Availability changed schema.");
             Console.WriteLine("PASS Availability: Vietnam dates/shifts/slots/durations, room/customer overlap, grace tick boundaries, session/walk-in/overdue rules and transaction writers on temporary SQLite.");
         }
         finally { SQLiteConnection.ClearAllPools(); if(File.Exists(file))File.Delete(file); }

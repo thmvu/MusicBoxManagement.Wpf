@@ -167,7 +167,7 @@ INSERT INTO Customers(FullName,PhoneNumber) VALUES('A','0901111111'),('B','09022
             }
             Clear(db);id=Booking(db,1,1,20);clock.UtcNow=Time(19);
             auth.Logout(staff);Reject<UnauthorizedAccessException>(()=>service.CheckIn(staff,id));
-            Assert(Count(db,"PRAGMA user_version")==6,"Check-in changed schema.");
+            Assert(Count(db,"PRAGMA user_version")== SqliteDatabase.CurrentSchemaVersion,"Check-in changed schema.");
             Console.WriteLine("PASS CheckIn: current permission, actual UTC/ticks/full duration, grace/shift/Room/Customer overlap, snapshot/replay, status/audit rollback, concurrent replay/Room/Customer/NoShow/cancel/lock and clock after writer on temporary SQLite.");
         }
         finally { SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix); }

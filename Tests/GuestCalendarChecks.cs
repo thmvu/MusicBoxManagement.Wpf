@@ -48,7 +48,7 @@ INSERT INTO RoomSessions(CustomerId,RoomId,ReservationId,ActualStartTime,Expecte
             Sql(db,"UPDATE Rooms SET IsActive=0,InactiveReason='Private lock' WHERE RoomId=1;");vm.RefreshAsync().GetAwaiter().GetResult();Assert(vm.Slots.Count==0 && !vm.CanChoose && vm.CanClose && !vm.Status.Contains("Private lock"),"Locked room retained old schedule/leaked reason.");
             var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin","GuestCalendar-Test!").GetAwaiter().GetResult();var staffRoute=new StaffBookingService(db,admin,clock);
             Assert(staffRoute.ReadDay(2,date,60).Slots.Count==28,"Staff anonymous calendar route failed.");auth.Logout(admin);Reject<UnauthorizedAccessException>(()=>staffRoute.ReadDay(2,date,60));
-            Assert(Convert.ToInt64(Sql(db,"PRAGMA user_version;"))==6,"Schema changed.");
+            Assert(Convert.ToInt64(Sql(db,"PRAGMA user_version;"))== SqliteDatabase.CurrentSchemaVersion,"Schema changed.");
             Console.WriteLine("PASS Guest calendar: anonymous DTO/no login, 28 slots/Vietnam/date/duration/shifts, holds/grace/walk-in/overdue/immediate/tomorrow, locked rooms, read-only, stale writer rollback and Staff session guard on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix);}

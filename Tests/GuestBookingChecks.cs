@@ -35,7 +35,7 @@ public static class MusicBoxGuestBookingChecks
             vm.PhoneNumber="0987654321";Assert(vm.SubmitAsync().GetAwaiter().GetResult() && !vm.CanBook,"VM did not lock successful submit.");
             Assert(!vm.SubmitAsync().GetAwaiter().GetResult() && Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM Reservations;"))==2,"VM sent successful booking again.");
             vm.StartNew();Assert(vm.CanBook && vm.FullName==null && vm.PhoneNumber==null,"Start new retained guest data.");
-            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM AspNetUsers;"))==0 && Convert.ToInt64(Sql(db,"PRAGMA user_version;"))==6,"Guest booking required user/schema change.");
+            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM AspNetUsers;"))==0 && Convert.ToInt64(Sql(db,"PRAGMA user_version;"))== SqliteDatabase.CurrentSchemaVersion,"Guest booking required user/schema change.");
             Console.WriteLine("PASS Guest booking: public catalog, phone preview/customer overlap, NoShow maintenance, no preview writes, VM validation/confirmation/reset and schema on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();if(File.Exists(file))File.Delete(file);}

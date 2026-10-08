@@ -117,7 +117,7 @@ INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('
                 gate.Set();Task.WaitAll(lockTask,bookTask);
                 Assert(lockTask.Result!=bookTask.Result && !(Count(db,"SELECT IsActive FROM Rooms WHERE RoomId=1;")==0 && Count(db,"SELECT COUNT(*) FROM Reservations;")>0),"Room lock and actual booking both committed.");
             }
-            Assert(Count(db,"PRAGMA user_version;")==6 && Count(db,"SELECT COUNT(*) FROM AspNetUsers;")==2,"Booking changed schema or created Guest account.");
+            Assert(Count(db,"PRAGMA user_version;")== SqliteDatabase.CurrentSchemaVersion && Count(db,"SELECT COUNT(*) FROM AspNetUsers;")==2,"Booking changed schema or created Guest account.");
             Console.WriteLine("PASS Reservations: Guest/Staff, customer reuse, live permission, UTC/Confirmed/audit, rollback, NoShow tick boundaries/idempotence and concurrent room/customer bookings on temporary SQLite.");
         }
         finally {SQLiteConnection.ClearAllPools();if(File.Exists(file))File.Delete(file);}

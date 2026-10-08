@@ -51,7 +51,7 @@ INSERT INTO AspNetUserRoles VALUES('viewer','Staff');DELETE FROM RolePermission 
             result=service.Search(actor,null,"Completed");Assert(result.Items.Count==1 && !result.Items[0].IsExtendable && result.Items[0].Details.Contains("Trả thực tế") && result.Items[0].Session.HourlyRate==120000,"Completed/locked history not readable by snapshot.");
             Assert(service.Search(actor,null,null).Items.Count==2 && service.Search(actor).Items.Count==1,"Status filter wrong.");
             Sql(db,"UPDATE AspNetUsers SET SecurityStamp='revoked' WHERE Id='viewer';");Reject<UnauthorizedAccessException>(()=>service.Search(actor));
-            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM AuditLog"))==audits+3 && Convert.ToInt64(Sql(db,"PRAGMA user_version"))==6,"Read wrote data or changed schema.");
+            Assert(Convert.ToInt64(Sql(db,"SELECT COUNT(*) FROM AuditLog"))==audits+3 && Convert.ToInt64(Sql(db,"PRAGMA user_version"))== SqliteDatabase.CurrentSchemaVersion,"Read wrote data or changed schema.");
             Console.WriteLine("PASS Sessions: independent live View/Extend, normalized/status filters, UTC snapshots/actual/history, one read clock/dynamic WalkIn deadline, read-only, UI route permissions/stale, revoked session on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix);}

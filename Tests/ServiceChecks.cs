@@ -31,14 +31,14 @@ public static class MusicBoxServiceChecks
             var auth = new AuthenticationService(db);
             var admin = auth.SetupAdminAsync("admin", "Quản trị thử nghiệm", Password).GetAwaiter().GetResult();
             var catalog = new ServiceCatalogService(db);
-            Assert(Count(db, "PRAGMA user_version;") == 6 && catalog.ListForManagement(admin).Count == 0, "Schema/default catalog incorrect.");
+            Assert(Count(db, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion && catalog.ListForManagement(admin).Count == 0, "Schema/default catalog incorrect.");
             // Reconstruct v5; a conflicting table must leave the migration version/data intact.
-            Sql(db, "UPDATE RoomTypes SET PricePerHour=123000 WHERE RoomTypeId=1; DROP TABLE Services; PRAGMA user_version=5; CREATE TABLE Services(Fixture TEXT);");
+            Sql(db, "UPDATE RoomTypes SET PricePerHour=123000 WHERE RoomTypeId=1; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; PRAGMA user_version=5; CREATE TABLE Services(Fixture TEXT);");
             Reject<SQLiteException>(() => db.Initialize());
             Assert(Count(db, "PRAGMA user_version;") == 5 && Count(db, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 123000,
                 "Failed migration changed existing data/version.");
             Sql(db, "DROP TABLE Services;"); db.Initialize();
-            Assert(Count(db, "PRAGMA user_version;") == 6 && Count(db, "SELECT COUNT(*) FROM AspNetUsers;") == 1 &&
+            Assert(Count(db, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion && Count(db, "SELECT COUNT(*) FROM AspNetUsers;") == 1 &&
                 Count(db, "SELECT COUNT(*) FROM AuditLog;") > 0 && Count(db, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 123000,
                 "v5 upgrade lost accounts, audit or room-type data.");
             Sql(db, @"INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive)
@@ -102,7 +102,7 @@ INSERT INTO AspNetUserRoles VALUES('staff','Staff');");
             }
             Reject<InvalidOperationException>(() => catalog.Save(admin, first, Input(first)));
             Assert(new ServiceCatalogService(new SqliteDatabase(file)).ListForManagement(admin).Count == 1, "Reopen lost catalog.");
-            Console.WriteLine("PASS: schema v6/migration, catalog, validation, live permissions, stale/concurrent edits and atomic audit on temporary SQLite.");
+            Console.WriteLine("PASS: schema/migration, catalog, validation, live permissions, stale/concurrent edits and atomic audit on temporary SQLite.");
         }
         finally { SQLiteConnection.ClearAllPools(); if (File.Exists(file)) File.Delete(file); }
     }

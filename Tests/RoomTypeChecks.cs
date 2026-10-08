@@ -47,7 +47,7 @@ INSERT INTO AspNetUserRoles VALUES (@id, @role);", "@id", id, "@role", role, "@h
             var auth = new AuthenticationService(database);
             var service = new RoomTypeService(database);
             var admin = auth.SetupAdminAsync("admin", "Quản trị viên thử nghiệm", Password).GetAwaiter().GetResult();
-            Assert(Count(database, "PRAGMA user_version;") == 6, "Expected schema v6.");
+            Assert(Count(database, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion, "Expected schema v6.");
             VerifyV2Migration(database, admin.UserId);
             var hash = (string)Sql(database, "SELECT PasswordHash FROM AspNetUsers WHERE Id=@id;", "@id", admin.UserId);
             FixtureUser(database, "manager", "Manager", hash);
@@ -151,7 +151,7 @@ INSERT INTO AspNetUserRoles VALUES (@id, @role);", "@id", id, "@role", role, "@h
         var existingId = Count(database, "SELECT AuditLogId FROM AuditLog LIMIT 1;");
         var existingTime = (string)Sql(database, "SELECT CreatedAt FROM AuditLog LIMIT 1;");
         // Reconstruct v2 audit storage and include Guest/System to verify all actors.
-        Sql(database, @"DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms;
+        Sql(database, @"DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms;
 ALTER TABLE AuditLog RENAME TO AuditLog_saved;
 CREATE TABLE AuditLog (
 AuditLogId INTEGER PRIMARY KEY, ActorType TEXT NOT NULL CHECK(ActorType IN ('User','Guest','System')),
@@ -168,7 +168,7 @@ CREATE TABLE AuditLog_v2(test TEXT);");
             "Failed audit migration changed the old schema or records.");
         Sql(database, "DROP TABLE AuditLog_v2;");
         database.Initialize();
-        Assert(Count(database, "PRAGMA user_version;") == 6 && Count(database, "SELECT COUNT(*) FROM AuditLog;") == 3,
+        Assert(Count(database, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion && Count(database, "SELECT COUNT(*) FROM AuditLog;") == 3,
             "Audit migration lost records.");
         Assert((string)Sql(database, "SELECT ActorType FROM AuditLog WHERE AuditLogId=@id;", "@id", existingId) == "Staff" &&
             (string)Sql(database, "SELECT CreatedAt FROM AuditLog WHERE AuditLogId=@id;", "@id", existingId) == existingTime &&

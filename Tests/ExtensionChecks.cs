@@ -176,7 +176,7 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId<>(SELECT Permis
             }
             held.Entered.Dispose();held.Release.Dispose();auth.Logout(staff);
             Reject<UnauthorizedAccessException>(()=>service.ExtendStaff(staff,source.RoomSessionId,source.ExpectedEndTime.Value,30));
-            Assert(Count(db,"PRAGMA user_version")==6,"Extension changed schema.");
+            Assert(Count(db,"PRAGMA user_version")== SqliteDatabase.CurrentSchemaVersion,"Extension changed schema.");
             Console.WriteLine("PASS Extension: independent live permission, read-only preview, 30/60/repeat/stale, UTC ticks/exact end/shifts, Room/Customer overlap and private limits/grace, unchanged reservation/snapshots, rollback, competing extension/booking/cancel/NoShow/lock and clock after writer on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix);}

@@ -116,7 +116,7 @@ try {
     try {
         $command = $connection.CreateCommand()
         try {
-            $command.CommandText = 'PRAGMA user_version = 7;'
+            $command.CommandText = ('PRAGMA user_version = ' + ([MusicBoxManagement.Wpf.Data.SqliteDatabase]::CurrentSchemaVersion + 1) + ';')
             [void]$command.ExecuteNonQuery()
         } finally { $command.Dispose() }
     } finally { $connection.Dispose() }

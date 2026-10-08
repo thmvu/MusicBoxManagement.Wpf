@@ -91,7 +91,7 @@ SELECT CustomerId,RoomId,ReservationId,StartTime,EndTime,120000,'R2','VIP','VIP'
             gate.Set();Task.WaitAll(cancelTask,createTask);gate.Dispose();
             Assert(Count(db,"SELECT COUNT(*) FROM Reservations WHERE RoomId=1 AND StartTime='"+Time(13).ToUniversalTime().ToString("O")+"' AND Status='Confirmed';")==(replacementCreated?1:0),"Cancel/create race left overlapping Confirmed bookings.");
             Assert(Count(db,"SELECT COUNT(*) FROM Customers WHERE PhoneNumber='0904444444';")==(replacementCreated?1:0),"Rejected replacement left a new customer.");
-            Assert(Count(db,"PRAGMA user_version;")==6 && (string)Sql(db,"SELECT StartTime FROM Reservations WHERE ReservationId="+first.ReservationId)==first.StartTime.ToString("O"),"Staff cancel changed schema/old interval.");
+            Assert(Count(db,"PRAGMA user_version;")== SqliteDatabase.CurrentSchemaVersion && (string)Sql(db,"SELECT StartTime FROM Reservations WHERE ReservationId="+first.ReservationId)==first.StartTime.ToString("O"),"Staff cancel changed schema/old interval.");
             Console.WriteLine("PASS Staff reservations: protected/current permissions, date/phone/status/details, mandatory reasons, Guest/Staff deadline difference, grace/source/state guards, audit rollback, concurrent cancellations, VM privacy and schema on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();if(File.Exists(file))File.Delete(file);}

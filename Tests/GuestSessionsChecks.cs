@@ -125,7 +125,7 @@ public static class MusicBoxGuestSessionsChecks
                 Task.WaitAll(holding,waiting);Assert(waiting.Result && waitingClock.Reads==1 && (string)Sql(db,"SELECT ExpectedEndTime FROM RoomSessions")==Utc(Time(14)),"Guest used time before writer wait.");
             }
             held.Entered.Dispose();held.Release.Dispose();
-            Assert(Count(db,"PRAGMA user_version")==6,"Guest changed schema.");
+            Assert(Count(db,"PRAGMA user_version")== SqliteDatabase.CurrentSchemaVersion,"Guest changed schema.");
             Console.WriteLine("PASS GuestSessions: current phone/private DTO/Active only, normalized lookup, snapshots/ticks/walk-in deadline, read-only preview, 30/60/fresh/stale/exact end/shifts/Room/customer/grace, Guest audit rollback, concurrent Guest/Staff/booking and clock after writer on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix);}

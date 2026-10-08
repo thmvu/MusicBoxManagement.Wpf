@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Gọi món, tiền tạm tính, hóa đơn và báo cáo chưa có.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.1 đã có dữ liệu/service đơn món, chưa có giao diện gọi món; tiền tạm tính, hóa đơn và báo cáo chưa có.
 
 ## Cấu trúc để học
 
@@ -343,3 +343,7 @@ GuestSessionService tra cứu phiên Active đúng SĐT hiện hành qua DTO pub
 ## Bước 6c.3b — Khách xem phiên và xác nhận gia hạn
 
 Khách → Tra cứu SĐT → nhập số → tab Đang sử dụng: xem phiên Active/giá đã chốt/giờ nhận/trả; phiên từ booking có thể chọn 30/60 phút → Xem trước gia hạn → Xác nhận gia hạn hoặc Giữ giờ trả. Walk-in chỉ hiện hạn trả động, không có gia hạn. Đổi số xóa dữ liệu cũ; xác nhận kiểm tra lại số/phiên/giờ/lịch, chặn gửi lặp và giữ thông báo đã gia hạn nếu refresh lỗi. Debug/Release và 16 bộ kiểm tra đạt, UI 76 ảnh trên dữ liệu tạm. Xem [báo cáo 6c.3b](docs/Step6c3b_GuestSessionUi.md). Tiếp theo gọi món/Order; tiền tạm tính/checkout/hóa đơn/dashboard/RBAC/báo cáo vẫn theo plan.
+
+## Bước 6d.1 — nền tảng đơn món
+
+Schema v7 nâng từ v6 giữ dữ liệu, thêm Orders/OrderItems và snapshot tên/giá. OrderService tạo Guest Pending hoặc Staff Completed (món đã phục vụ), xác nhận/hủy Pending cùng transaction/audit, quyền riêng và số hiện hành; chỉ Active Session, món mới trong ca và đang bán, mỗi món 1–10. Đơn cũ giữ snapshot khi danh mục đổi/ngừng bán. Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.1](docs/Step6d1_OrderFoundation.md). **Chưa có giao diện gọi món**; tiếp theo menu/giỏ món và thao tác phục vụ/hủy, rồi tiền tạm tính/checkout theo plan.

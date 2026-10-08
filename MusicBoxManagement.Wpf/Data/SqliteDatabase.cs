@@ -7,6 +7,7 @@ namespace MusicBoxManagement.Wpf.Data
 {
     public sealed class SqliteDatabase
     {
+        public const int CurrentSchemaVersion = 7;
         public string FilePath { get; }
 
         public static string DefaultPath => Path.Combine(
@@ -61,7 +62,7 @@ namespace MusicBoxManagement.Wpf.Data
                 command.Transaction = transaction;
                 command.CommandText = "PRAGMA user_version;";
                 var version = Convert.ToInt32(command.ExecuteScalar());
-                if (version > 6) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
+                if (version > CurrentSchemaVersion) throw new InvalidOperationException("Database thuộc phiên bản ứng dụng mới hơn.");
                 if (version == 0)
                 {
                     command.CommandText = @"
@@ -86,6 +87,7 @@ PRAGMA user_version = 1;";
                 if (version < 4) RoomSchema.Create(command);
                 if (version < 5) RoomUsageSchema.Create(command);
                 if (version < 6) ServiceSchema.Create(command);
+                if (version < 7) OrderSchema.Create(command);
                 transaction.Commit();
             }
         }
