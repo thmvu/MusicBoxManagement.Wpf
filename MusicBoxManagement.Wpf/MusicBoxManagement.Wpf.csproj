@@ -141,6 +141,8 @@
     <Compile Include="Views\RoomTypeEditWindow.xaml.cs"><DependentUpon>RoomTypeEditWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\AuthenticationWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
+    <Compile Include="Models\GuestSession.cs" />
+    <Compile Include="Services\GuestSessionService.cs" />
     <Compile Include="Models\RoomType.cs" />
     <Compile Include="Services\RoomTypeService.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />

@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); đã có service và UI gia hạn nội bộ; chưa có gia hạn Guest, gọi món, hóa đơn và báo cáo.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v6**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in); đã có service và UI gia hạn nội bộ. Bước 6c.3a bổ sung service Guest tra cứu Active/gia hạn theo SĐT, chưa nối giao diện Guest. Gọi món, hóa đơn và báo cáo chưa có.
 
 ## Cấu trúc để học
 
@@ -335,3 +335,7 @@ Gia hạn phiên Active từ booking theo Session.Extend, mỗi lần +30/+60 tr
 ## Bước 6c.2 — phiên sử dụng và giao diện gia hạn
 
 Đăng nhập → Phiên sử dụng → lọc Active/Completed/Tất cả hoặc SĐT → chọn phiên. Session.View độc lập Reservation.View; chi tiết dùng snapshot giá/phòng và giờ thực tế, walk-in hiện giờ cần trả động. Phiên từ booking đủ điều kiện với Session.Extend có thể chọn 30/60 phút, xem trước và xác nhận gia hạn. Chặn gửi lặp/stale/mất quyền, tải lại giờ mới và giữ thông báo thành công khi refresh lỗi sau commit. Chi tiết [báo cáo 6c.2](docs/Step6c2_SessionsExtensionUi.md). Debug/Release và 14 bộ kiểm tra liên quan đạt, UI 69 ảnh trên dữ liệu tạm. Tiếp theo Guest Lookup Active và gia hạn theo SĐT; gọi món/tiền tạm tính và checkout vẫn theo plan.
+
+## Bước 6c.3a — service phiên và gia hạn cho Khách
+
+GuestSessionService tra cứu phiên Active đúng SĐT hiện hành qua DTO public riêng; preview/gia hạn +30/+60 kiểm tra lại số, trạng thái, giờ trả, ca và lịch Room/Customer trong transaction, audit Guest và chặn xác nhận cũ. Giữ snapshot/Reservation; walk-in chỉ xem giờ cần trả động. Debug/Release và 16 bộ kiểm tra đạt trên dữ liệu tạm, UI cũ 69 ảnh. Xem [báo cáo 6c.3a](docs/Step6c3a_GuestSessions.md). **Chưa nối vào màn hình Tra cứu SĐT**; tiếp theo 6c.3b giao diện phiên Active và xác nhận gia hạn cho Khách. Tiền tạm tính/gọi món/checkout vẫn giữ trong plan.
