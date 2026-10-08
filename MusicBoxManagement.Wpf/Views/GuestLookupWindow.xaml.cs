@@ -13,5 +13,8 @@ namespace MusicBoxManagement.Wpf.Views
   private void Cancel_Click(object sender,RoutedEventArgs args)=>viewModel.RequestCancel();
   private void Keep_Click(object sender,RoutedEventArgs args)=>viewModel.KeepBooking();
   private async void Confirm_Click(object sender,RoutedEventArgs args)=>await viewModel.ConfirmCancelAsync();
+  private async void PreviewExtension_Click(object sender,RoutedEventArgs args)=>await viewModel.PreviewExtensionAsync();
+  private async void ConfirmExtension_Click(object sender,RoutedEventArgs args)=>await viewModel.ConfirmExtensionAsync();
+  private void KeepSession_Click(object sender,RoutedEventArgs args)=>viewModel.KeepSession();
  }
 }

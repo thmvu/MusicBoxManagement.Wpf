@@ -20,6 +20,7 @@ namespace MusicBoxManagement.Wpf.Models
     public sealed class GuestReservationLookup
     {
         public List<GuestReservation> Items { get; internal set; }
+        public GuestSession ActiveSession { get; internal set; }
         public DateTimeOffset CheckedAt { get; internal set; }
     }
 }

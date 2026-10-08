@@ -28,8 +28,7 @@ namespace MusicBoxManagement.Wpf.Services
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
             {
                 var now = clock.UtcNow.ToUniversalTime();
-                var current = ReadActive(connection, transaction, phone, null);
-                return current == null ? null : PublicSession(connection, transaction, current, now);
+                return ReadActiveAt(connection, transaction, phone, now);
             }
         }
 
@@ -75,6 +74,12 @@ namespace MusicBoxManagement.Wpf.Services
                 transaction.Commit();
                 return result;
             }
+        }
+
+        internal static GuestSession ReadActiveAt(SQLiteConnection connection, SQLiteTransaction transaction, string phone, DateTimeOffset now)
+        {
+            var current = ReadActive(connection, transaction, phone, null);
+            return current == null ? null : PublicSession(connection, transaction, current, now);
         }
 
         private static RoomSession DemandActive(SQLiteConnection connection, SQLiteTransaction transaction, string phone, int id)

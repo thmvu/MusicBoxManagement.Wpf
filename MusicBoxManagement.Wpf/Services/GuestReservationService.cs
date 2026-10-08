@@ -16,6 +16,7 @@ namespace MusicBoxManagement.Wpf.Services
         public GuestReservationService(SqliteDatabase database) : this(database,new SystemClock()) { }
         public GuestReservationService(SqliteDatabase database,IClock clock)
         { this.database=database??throw new ArgumentNullException(nameof(database));this.clock=clock??throw new ArgumentNullException(nameof(clock));noShows=new NoShowService(database,clock); }
+        internal GuestSessionService ForSessions() => new GuestSessionService(database, clock);
         public GuestReservationLookup Lookup(string phoneNumber)
         {
             var phone=PhoneNumberNormalizer.Normalize(phoneNumber);
@@ -37,7 +38,7 @@ ORDER BY b.StartTime,b.ReservationId;";
                     items.Add(new GuestReservation{ReservationId=reader.GetInt32(0),RoomCode=reader.GetString(1),RoomName=reader.GetString(2),
                         StartTime=start,EndTime=Parse(reader.GetString(4)),CanCancel=now<=start.AddHours(-2)});
                 }
-                return new GuestReservationLookup{Items=items,CheckedAt=now};
+                return new GuestReservationLookup{Items=items,CheckedAt=now,ActiveSession=GuestSessionService.ReadActiveAt(connection,transaction,phone,now)};
             }
         }
         public void Cancel(string phoneNumber,int reservationId)

@@ -134,6 +134,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
+            VerifyGuestSessionsUi(Path.Combine(testDirectory,"guest-sessions-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -640,7 +641,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered sixty-nine views.");
+            Console.WriteLine("PASS WPF UI: Guest Active/extension/phone/confirmation/compact/stale/conflict/duplicate/post-commit, Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered seventy-six views.");
         }
         finally
         {
@@ -1111,6 +1112,73 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT Permi
             Assert(vm.Items.Count==0 && vm.Selected==null && !vm.CanCancel,"Changing phone left old results.");
             Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);
             Assert(vm.Items.Count==0 && vm.Status.Contains("Không có"),"Unknown phone returned others' bookings.");
+        }
+        finally{form.Close();}
+    }
+
+    private static void VerifyGuestSessionsUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var admin=auth.SetupAdminAsync("admin","Admin UI","Guest-UI-2026!").GetAwaiter().GetResult();
+        Action<string> sql=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+        Func<string,object> value=statement=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;return cmd.ExecuteScalar();}};
+        Func<int,int,DateTimeOffset> time=(h,m)=>new DateTimeOffset(2026,10,8,h,m,0,TimeSpan.FromHours(7));
+        sql("INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('G01','Phòng Guest',1,'test.png',1,'test'),('G02','Phòng khác',2,'test.png',1,'test');");
+        var clock=new LookupClock{UtcNow=time(9,0)};var booking=new ReservationService(db,clock);var sessions=new RoomSessionService(db,clock);
+        var source=booking.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Khách riêng",PhoneNumber="0901111111",StartTime=time(13,0),DurationMinutes=60});
+        booking.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=2,FullName="Khách riêng",PhoneNumber="0901111111",StartTime=time(18,0),DurationMinutes=60});
+        clock.UtcNow=time(13,0).AddSeconds(12).AddTicks(1234);var current=sessions.CheckIn(admin,source.ReservationId);
+        var form=new GuestLookupWindow(new GuestReservationService(db,clock));var vm=(GuestLookupViewModel)form.DataContext;
+        Action search=()=>{Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action preview=()=>{Click(Field<Button>(form,"PreviewExtensionButton"));PumpUntil(()=>!vm.IsBusy);};
+        try
+        {
+            form.Show();Field<TextBox>(form,"PhoneInput").Text="+84 901.111-111";search();
+            Assert(vm.Items.Count==1 && vm.ActiveSession.SessionId==current.RoomSessionId && vm.CanExtend && vm.SessionDetails.Contains("13:00:12"),"Guest lookup missed Active/current booking/ticks.");
+            Field<TabControl>(form,"LookupTabs").SelectedIndex=1;Image(form,outputDirectory,"guest-session-active");
+            sql("UPDATE RoomTypes SET PricePerHour=999000;");preview();
+            Assert(vm.IsExtensionConfirming && !vm.CanSearch && !vm.CanCancel && !Field<ComboBox>(form,"ExtensionMinutesInput").IsEnabled,"Confirmation did not lock inputs/other actions.");
+            Assert(vm.ExtensionDetails.Contains("14:30:12") && vm.ActiveSession.HourlyRate==120000,"Guest preview lost actual/snapshot.");
+            Image(form,outputDirectory,"guest-session-confirm");
+            form.Width=form.MinWidth;form.Height=form.MinHeight;Image(form,outputDirectory,"guest-session-confirm-compact");
+            var confirm=Field<Button>(form,"ConfirmExtensionButton");var tabs=Field<TabControl>(form,"LookupTabs");
+            Assert(confirm.IsVisible && confirm.TranslatePoint(new Point(0,0),tabs).Y+confirm.ActualHeight<tabs.ActualHeight,"Guest confirmation buttons require scrolling at minimum size.");
+            form.Width=1040;form.Height=690;Click(Field<Button>(form,"KeepSessionButton"));
+            Assert(!vm.IsExtensionConfirming && vm.CanExtend && Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend'"))==0,"Keep session wrote extension.");
+            preview();Click(Field<Button>(form,"ConfirmExtensionButton"));Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.Status.Contains("Đã gia hạn") && vm.ActiveSession.ExpectedEndTime==current.ExpectedEndTime.Value.AddMinutes(30) && Convert.ToInt64(value("SELECT COUNT(*) FROM AuditLog WHERE Action='Session.Extend' AND ActorType='Guest' AND UserId IS NULL"))==1,"Guest duplicate confirmation/receipt/audit wrong.");
+            Image(form,outputDirectory,"guest-session-extended");
+            preview();sessions.ExtendStaff(admin,current.RoomSessionId,vm.ActiveSession.ExpectedEndTime.Value,30);
+            Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.ActiveSession==null && vm.Items.Count==0 && !vm.CanConfirmExtension && vm.Status.Contains("thay đổi"),"Stale guest form did not clear results.");
+            search();Field<ComboBox>(form,"ExtensionMinutesInput").SelectedItem=60;
+            // Preview can succeed but a new booking before confirm must win the later write check.
+            preview();booking.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Không lộ tên",PhoneNumber="0902222222",StartTime=time(16,0),DurationMinutes=60});
+            Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.ActiveSession==null && vm.Status.Contains("Giới hạn") && !vm.Status.Contains("0902222222") && !vm.Status.Contains("Không lộ tên"),"Later conflict leaked data or stale results.");
+            Image(form,outputDirectory,"guest-session-conflict");
+            search();vm.ExtensionMinutes=30;preview();sql("UPDATE Customers SET PhoneNumber='0909999999' WHERE PhoneNumber='0901111111';");
+            Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.ActiveSession==null && vm.Items.Count==0 && vm.Status.Contains("SĐT"),"Guest writer accepted obsolete phone.");
+            Field<TextBox>(form,"PhoneInput").Text="0909999999";search();preview();
+            Field<TextBox>(form,"PhoneInput").Text="0903333333";
+            Assert(vm.ActiveSession==null && vm.Items.Count==0 && !vm.IsExtensionConfirming && !vm.CanConfirmExtension,"Changed phone retained session or confirmation.");
+            search();Assert(vm.ActiveSession==null && vm.Status.Contains("Không có"),"Wrong phone returned session.");
+            Field<TextBox>(form,"PhoneInput").Text="0909999999";search();preview();
+            sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+clock.UtcNow.ToUniversalTime().ToString("O")+"';");
+            Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);Assert(vm.ActiveSession==null,"Completed stale session remained public.");
+            var walk=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Walk-in",PhoneNumber="0909999999"});search();
+            Assert(vm.ActiveSession!=null && !vm.CanExtend && vm.SessionDetails.Contains("không có gia hạn") && vm.ActiveSession.ReturnBy==time(16,0),"Walk-in UI extension/deadline wrong.");
+            form.Width=form.MinWidth;form.Height=form.MinHeight;Image(form,outputDirectory,"guest-session-walkin-compact");
+            // Refresh fails after a successful extension; retain success, clear data, do not invite replay.
+            sql("DELETE FROM RoomSessions;DELETE FROM Reservations;");clock.UtcNow=time(9,0);
+            var fresh=booking.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Khách",PhoneNumber="0909999999",StartTime=time(13,0),DurationMinutes=60});
+            clock.UtcNow=time(13,0);sessions.CheckIn(admin,fresh.ReservationId);search();preview();
+            booking.CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=2,FullName="Hết hạn",PhoneNumber="0902222222",StartTime=time(13,0),DurationMinutes=60});
+            sql("CREATE TRIGGER FailNoShowRefresh BEFORE INSERT ON AuditLog WHEN NEW.Action='Reservation.NoShow' BEGIN SELECT RAISE(ABORT,'refresh failed'); END;");clock.UtcNow=time(13,15);
+            Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
+            Assert(vm.ActiveSession==null && vm.Items.Count==0 && vm.Status.Contains("Đã gia hạn") && vm.Status.Contains("chưa tải") && (string)value("SELECT ExpectedEndTime FROM RoomSessions")==time(14,30).ToUniversalTime().ToString("O"),"Refresh failure hid committed extension.");
+            Image(form,outputDirectory,"guest-session-refresh-failed");sql("DROP TRIGGER FailNoShowRefresh;");
         }
         finally{form.Close();}
     }
