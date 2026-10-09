@@ -25,6 +25,54 @@ public static class MusicBoxOrderChecks
     private static void Reject<T>(Action action)where T:Exception{try{action();}catch(T){return;}throw new Exception("Expected "+typeof(T).Name);}
     private static OrderLineRequest[] Cart(int id=1,int quantity=1){return new[]{new OrderLineRequest{ServiceId=id,Quantity=quantity}};}
     private static bool Attempt(Action action){try{action();return true;}catch(InvalidOperationException){return false;}}
+    private static void VerifyMenu(SqliteDatabase db,Clock clock,LoginSession actor,OrderService service,int sessionId)
+    {
+        clock.Value=Time(13).AddSeconds(11).AddTicks(1234);
+        Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Order.Create';");
+        var orders=Count(db,"SELECT COUNT(*) FROM Orders");var audits=Count(db,"SELECT COUNT(*) FROM AuditLog");clock.Reads=0;
+        var menu=service.ReadMenuGuest("+84 901.111-111",sessionId);
+        Assert(menu.CanCreate && menu.Items.Count==1 && menu.Items.Single().ServiceId==2 && menu.CheckedAt==clock.Value && clock.Reads==1,"Menu exposed inactive services or wrong normalized phone/time.");
+        Assert(service.ReadMenuStaff(actor,sessionId).Items.Count==1,"Create-only staff menu required unrelated rights.");
+        var cart=new[]{new OrderLineRequest{ServiceId=2,Quantity=2},new OrderLineRequest{ServiceId=2,Quantity=3}};
+        clock.Reads=0;var preview=service.PreviewGuest("0901111111",sessionId,cart);
+        Assert(preview.Items.Count==1 && preview.Items.Single().Quantity==5 && preview.Amount==175000m && preview.CheckedAt==clock.Value && clock.Reads==1,"Cart preview lost merged quantity/current prices/one clock.");
+        Assert(service.PreviewStaff(actor,sessionId,cart).Amount==preview.Amount,"Staff preview used unrelated rights or prices.");
+        Assert(Count(db,"SELECT COUNT(*) FROM Orders")==orders && Count(db,"SELECT COUNT(*) FROM AuditLog")==audits,"Menu/preview wrote data.");
+        foreach(var type in new[]{typeof(OrderMenu),typeof(OrderMenuItem),typeof(OrderPreview)})
+            foreach(var name in new[]{"CustomerId","PhoneNumber","FullName","CreatedByUserId","RoomSessionId"})Assert(type.GetProperty(name)==null,"Public menu/cart leaks "+name);
+        Reject<UnauthorizedAccessException>(()=>service.ReadMenuStaff(null,sessionId));
+        Reject<InvalidOperationException>(()=>service.ReadMenuGuest("0902222222",sessionId));
+        Reject<InvalidOperationException>(()=>service.PreviewGuest("0902222222",sessionId,cart));
+        Reject<ArgumentException>(()=>service.ReadMenuGuest("bad",sessionId));
+        Reject<ArgumentException>(()=>service.PreviewGuest("0901111111",sessionId,new OrderLineRequest[0]));
+        Reject<ArgumentException>(()=>service.PreviewStaff(actor,sessionId,Cart(2,11)));
+        Reject<ArgumentException>(()=>service.PreviewGuest("0901111111",sessionId,new[]{new OrderLineRequest{ServiceId=2,Quantity=6},new OrderLineRequest{ServiceId=2,Quantity=5}}));
+        Reject<InvalidOperationException>(()=>service.PreviewGuest("0901111111",sessionId,Cart(1)));
+        foreach(var time in new[]{Time(12),Time(23)})
+        {
+            clock.Value=time;Assert(!service.ReadMenuGuest("0901111111",sessionId).CanCreate && !service.ReadMenuStaff(actor,sessionId).CanCreate,"Menu enabled new order outside shift.");
+            Reject<ArgumentException>(()=>service.PreviewGuest("0901111111",sessionId,cart));Reject<ArgumentException>(()=>service.PreviewStaff(actor,sessionId,cart));
+        }
+        clock.Value=Time(13);Sql(db,"UPDATE Customers SET PhoneNumber='0909999999';");
+        Reject<InvalidOperationException>(()=>service.ReadMenuGuest("0901111111",sessionId));Reject<InvalidOperationException>(()=>service.PreviewGuest("0901111111",sessionId,cart));
+        Assert(service.ReadMenuGuest("0909999999",sessionId).CanCreate,"Menu ignored changed current phone.");Sql(db,"UPDATE Customers SET PhoneNumber='0901111111';");
+        Sql(db,"UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+Utc(Time(13,30))+"';");
+        Reject<InvalidOperationException>(()=>service.ReadMenuGuest("0901111111",sessionId));Reject<InvalidOperationException>(()=>service.ReadMenuStaff(actor,sessionId));
+        Reject<InvalidOperationException>(()=>service.PreviewGuest("0901111111",sessionId,cart));Reject<InvalidOperationException>(()=>service.PreviewStaff(actor,sessionId,cart));
+        Sql(db,"UPDATE RoomSessions SET Status='Active',ActualEndTime=NULL;");
+        preview=service.PreviewGuest("0901111111",sessionId,cart);Sql(db,"UPDATE Services SET Name='Bánh mới',Price=45000 WHERE ServiceId=2;");
+        var saved=service.CreateGuest("0901111111",sessionId,cart);
+        Assert(preview.Amount==175000m && saved.Items.Single().UnitPrice==45000 && saved.Items.Single().ServiceNameSnapshot=="Bánh mới","Preview froze name/price for subsequent create.");
+        service.PreviewGuest("0901111111",sessionId,cart);Sql(db,"UPDATE Services SET IsActive=0 WHERE ServiceId=2;");orders=Count(db,"SELECT COUNT(*) FROM Orders");
+        Reject<InvalidOperationException>(()=>service.CreateGuest("0901111111",sessionId,cart));
+        Assert(service.ReadMenuGuest("0901111111",sessionId).Items.Count==0 && Count(db,"SELECT COUNT(*) FROM Orders")==orders,"Stale cart created inactive order or empty menu seeded services.");
+        Sql(db,"UPDATE Services SET IsActive=1,Price=9223372036854775807 WHERE ServiceId=2;");
+        Assert(service.PreviewGuest("0901111111",sessionId,Cart(2,10)).Amount==(decimal)long.MaxValue*10,"Cart total overflowed long.");
+        Sql(db,"UPDATE Services SET Price=45000 WHERE ServiceId=2;DELETE FROM RolePermission WHERE RoleId='Staff';");
+        Reject<UnauthorizedAccessException>(()=>service.ReadMenuStaff(actor,sessionId));Reject<UnauthorizedAccessException>(()=>service.PreviewStaff(actor,sessionId,cart));
+        // Staff must fail after revocation; the anonymous route remains a separate explicit API.
+        Assert(service.ReadMenuGuest("0901111111",sessionId).CanCreate,"Staff revocation incorrectly disabled Guest route.");
+    }
     public static void Run()
     {
         var file=Path.Combine(Path.GetTempPath(),"MusicBoxOrders_"+Guid.NewGuid().ToString("N")+".db");var db=new SqliteDatabase(file);
@@ -133,6 +181,7 @@ INSERT INTO AspNetUserRoles VALUES('operator','Staff');DELETE FROM RolePermissio
             Assert(creating.Result.Items.Single().UnitPrice==original.Price && creating.Result.Items.Single().ServiceNameSnapshot==original.Name && creating.Result.Status=="Pending" && Count(db,"SELECT IsActive FROM Services WHERE ServiceId=1")==0,"Queued catalog writer altered or cancelled existing snapshot.");
             creatingClock.Entered.Dispose();creatingClock.Release.Dispose();
             Reject<InvalidOperationException>(()=>service.CreateGuest("0901111111",sessionId,Cart()));
+            VerifyMenu(db,clock,actor,service,sessionId);
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Order.View');");Reject<UnauthorizedAccessException>(()=>service.ListStaff(actor,sessionId));
             auth.Logout(actor);Reject<UnauthorizedAccessException>(()=>service.ConfirmStaff(actor,stale.OrderId));
             var savedOrders=Count(db,"SELECT COUNT(*) FROM Orders");var savedItems=Count(db,"SELECT COUNT(*) FROM OrderItems");var savedAudits=Count(db,"SELECT COUNT(*) FROM AuditLog");

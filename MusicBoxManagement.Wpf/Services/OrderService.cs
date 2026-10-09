@@ -35,30 +35,8 @@ namespace MusicBoxManagement.Wpf.Services
                 if (phone == null) permissions.Demand(actor, "Order.Create", connection, transaction);
                 DemandSession(connection, transaction, sessionId, phone, true);
                 var now = clock.UtcNow.ToUniversalTime();
-                try { BookingHours.GetOpenShiftEnd(now); }
-                catch (ArgumentException) { throw new ArgumentException("Chỉ nhận món mới trong ca 09:00–12:00 hoặc 13:00–23:00."); }
-                if (items == null) throw new ArgumentException("Cần ít nhất một món.");
-                var lines = items.Select(i => i == null ? null : new OrderLineRequest { ServiceId = i.ServiceId, Quantity = i.Quantity }).ToList();
-                if (lines.Count == 0 || lines.Any(i => i == null || i.ServiceId <= 0 || i.Quantity < 1 || i.Quantity > 10))
-                    throw new ArgumentException("Cần ít nhất một món; số lượng mỗi món từ 1 đến 10.");
-                var snapshots = new List<ServiceOrderItem>();
-                foreach (var group in lines.GroupBy(i => i.ServiceId))
-                {
-                    var quantity = group.Sum(i => (long)i.Quantity);
-                    if (quantity > 10) throw new ArgumentException("Tổng số lượng mỗi món từ 1 đến 10.");
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.Transaction = transaction;
-                        command.CommandText = "SELECT Name,Price FROM Services WHERE ServiceId=@id AND IsActive=1;";
-                        command.Parameters.AddWithValue("@id", group.Key);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (!reader.Read()) throw new InvalidOperationException("Món đã ngừng bán hoặc không còn trong danh mục. Hãy tải lại menu.");
-                            snapshots.Add(new ServiceOrderItem { ServiceId = group.Key, Quantity = (int)quantity,
-                                ServiceNameSnapshot = reader.GetString(0), UnitPrice = reader.GetInt64(1) });
-                        }
-                    }
-                }
+                DemandOrderHours(now);
+                var snapshots = ReadCart(connection, transaction, items);
                 int id;
                 using (var command = connection.CreateCommand())
                 {
@@ -83,6 +61,82 @@ namespace MusicBoxManagement.Wpf.Services
                 var result = ReadOrder(connection, transaction, id);
                 transaction.Commit(); return result;
             }
+        }
+
+        public OrderMenu ReadMenuGuest(string phoneNumber, int sessionId)
+        { return ReadMenu(null, PhoneNumberNormalizer.Normalize(phoneNumber), sessionId); }
+        public OrderMenu ReadMenuStaff(LoginSession actor, int sessionId)
+        { return ReadMenu(actor, null, sessionId); }
+        private OrderMenu ReadMenu(LoginSession actor, string phone, int sessionId)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                if (phone == null) permissions.Demand(actor, "Order.Create", connection, transaction);
+                DemandSession(connection, transaction, sessionId, phone, true);
+                var now = clock.UtcNow.ToUniversalTime();
+                var result = new OrderMenu { Items = new List<OrderMenuItem>(), CheckedAt = now, CanCreate = true,
+                    Reason = "Có thể chọn món; giá và tình trạng bán sẽ được kiểm tra lại khi gửi." };
+                try { DemandOrderHours(now); }
+                catch (ArgumentException error) { result.CanCreate = false; result.Reason = error.Message; }
+                using (var command = connection.CreateCommand())
+                {
+                    command.Transaction = transaction;
+                    command.CommandText = "SELECT ServiceId,Name,Category,Price,Description FROM Services WHERE IsActive=1 ORDER BY Category,ServiceId;";
+                    using (var reader = command.ExecuteReader()) while (reader.Read())
+                        result.Items.Add(new OrderMenuItem { ServiceId = reader.GetInt32(0), Name = reader.GetString(1),
+                            Category = reader.GetString(2), Price = reader.GetInt64(3), Description = reader.IsDBNull(4) ? null : reader.GetString(4) });
+                }
+                return result;
+            }
+        }
+        public OrderPreview PreviewGuest(string phoneNumber, int sessionId, IEnumerable<OrderLineRequest> items)
+        { return Preview(null, PhoneNumberNormalizer.Normalize(phoneNumber), sessionId, items); }
+        public OrderPreview PreviewStaff(LoginSession actor, int sessionId, IEnumerable<OrderLineRequest> items)
+        { return Preview(actor, null, sessionId, items); }
+        private OrderPreview Preview(LoginSession actor, string phone, int sessionId, IEnumerable<OrderLineRequest> items)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                if (phone == null) permissions.Demand(actor, "Order.Create", connection, transaction);
+                DemandSession(connection, transaction, sessionId, phone, true);
+                var now = clock.UtcNow.ToUniversalTime(); DemandOrderHours(now);
+                var snapshots = ReadCart(connection, transaction, items);
+                return new OrderPreview { Items = snapshots, CheckedAt = now,
+                    Amount = snapshots.Sum(i => (decimal)i.UnitPrice * i.Quantity) };
+            }
+        }
+        private static void DemandOrderHours(DateTimeOffset now)
+        {
+            try { BookingHours.GetOpenShiftEnd(now); }
+            catch (ArgumentException) { throw new ArgumentException("Chỉ nhận món mới trong ca 09:00–12:00 hoặc 13:00–23:00."); }
+        }
+        private static List<ServiceOrderItem> ReadCart(SQLiteConnection connection, SQLiteTransaction transaction, IEnumerable<OrderLineRequest> items)
+        {
+            if (items == null) throw new ArgumentException("Cần ít nhất một món.");
+            var lines = items.Select(i => i == null ? null : new OrderLineRequest { ServiceId = i.ServiceId, Quantity = i.Quantity }).ToList();
+            if (lines.Count == 0 || lines.Any(i => i == null || i.ServiceId <= 0 || i.Quantity < 1 || i.Quantity > 10))
+                throw new ArgumentException("Cần ít nhất một món; số lượng mỗi món từ 1 đến 10.");
+            var snapshots = new List<ServiceOrderItem>();
+            foreach (var group in lines.GroupBy(i => i.ServiceId))
+            {
+                var quantity = group.Sum(i => (long)i.Quantity);
+                if (quantity > 10) throw new ArgumentException("Tổng số lượng mỗi món từ 1 đến 10.");
+                using (var command = connection.CreateCommand())
+                {
+                    command.Transaction = transaction;
+                    command.CommandText = "SELECT Name,Price FROM Services WHERE ServiceId=@id AND IsActive=1;";
+                    command.Parameters.AddWithValue("@id", group.Key);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read()) throw new InvalidOperationException("Món đã ngừng bán hoặc không còn trong danh mục. Hãy tải lại menu.");
+                        snapshots.Add(new ServiceOrderItem { ServiceId = group.Key, Quantity = (int)quantity,
+                            ServiceNameSnapshot = reader.GetString(0), UnitPrice = reader.GetInt64(1) });
+                    }
+                }
+            }
+            return snapshots;
         }
 
         public ServiceOrder ConfirmStaff(LoginSession actor, int orderId)

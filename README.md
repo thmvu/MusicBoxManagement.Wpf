@@ -347,3 +347,7 @@ Khách → Tra cứu SĐT → nhập số → tab Đang sử dụng: xem phiên 
 ## Bước 6d.1 — nền tảng đơn món
 
 Schema v7 nâng từ v6 giữ dữ liệu, thêm Orders/OrderItems và snapshot tên/giá. OrderService tạo Guest Pending hoặc Staff Completed (món đã phục vụ), xác nhận/hủy Pending cùng transaction/audit, quyền riêng và số hiện hành; chỉ Active Session, món mới trong ca và đang bán, mỗi món 1–10. Đơn cũ giữ snapshot khi danh mục đổi/ngừng bán. Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.1](docs/Step6d1_OrderFoundation.md). **Chưa có giao diện gọi món**; tiếp theo menu/giỏ món và thao tác phục vụ/hủy, rồi tiền tạm tính/checkout theo plan.
+
+## Bước 6d.2a — đường menu và xem trước giỏ món
+
+Đã có ReadMenuGuest/ReadMenuStaff và PreviewGuest/PreviewStaff: chỉ món đang bán/phiên Active, Guest đúng SĐT hiện hành hoặc Staff Order.Create riêng, không cần quyền quản lý dịch vụ. Preview chỉ đọc giỏ/giá hiện tại, không tạo đơn/khóa giá; khi gửi vẫn kiểm tra lại toàn bộ trong transaction ghi. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.2a](docs/Step6d2a_OrderMenuPreview.md). **Chưa có màn hình gọi món**; tiếp theo giao diện Guest chọn/gửi/xem-hủy Pending, sau đó giao diện Staff phục vụ/tạo hộ/hủy theo plan.
