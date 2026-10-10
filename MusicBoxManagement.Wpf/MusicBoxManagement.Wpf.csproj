@@ -142,6 +142,9 @@
     <Page Include="Views\AuthenticationWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\GuestSession.cs" />
+    <Compile Include="ViewModels\GuestOrdersViewModel.cs" />
+    <Page Include="Views\GuestOrdersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\GuestOrdersWindow.xaml.cs"><DependentUpon>GuestOrdersWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\OrderSchema.cs" />
     <Compile Include="Models\ServiceOrder.cs" />
     <Compile Include="Services\OrderService.cs" />

@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.1 đã có dữ liệu/service đơn món, chưa có giao diện gọi món; tiền tạm tính, hóa đơn và báo cáo chưa có.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2b đã có giao diện Khách gọi món/xem-hủy Pending; giao diện nhân viên phục vụ/tạo hộ đơn, tiền tạm tính, hóa đơn và báo cáo chưa có.
 
 ## Cấu trúc để học
 
@@ -351,3 +351,7 @@ Schema v7 nâng từ v6 giữ dữ liệu, thêm Orders/OrderItems và snapshot 
 ## Bước 6d.2a — đường menu và xem trước giỏ món
 
 Đã có ReadMenuGuest/ReadMenuStaff và PreviewGuest/PreviewStaff: chỉ món đang bán/phiên Active, Guest đúng SĐT hiện hành hoặc Staff Order.Create riêng, không cần quyền quản lý dịch vụ. Preview chỉ đọc giỏ/giá hiện tại, không tạo đơn/khóa giá; khi gửi vẫn kiểm tra lại toàn bộ trong transaction ghi. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.2a](docs/Step6d2a_OrderMenuPreview.md). **Chưa có màn hình gọi món**; tiếp theo giao diện Guest chọn/gửi/xem-hủy Pending, sau đó giao diện Staff phục vụ/tạo hộ/hủy theo plan.
+
+## Bước 6d.2b — Khách gọi món, xem và hủy đơn chờ
+
+Khách → Tra cứu SĐT → Đang sử dụng → Gọi món / xem đơn: chọn món đang bán, thêm số lượng 1–10 vào giỏ, xem trước rồi xác nhận gửi Pending. Danh sách bên phải cho xem snapshot món và xác nhận hủy Pending; Quay lại không lưu. Màn hình dùng số/phiên đã tra cứu, kiểm tra lại khi ghi, khóa gửi lặp và xóa kết quả stale; lỗi tải lại sau commit vẫn báo đã gửi/đã hủy. Ngoài ca không gửi mới nhưng vẫn hủy Pending của phiên Active. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 83 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2b](docs/Step6d2b_GuestOrderUi.md). Tiếp theo 6d.2c giao diện Staff xem/phục vụ/hủy/tạo hộ Completed theo quyền riêng; Billing/checkout/dashboard/RBAC/báo cáo vẫn trong plan.

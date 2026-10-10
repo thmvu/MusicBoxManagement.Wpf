@@ -17,6 +17,7 @@ namespace MusicBoxManagement.Wpf.Services
         public GuestReservationService(SqliteDatabase database,IClock clock)
         { this.database=database??throw new ArgumentNullException(nameof(database));this.clock=clock??throw new ArgumentNullException(nameof(clock));noShows=new NoShowService(database,clock); }
         internal GuestSessionService ForSessions() => new GuestSessionService(database, clock);
+        internal OrderService ForOrders() => new OrderService(database, clock);
         public GuestReservationLookup Lookup(string phoneNumber)
         {
             var phone=PhoneNumberNormalizer.Normalize(phoneNumber);

@@ -35,6 +35,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Details=>Selected==null?"Chọn booking để xem điều kiện hủy.":"Booking #"+Selected.ReservationId+" — đã xác nhận. "+Selected.CancelNotice;
         public string Status=>status;
         public GuestSession ActiveSession=>activeSession;
+        public bool HasActiveSession=>activeSession!=null;
+        internal string CurrentPhone=>lookedUpPhone;
+        public bool CanOpenOrders=>CanSearch && lookedUpPhone!=null && activeSession!=null;
         public bool ShowExtensionControls=>activeSession!=null && activeSession.FromBooking;
         public bool CanExtend=>CanSearch && lookedUpPhone!=null && activeSession!=null && activeSession.CanExtend;
         public bool IsExtensionConfirming=>extension!=null;
@@ -107,7 +110,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             return saved;
         }
         private void ClearResults(){lookedUpPhone=null;Items.Clear();Selected=null;confirming=false;activeSession=null;extension=null;SessionChanged();}
-        private void SessionChanged(){Notify(nameof(ActiveSession));Notify(nameof(ShowExtensionControls));Notify(nameof(SessionDetails));Notify(nameof(ExtensionDetails));AccessChanged();}
+        private void SessionChanged(){Notify(nameof(ActiveSession));Notify(nameof(HasActiveSession));Notify(nameof(ShowExtensionControls));Notify(nameof(SessionDetails));Notify(nameof(ExtensionDetails));AccessChanged();}
         private static string TimeLabel(DateTimeOffset value)=>value.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy");
         private void ShowError(Exception error)
         {
@@ -116,7 +119,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             else SetStatus("Không xử lý được tra cứu/hủy/gia hạn. Thay đổi chưa được lưu; hãy thử lại.");
         }
         private void SetBusy(bool value){busy=value;Notify(nameof(IsBusy));AccessChanged();}
-        private void AccessChanged(){foreach(var p in new[]{nameof(CanSearch),nameof(CanClose),nameof(CanCancel),nameof(CanConfirm),nameof(IsConfirming),nameof(CanExtend),nameof(IsExtensionConfirming),nameof(CanConfirmExtension)})Notify(p);}
+        private void AccessChanged(){foreach(var p in new[]{nameof(CanSearch),nameof(CanClose),nameof(CanCancel),nameof(CanConfirm),nameof(IsConfirming),nameof(CanExtend),nameof(IsExtensionConfirming),nameof(CanConfirmExtension),nameof(CanOpenOrders)})Notify(p);}
         private void SetStatus(string value){status=value;Notify(nameof(Status));}
         private void Notify([CallerMemberName]string property=null)=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(property));
     }

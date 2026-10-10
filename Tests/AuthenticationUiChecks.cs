@@ -135,6 +135,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyGuestSessionsUi(Path.Combine(testDirectory,"guest-sessions-ui.db"),outputDirectory);
+            VerifyGuestOrdersUi(Path.Combine(testDirectory,"guest-orders-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -641,7 +642,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest Active/extension/phone/confirmation/compact/stale/conflict/duplicate/post-commit, Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered seventy-six views.");
+            Console.WriteLine("PASS WPF UI: Guest Active/extension/phone/confirmation/compact/stale/conflict/duplicate/post-commit, Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered eighty-three views including Guest orders.");
         }
         finally
         {
@@ -1179,6 +1180,62 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT Permi
             Click(Field<Button>(form,"ConfirmExtensionButton"));PumpUntil(()=>!vm.IsBusy);
             Assert(vm.ActiveSession==null && vm.Items.Count==0 && vm.Status.Contains("Đã gia hạn") && vm.Status.Contains("chưa tải") && (string)value("SELECT ExpectedEndTime FROM RoomSessions")==time(14,30).ToUniversalTime().ToString("O"),"Refresh failure hid committed extension.");
             Image(form,outputDirectory,"guest-session-refresh-failed");sql("DROP TRIGGER FailNoShowRefresh;");
+        }
+        finally{form.Close();}
+    }
+
+    private static void VerifyGuestOrdersUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var admin=auth.SetupAdminAsync("admin","Admin UI",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,8,13,0,0,TimeSpan.FromHours(7))};
+        sql("INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('G01','Phòng Guest',1,'test.png',1,'test'); INSERT INTO Services(Name,Category,Price,Description,IsActive) VALUES('Nước cam','Đồ uống',25000,'Cam tươi',1),('Món dừng','Đồ ăn',40000,'',0);");
+        var sessions=new RoomSessionService(db,clock);var current=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111"});
+        var service=new OrderService(db,clock);var form=new GuestOrdersWindow(service,"+84 901.111-111",current.Session.RoomSessionId,"G01");var vm=(GuestOrdersViewModel)form.DataContext;
+        Action reload=()=>{Click(Field<Button>(form,"ReloadButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action add=()=>{Field<DataGrid>(form,"MenuTable").SelectedItem=vm.Menu.First();Click(Field<Button>(form,"AddButton"));};
+        Action preview=()=>{Click(Field<Button>(form,"PreviewButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action confirm=()=>{Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);};
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Menu.Count==1);add();Image(form,outputDirectory,"guest-orders-cart");
+            Field<ComboBox>(form,"QuantityInput").SelectedItem=10;Click(Field<Button>(form,"AddButton"));Assert(vm.Cart.Single().Quantity==1,"Cart accepted quantity above ten.");
+            Field<DataGrid>(form,"CartTable").SelectedItem=vm.Cart.First();Click(Field<Button>(form,"RemoveButton"));Assert(vm.Cart.Count==0 && !vm.CanPreview,"Remove did not clear cart.");
+            Field<ComboBox>(form,"QuantityInput").SelectedItem=2;add();preview();
+            Assert(vm.IsConfirming && !vm.CanEdit && count("SELECT COUNT(*) FROM Orders")==0,"Preview wrote or did not lock input.");
+            Image(form,outputDirectory,"guest-orders-confirm");form.Width=form.MinWidth;form.Height=form.MinHeight;
+            PumpUntil(()=>Field<DataGrid>(form,"MenuTable").Columns.Sum(c=>c.ActualWidth)<=Field<DataGrid>(form,"MenuTable").ActualWidth);
+            Image(form,outputDirectory,"guest-orders-confirm-compact");
+            var button=Field<Button>(form,"ConfirmButton");Assert(button.IsVisible && button.TranslatePoint(new Point(),form).Y+button.ActualHeight<form.ActualHeight-40,"Compact confirmation clipped.");
+            Click(Field<Button>(form,"KeepButton"));Assert(vm.Cart.Count==1 && !vm.IsConfirming && count("SELECT COUNT(*) FROM Orders")==0,"Keep changed database/cart.");
+            preview();sql("UPDATE Services SET Price=30000 WHERE ServiceId=1;");confirm();
+            Assert(vm.Orders.Single().Status=="Pending" && vm.Orders.Single().Items.Single().UnitPrice==30000 && count("SELECT COUNT(*) FROM Orders")==1 && vm.Status.Contains("Đã gửi"),"Duplicate/current price/send receipt wrong.");
+            Image(form,outputDirectory,"guest-orders-sent");Click(Field<Button>(form,"CancelOrderButton"));Click(Field<Button>(form,"KeepButton"));Assert(vm.Orders.Single().Status=="Pending","Keep cancellation changed order.");
+            Click(Field<Button>(form,"CancelOrderButton"));confirm();Assert(vm.Orders.Single().Status=="Cancelled" && !vm.CanCancel,"Cancel did not become terminal.");Image(form,outputDirectory,"guest-orders-cancelled");
+            add();preview();sql("UPDATE Services SET IsActive=0 WHERE ServiceId=1;");confirm();Assert(vm.Menu.Count==0 && vm.Orders.Count==0 && !vm.CanConfirm && count("SELECT COUNT(*) FROM Orders")==1,"Inactive stale submit wrote or kept old data.");
+            sql("UPDATE Services SET IsActive=1 WHERE ServiceId=1;");reload();add();preview();
+            sql("UPDATE Customers SET PhoneNumber='0909999999';");confirm();Assert(vm.Menu.Count==0 && vm.Cart.Count==0 && vm.Orders.Count==0,"Changed phone kept public results.");
+            sql("UPDATE Customers SET PhoneNumber='0901111111';");reload();add();preview();
+            sql("CREATE TRIGGER ChangePhoneAfterOrder AFTER INSERT ON AuditLog WHEN NEW.Action='Order.Create' AND NEW.ActorType='Guest' BEGIN UPDATE Customers SET PhoneNumber='0909999999'; END;");confirm();
+            Assert(vm.Status.Contains("Đã gửi") && vm.Status.Contains("Chưa tải") && vm.Orders.Count==0 && count("SELECT COUNT(*) FROM Orders")==2,"Refresh failure hid committed order or invited replay.");Image(form,outputDirectory,"guest-orders-refresh-failed");
+            sql("DROP TRIGGER ChangePhoneAfterOrder;UPDATE Customers SET PhoneNumber='0901111111';");reload();vm.SelectedOrder=vm.Orders.Single(o=>o.Status=="Pending");Click(Field<Button>(form,"CancelOrderButton"));service.ConfirmStaff(admin,vm.SelectedOrder.OrderId);confirm();Assert(vm.Orders.Count==0,"Already served stale cancel kept results.");
+            reload();add();preview();sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+clock.UtcNow.ToUniversalTime().ToString("O")+"';");confirm();Assert(vm.Menu.Count==0 && vm.Orders.Count==0 && count("SELECT COUNT(*) FROM Orders")==2,"Completed session accepted stale order.");
+            sql("UPDATE RoomSessions SET Status='Active',ActualEndTime=NULL;");service.CreateGuest("0901111111",current.Session.RoomSessionId,new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=1}});
+            clock.UtcNow=clock.UtcNow.AddHours(10);reload();Assert(vm.Menu.Count==1 && !vm.CanAdd && !vm.CanPreview,"Outside hours allowed new cart.");Image(form,outputDirectory,"guest-orders-outside-hours");
+            vm.SelectedOrder=vm.Orders.Single(o=>o.Status=="Pending");Assert(vm.CanCancel,"Outside hours disabled pending cancellation.");Click(Field<Button>(form,"CancelOrderButton"));confirm();Assert(vm.Orders.All(o=>o.Status!="Pending"),"Outside hours cancellation failed.");
+            clock.UtcNow=clock.UtcNow.AddHours(-10);
+            var lookup=new GuestLookupWindow(new GuestReservationService(db,clock));var lookupVm=(GuestLookupViewModel)lookup.DataContext;
+            var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};var opened=false;
+            timer.Tick+=(sender,args)=>{var child=lookup.OwnedWindows.OfType<GuestOrdersWindow>().FirstOrDefault();if(child!=null && !((GuestOrdersViewModel)child.DataContext).IsBusy){opened=((GuestOrdersViewModel)child.DataContext).Orders.Count==3;timer.Stop();child.Close();}};
+            try
+            {
+                lookup.Show();Field<TextBox>(lookup,"PhoneInput").Text="0901111111";Click(Field<Button>(lookup,"SearchButton"));PumpUntil(()=>!lookupVm.IsBusy);
+                Field<TabControl>(lookup,"LookupTabs").SelectedIndex=1;lookup.UpdateLayout();Assert(lookupVm.CanOpenOrders && Field<Button>(lookup,"OrdersButton").IsVisible,"Lookup did not enable order entry for Active session.");timer.Start();Click(Field<Button>(lookup,"OrdersButton"));PumpUntil(()=>!lookupVm.IsBusy);
+                Assert(opened && lookupVm.ActiveSession!=null,"Lookup did not open own orders or refresh after close.");Field<TextBox>(lookup,"PhoneInput").Text="0902222222";Assert(!lookupVm.CanOpenOrders && !lookupVm.HasActiveSession,"Changing phone retained order entry.");
+            }
+            finally{timer.Stop();lookup.Close();}
         }
         finally{form.Close();}
     }

@@ -7,8 +7,16 @@ namespace MusicBoxManagement.Wpf.Views
  public partial class GuestLookupWindow:Window
  {
   private readonly GuestLookupViewModel viewModel;
+  private readonly OrderService orders;
   public GuestLookupWindow(GuestReservationService service)
-  {InitializeComponent();viewModel=new GuestLookupViewModel(service);DataContext=viewModel;Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};}
+  {InitializeComponent();orders=service.ForOrders();viewModel=new GuestLookupViewModel(service);DataContext=viewModel;Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};}
+  private async void Orders_Click(object sender,RoutedEventArgs args)
+  {
+   if(!viewModel.CanOpenOrders)return;
+   var active=viewModel.ActiveSession;
+   new GuestOrdersWindow(orders,viewModel.CurrentPhone,active.SessionId,active.RoomCode){Owner=this}.ShowDialog();
+   await viewModel.SearchAsync();
+  }
   private async void Search_Click(object sender,RoutedEventArgs args)=>await viewModel.SearchAsync();
   private void Cancel_Click(object sender,RoutedEventArgs args)=>viewModel.RequestCancel();
   private void Keep_Click(object sender,RoutedEventArgs args)=>viewModel.KeepBooking();
