@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2b đã có giao diện Khách gọi món/xem-hủy Pending; giao diện nhân viên phục vụ/tạo hộ đơn, tiền tạm tính, hóa đơn và báo cáo chưa có.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2c đã có giao diện Khách gọi món/xem-hủy Pending và nhân viên xem/phục vụ/hủy/tạo hộ đơn Completed; tiền tạm tính, hóa đơn và báo cáo chưa có.
 
 ## Cấu trúc để học
 
@@ -355,3 +355,7 @@ Schema v7 nâng từ v6 giữ dữ liệu, thêm Orders/OrderItems và snapshot 
 ## Bước 6d.2b — Khách gọi món, xem và hủy đơn chờ
 
 Khách → Tra cứu SĐT → Đang sử dụng → Gọi món / xem đơn: chọn món đang bán, thêm số lượng 1–10 vào giỏ, xem trước rồi xác nhận gửi Pending. Danh sách bên phải cho xem snapshot món và xác nhận hủy Pending; Quay lại không lưu. Màn hình dùng số/phiên đã tra cứu, kiểm tra lại khi ghi, khóa gửi lặp và xóa kết quả stale; lỗi tải lại sau commit vẫn báo đã gửi/đã hủy. Ngoài ca không gửi mới nhưng vẫn hủy Pending của phiên Active. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 83 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2b](docs/Step6d2b_GuestOrderUi.md). Tiếp theo 6d.2c giao diện Staff xem/phục vụ/hủy/tạo hộ Completed theo quyền riêng; Billing/checkout/dashboard/RBAC/báo cáo vẫn trong plan.
+
+## Bước 6d.2c — nhân viên xử lý đơn và ghi món đã phục vụ
+
+Đăng nhập → Đơn món → chọn phiên: Order.View xem đơn/chi tiết snapshot và lịch sử Completed; Order.Confirm xác nhận đã phục vụ, Order.Cancel hủy Pending sau xác nhận. Order.Create độc lập quyền khác cho chọn phiên Active và ghi đơn hộ Completed sau khi giao món. Nhân viên chỉ có quyền tạo vẫn mở được menu này, không đọc đơn cũ. Chặn thao tác lặp/stale/mất quyền, lỗi refresh sau commit giữ thông báo thành công. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 94 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2c](docs/Step6d2c_StaffOrderUi.md). Tiếp theo BillingService/tiền tạm tính dùng chung checkout; hóa đơn/dashboard/quản trị RBAC/báo cáo vẫn theo plan.

@@ -22,6 +22,31 @@ namespace MusicBoxManagement.Wpf.Services
             permissions = new PermissionService(database);
         }
 
+        public OrderWorkspace ReadWorkspaceStaff(LoginSession actor)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                var access = permissions.ReadAccess(actor, connection, transaction).Permissions;
+                var result = new OrderWorkspace { Sessions = new List<OrderSessionChoice>(),
+                    CanView = access.ContainsKey("Order.View"), CanCreate = access.ContainsKey("Order.Create"),
+                    CanConfirm = access.ContainsKey("Order.Confirm"), CanCancel = access.ContainsKey("Order.Cancel") };
+                if (!result.CanView && !result.CanCreate)
+                    throw new UnauthorizedAccessException("Cần quyền xem hoặc tạo đơn món.");
+                result.CheckedAt = clock.UtcNow.ToUniversalTime();
+                using (var command = connection.CreateCommand())
+                {
+                    command.Transaction = transaction;
+                    command.CommandText = "SELECT RoomSessionId,RoomCodeSnapshot,Status,ActualStartTime FROM RoomSessions" +
+                        (result.CanView ? "" : " WHERE Status='Active'") + " ORDER BY CASE Status WHEN 'Active' THEN 0 ELSE 1 END, RoomSessionId DESC;";
+                    using (var reader = command.ExecuteReader()) while (reader.Read())
+                        result.Sessions.Add(new OrderSessionChoice { SessionId = reader.GetInt32(0), RoomCode = reader.GetString(1),
+                            Status = reader.GetString(2), ActualStartTime = DateTimeOffset.ParseExact(reader.GetString(3), "O", CultureInfo.InvariantCulture) });
+                }
+                return result;
+            }
+        }
+
         public ServiceOrder CreateGuest(string phoneNumber, int sessionId, IEnumerable<OrderLineRequest> items)
         { return Create(null, PhoneNumberNormalizer.Normalize(phoneNumber), sessionId, items); }
         // Staff uses this only for items already served; Order.Create is independent of View/Confirm.

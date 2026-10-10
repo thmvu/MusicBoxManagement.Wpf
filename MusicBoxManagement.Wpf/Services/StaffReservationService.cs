@@ -30,6 +30,12 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(session, "Session.View");
             return new StaffSessionService(database, clock);
         }
+        public OrderService ForOrders(LoginSession session)
+        {
+            var result = new OrderService(database, clock);
+            result.ReadWorkspaceStaff(session);
+            return result;
+        }
         public StaffReservationSearch Search(LoginSession session, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

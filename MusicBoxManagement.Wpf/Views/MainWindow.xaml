@@ -69,6 +69,7 @@
                             <Button x:Name="StaffBookingButton" Style="{StaticResource SidebarButton}" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed"/>
                             <Button x:Name="WalkInButton" Style="{StaticResource SidebarButton}" Content="Khách trực tiếp" Click="ShowWalkIn_Click" Visibility="Collapsed"/>
                             <Button x:Name="SessionsButton" Style="{StaticResource SidebarButton}" Content="Phiên sử dụng" Click="ShowSessions_Click" Visibility="Collapsed"/>
+                            <Button x:Name="OrdersButton" Style="{StaticResource SidebarButton}" Content="Đơn món" Click="ShowOrders_Click" Visibility="Collapsed"/>
                             <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
                             <Separator Background="#51616D" Margin="12,10,12,14"/>
                             <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Kiểm tra lại quyền" Click="RefreshAccess_Click"/>

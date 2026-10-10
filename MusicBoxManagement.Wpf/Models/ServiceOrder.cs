@@ -8,6 +8,26 @@ namespace MusicBoxManagement.Wpf.Models
         public int ServiceId { get; set; }
         public int Quantity { get; set; }
     }
+    // Staff order navigation: no customer catalog or Session.View dependency.
+    public sealed class OrderSessionChoice
+    {
+        public int SessionId { get; internal set; }
+        public string RoomCode { get; internal set; }
+        public string Status { get; internal set; }
+        public DateTimeOffset ActualStartTime { get; internal set; }
+        public bool IsActive => Status == "Active";
+        public string Label => "#" + SessionId + " · " + RoomCode + " · " +
+            (IsActive ? "Đang sử dụng" : "Đã hoàn tất") + " · " + ActualStartTime.ToOffset(TimeSpan.FromHours(7)).ToString("HH:mm dd/MM/yyyy");
+    }
+    public sealed class OrderWorkspace
+    {
+        public List<OrderSessionChoice> Sessions { get; internal set; }
+        public bool CanView { get; internal set; }
+        public bool CanCreate { get; internal set; }
+        public bool CanConfirm { get; internal set; }
+        public bool CanCancel { get; internal set; }
+        public DateTimeOffset CheckedAt { get; internal set; }
+    }
     // Public receipt: no customer, phone, creator or session entity.
     public sealed class ServiceOrder
     {

@@ -29,6 +29,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningCalendar;
         private bool isOpeningWalkIn;
         private bool isOpeningSessions;
+        private bool isOpeningOrders;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
@@ -120,6 +121,7 @@ namespace MusicBoxManagement.Wpf.Views
                 StaffBookingButton.Visibility = access.Permissions.ContainsKey("Reservation.Create") ? Visibility.Visible : Visibility.Collapsed;
                 WalkInButton.Visibility = access.Permissions.ContainsKey("Session.WalkIn") ? Visibility.Visible : Visibility.Collapsed;
                 SessionsButton.Visibility = access.Permissions.ContainsKey("Session.View") ? Visibility.Visible : Visibility.Collapsed;
+                OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
                 BackToStaffButton.Visibility = Visibility.Collapsed;
@@ -170,6 +172,7 @@ namespace MusicBoxManagement.Wpf.Views
             StaffBookingButton.Visibility = Visibility.Collapsed;
             WalkInButton.Visibility = Visibility.Collapsed;
             SessionsButton.Visibility = Visibility.Collapsed;
+            OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
             StaffIdentity.Text = "";
@@ -339,6 +342,21 @@ namespace MusicBoxManagement.Wpf.Views
             isOpeningBooking=true;BookingButton.IsEnabled=false;
             try{new GuestBookingWindow(guestBooking){Owner=this}.ShowDialog();}
             finally{isOpeningBooking=false;BookingButton.IsEnabled=true;}
+        }
+
+        private async void ShowOrders_Click(object sender, RoutedEventArgs args)
+        {
+            if (isOpeningOrders) return; isOpeningOrders = true; OrdersButton.IsEnabled = false;
+            try
+            {
+                var current = session;
+                var orderService = await Task.Run(() => reservations.ForOrders(current));
+                if (session != current) return;
+                new StaffOrdersWindow(orderService, current) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem/tạo đơn món hoặc phiên đăng nhập đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Không mở được đơn món. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningOrders = false; OrdersButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private void ShowLookup_Click(object sender,RoutedEventArgs args)

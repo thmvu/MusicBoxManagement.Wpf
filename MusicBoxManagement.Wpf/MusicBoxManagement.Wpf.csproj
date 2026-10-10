@@ -143,6 +143,12 @@
     <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\GuestSession.cs" />
     <Compile Include="ViewModels\GuestOrdersViewModel.cs" />
+    <Compile Include="ViewModels\StaffOrdersViewModel.cs" />
+    <Compile Include="ViewModels\StaffOrderCreateViewModel.cs" />
+    <Page Include="Views\StaffOrdersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\StaffOrdersWindow.xaml.cs"><DependentUpon>StaffOrdersWindow.xaml</DependentUpon></Compile>
+    <Page Include="Views\StaffOrderCreateWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\StaffOrderCreateWindow.xaml.cs"><DependentUpon>StaffOrderCreateWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\GuestOrdersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\GuestOrdersWindow.xaml.cs"><DependentUpon>GuestOrdersWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\OrderSchema.cs" />

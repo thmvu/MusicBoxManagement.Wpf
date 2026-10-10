@@ -65,7 +65,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -136,6 +136,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyGuestLookup(Path.Combine(testDirectory,"lookup.db"),outputDirectory);
             VerifyGuestSessionsUi(Path.Combine(testDirectory,"guest-sessions-ui.db"),outputDirectory);
             VerifyGuestOrdersUi(Path.Combine(testDirectory,"guest-orders-ui.db"),outputDirectory);
+            VerifyStaffOrdersUi(Path.Combine(testDirectory,"staff-orders-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -642,7 +643,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest Active/extension/phone/confirmation/compact/stale/conflict/duplicate/post-commit, Sessions/View/Extend/filter/confirmation/stale/conflict/snapshot/duplicate/revoked/post-commit, WalkIn, sidebar and compact layout, check-in, Guest calendar, internal Day/Week, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered eighty-three views including Guest orders.");
+            Console.WriteLine("PASS WPF UI: Guest/Staff orders, Create-only/View-only/serving/cancel/cart/live permissions/stale/duplicate/post-commit/compact, Guest Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
         }
         finally
         {
@@ -1236,6 +1237,74 @@ DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT Permi
                 Assert(opened && lookupVm.ActiveSession!=null,"Lookup did not open own orders or refresh after close.");Field<TextBox>(lookup,"PhoneInput").Text="0902222222";Assert(!lookupVm.CanOpenOrders && !lookupVm.HasActiveSession,"Changing phone retained order entry.");
             }
             finally{timer.Stop();lookup.Close();}
+        }
+        finally{form.Close();}
+    }
+
+    private static void VerifyStaffOrdersUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin UI",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        Action<string> grant=codes=>sql("DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN("+codes+");");
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('O1','Đơn món',1,'test.png',1,'test'),('O2','Lịch sử',2,'test.png',1,'test');
+INSERT INTO Services(Name,Category,Price,IsActive) VALUES('Nước cam','Đồ uống',25000,1),('Món dừng','Đồ ăn',40000,0);
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'orders','orders','ORDERS',PasswordHash,'orders','Nhân viên món',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('orders','Staff');");
+        var login=auth.LoginAsync("orders",Password);PumpUntil(()=>login.IsCompleted);var actor=login.GetAwaiter().GetResult();
+        grant("'Order.View','Order.Create','Order.Confirm','Order.Cancel'");
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,10,13,0,0,TimeSpan.FromHours(7))};var sessions=new RoomSessionService(db,clock);
+        var active=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111"});
+        var history=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=2,FullName="Lịch sử",PhoneNumber="0902222222"});
+        var service=new OrderService(db,clock);var lines=new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=2}};
+        service.CreateStaff(admin,history.Session.RoomSessionId,lines);sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+clock.UtcNow.ToUniversalTime().ToString("O")+"' WHERE RoomId=2;");
+        var first=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);var second=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);var third=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);
+        var form=new StaffOrdersWindow(service,actor);var vm=(StaffOrdersViewModel)form.DataContext;
+        Action reload=()=>{Click(Field<Button>(form,"ReloadButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action<int> select=id=>{Field<DataGrid>(form,"OrdersTable").SelectedItem=vm.Orders.Single(o=>o.OrderId==id);};
+        Action confirm=()=>{Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);};
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Sessions.Count==2);select(first.OrderId);Assert(vm.CanServe && vm.CanCancel && vm.CanCreate && vm.Details.Contains("Nước cam"),"Order UI demanded unrelated rights or missed snapshot.");Image(form,outputDirectory,"staff-orders-list");
+            Click(Field<Button>(form,"ServeButton"));Assert(vm.IsConfirming && !vm.CanEdit && !vm.CanCreate,"Serve confirmation did not lock inputs.");Click(Field<Button>(form,"KeepButton"));Assert(vm.Orders.Single(o=>o.OrderId==first.OrderId).Status=="Pending","Keep served order.");
+            Click(Field<Button>(form,"ServeButton"));form.Width=form.MinWidth;form.Height=form.MinHeight;PumpUntil(()=>Field<DataGrid>(form,"OrdersTable").Columns.Sum(c=>c.ActualWidth)<=Field<DataGrid>(form,"OrdersTable").ActualWidth);Image(form,outputDirectory,"staff-orders-confirm-compact");
+            var button=Field<Button>(form,"ConfirmButton");Assert(button.TranslatePoint(new Point(),form).Y+button.ActualHeight<form.ActualHeight-40,"Compact serve confirmation clipped.");
+            sql("UPDATE Services SET Name='Tên mới',Price=99000,IsActive=0 WHERE ServiceId=1;");confirm();Assert(vm.Orders.Single(o=>o.OrderId==first.OrderId).Status=="Completed" && vm.Details.Contains("Nước cam") && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Order.Confirm' AND UserId='orders'")==1,"Serve duplicate/inactive snapshot failed.");Image(form,outputDirectory,"staff-orders-served");
+            select(second.OrderId);Click(Field<Button>(form,"ServeButton"));service.CancelGuest("0901111111",second.OrderId);confirm();Assert(vm.Orders.Count==0 && vm.Sessions.Count==0 && count("SELECT COUNT(*) FROM AuditLog WHERE Action='Order.Confirm' AND UserId='orders'")==1,"Stale Guest cancellation served or retained data.");reload();select(third.OrderId);
+            Click(Field<Button>(form,"CancelButton"));Click(Field<Button>(form,"KeepButton"));Assert(vm.SelectedOrder.Status=="Pending","Keep cancelled order.");Click(Field<Button>(form,"CancelButton"));confirm();Assert(vm.SelectedOrder.Status=="Cancelled" && !vm.CanCancel,"Staff cancellation terminal/duplicate failed.");Image(form,outputDirectory,"staff-orders-cancelled");
+            Field<ComboBox>(form,"SessionInput").SelectedItem=vm.Sessions.Single(s=>!s.IsActive);PumpUntil(()=>!vm.IsBusy);Assert(vm.Orders.Count==1 && !vm.CanCreate && !vm.CanServe && !vm.CanCancel,"Completed history was missing or allowed changes.");Image(form,outputDirectory,"staff-orders-history");
+            Field<ComboBox>(form,"SessionInput").SelectedItem=vm.Sessions.Single(s=>s.IsActive);PumpUntil(()=>!vm.IsBusy);sql("UPDATE Services SET IsActive=1 WHERE ServiceId=1;");
+            var pending=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);reload();select(pending.OrderId);Click(Field<Button>(form,"ServeButton"));grant("'Order.View'");confirm();Assert(vm.Sessions.Count==0 && vm.Orders.Count==0 && !vm.CanServe,"Revoked Confirm retained data or served.");
+            reload();select(pending.OrderId);Assert(!vm.CanCreate && !vm.CanServe && !vm.CanCancel,"View-only UI exposed writing.");Image(form,outputDirectory,"staff-orders-view-only");
+            grant("'Order.View','Order.Confirm'");reload();select(pending.OrderId);Click(Field<Button>(form,"ServeButton"));
+            sql("CREATE TRIGGER RevokeOrderRead AFTER INSERT ON AuditLog WHEN NEW.Action='Order.Confirm' AND NEW.UserId='orders' BEGIN DELETE FROM RolePermission WHERE RoleId='Staff'; END;");confirm();Assert(vm.Status.Contains("Đã xác nhận") && vm.Status.Contains("Chưa tải") && vm.Orders.Count==0,"Post-commit serve refresh hid success.");Image(form,outputDirectory,"staff-orders-refresh-failed");sql("DROP TRIGGER RevokeOrderRead;");
+            grant("'Order.Create'");reload();Assert(vm.Sessions.Count==1 && vm.Orders.Count==0 && !vm.HasView && vm.CanCreate,"Create-only UI needed View/Session.View or leaked old orders.");Image(form,outputDirectory,"staff-orders-create-only");
+            var opened=false;var entryTimer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            entryTimer.Tick+=(sender,args)=>{var child=form.OwnedWindows.OfType<StaffOrderCreateWindow>().FirstOrDefault();if(child!=null && !((StaffOrderCreateViewModel)child.DataContext).IsBusy){opened=((StaffOrderCreateViewModel)child.DataContext).Menu.Count==1;entryTimer.Stop();child.Close();}};
+            try{entryTimer.Start();Click(Field<Button>(form,"CreateButton"));PumpUntil(()=>!vm.IsBusy);Assert(opened && vm.CanCreate && vm.Orders.Count==0,"Create-only entry/parent refresh required View or exposed old orders.");}
+            finally{entryTimer.Stop();}
+            var create=new StaffOrderCreateWindow(service,actor,vm.SelectedSession);var cvm=(StaffOrderCreateViewModel)create.DataContext;
+            Action add=()=>{Field<DataGrid>(create,"MenuTable").SelectedItem=cvm.Menu.First();Click(Field<Button>(create,"AddButton"));};
+            Action preview=()=>{Click(Field<Button>(create,"PreviewButton"));PumpUntil(()=>!cvm.IsBusy);};
+            Action save=()=>{Click(Field<Button>(create,"ConfirmButton"));Click(Field<Button>(create,"ConfirmButton"));PumpUntil(()=>!cvm.IsBusy);};
+            Action loadCreate=()=>{Click(Field<Button>(create,"ReloadButton"));PumpUntil(()=>!cvm.IsBusy);};
+            try
+            {
+                create.Show();PumpUntil(()=>!cvm.IsBusy && cvm.Menu.Count==1);add();Field<ComboBox>(create,"QuantityInput").SelectedItem=10;Click(Field<Button>(create,"AddButton"));Assert(cvm.Cart.Single().Quantity==1,"Staff cart exceeded quantity limit.");
+                Field<DataGrid>(create,"CartTable").SelectedItem=cvm.Cart.First();Click(Field<Button>(create,"RemoveButton"));Assert(!cvm.CanPreview,"Staff remove retained cart.");Field<ComboBox>(create,"QuantityInput").SelectedItem=2;add();var before=count("SELECT COUNT(*) FROM Orders");preview();
+                Assert(cvm.IsConfirming && !cvm.CanAdd && !cvm.CanEdit && count("SELECT COUNT(*) FROM Orders")==before,"Staff preview wrote or left inputs enabled.");Click(Field<Button>(create,"KeepButton"));Assert(cvm.Cart.Count==1 && count("SELECT COUNT(*) FROM Orders")==before,"Staff Keep wrote or lost cart.");preview();
+                create.Width=create.MinWidth;create.Height=create.MinHeight;PumpUntil(()=>Field<DataGrid>(create,"MenuTable").Columns.Sum(c=>c.ActualWidth)<=Field<DataGrid>(create,"MenuTable").ActualWidth);Image(create,outputDirectory,"staff-order-create-confirm-compact");
+                button=Field<Button>(create,"ConfirmButton");Assert(button.TranslatePoint(new Point(),create).Y+button.ActualHeight<create.ActualHeight-40,"Compact create confirmation clipped.");
+                sql("UPDATE Services SET Price=35000 WHERE ServiceId=1;");save();Assert(count("SELECT COUNT(*) FROM Orders WHERE CreatedByUserId='orders' AND Status='Completed'")==1 && count("SELECT COUNT(*) FROM Orders")==before+1 && cvm.Receipt.Contains("35") && cvm.Status.Contains("Đã ghi"),"Staff Create-only actor/Completed/server price/receipt/duplicate failed.");Image(create,outputDirectory,"staff-order-create-receipt");
+                add();preview();sql("UPDATE Services SET IsActive=0 WHERE ServiceId=1;");save();Assert(cvm.Cart.Count==0 && cvm.Menu.Count==0 && cvm.Receipt==null && count("SELECT COUNT(*) FROM Orders")==before+1,"Inactive Staff stale cart saved or retained data.");
+                sql("UPDATE Services SET IsActive=1 WHERE ServiceId=1;");loadCreate();add();preview();grant("'Order.View'");save();Assert(cvm.Menu.Count==0 && cvm.Cart.Count==0 && cvm.Receipt==null,"Revoked Create fell back to Guest or retained menu.");
+                grant("'Order.Create'");loadCreate();add();preview();sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+clock.UtcNow.ToUniversalTime().ToString("O")+"' WHERE RoomId=1;");save();Assert(cvm.Menu.Count==0 && count("SELECT COUNT(*) FROM Orders")==before+1,"Completed Staff stale session accepted order.");
+                sql("UPDATE RoomSessions SET Status='Active',ActualEndTime=NULL WHERE RoomId=1;");loadCreate();add();preview();clock.UtcNow=clock.UtcNow.AddHours(10);save();Assert(cvm.Menu.Count==0 && count("SELECT COUNT(*) FROM Orders")==before+1,"Clock changed past closing accepted Staff order.");loadCreate();Assert(cvm.Menu.Count==1 && !cvm.CanAdd,"Outside hours staff menu allowed new cart.");
+                clock.UtcNow=clock.UtcNow.AddHours(-10);loadCreate();add();preview();sql("CREATE TRIGGER RevokeOrderCreate AFTER INSERT ON AuditLog WHEN NEW.Action='Order.Create' AND NEW.UserId='orders' BEGIN DELETE FROM RolePermission WHERE RoleId='Staff'; END;");save();Assert(cvm.Status.Contains("Đã ghi") && cvm.Status.Contains("chưa tải") && cvm.Menu.Count==0 && count("SELECT COUNT(*) FROM Orders WHERE CreatedByUserId='orders'")==2,"Post-commit Create refresh failure hid success or replayed.");Image(create,outputDirectory,"staff-order-create-refresh-failed");sql("DROP TRIGGER RevokeOrderCreate;");
+            }
+            finally{create.Close();}
+            reload();Assert(vm.Sessions.Count==0 && vm.Orders.Count==0 && !vm.CanCreate,"Loss of all Order rights retained workspace.");
+            grant("'Order.View','Order.Cancel','Order.Confirm'");sql("UPDATE Services SET IsActive=1 WHERE ServiceId=1;");var afterHours=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);clock.UtcNow=clock.UtcNow.AddHours(10);reload();select(afterHours.OrderId);Assert(vm.CanServe && vm.CanCancel,"Outside hours disabled pending actions.");Click(Field<Button>(form,"CancelButton"));confirm();Assert(vm.SelectedOrder.Status=="Cancelled","Outside hours staff cancel failed.");
         }
         finally{form.Close();}
     }

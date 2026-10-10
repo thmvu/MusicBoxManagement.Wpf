@@ -33,6 +33,10 @@ public static class MusicBoxOrderChecks
         var menu=service.ReadMenuGuest("+84 901.111-111",sessionId);
         Assert(menu.CanCreate && menu.Items.Count==1 && menu.Items.Single().ServiceId==2 && menu.CheckedAt==clock.Value && clock.Reads==1,"Menu exposed inactive services or wrong normalized phone/time.");
         Assert(service.ReadMenuStaff(actor,sessionId).Items.Count==1,"Create-only staff menu required unrelated rights.");
+        clock.Reads=0;var workspace=service.ReadWorkspaceStaff(actor);
+        Assert(workspace.CanCreate && !workspace.CanView && !workspace.CanConfirm && !workspace.CanCancel && workspace.Sessions.All(s=>s.IsActive) && workspace.Sessions.Any(s=>s.SessionId==sessionId) && clock.Reads==1 && workspace.CheckedAt==clock.Value,"Create-only workspace required unrelated rights or exposed history.");
+        foreach(var name in new[]{"CustomerId","PhoneNumber","FullName","RoomId","ReservationId"})Assert(typeof(OrderSessionChoice).GetProperty(name)==null,"Order selector exposed unnecessary "+name);
+        Reject<UnauthorizedAccessException>(()=>service.ReadWorkspaceStaff(null));
         var cart=new[]{new OrderLineRequest{ServiceId=2,Quantity=2},new OrderLineRequest{ServiceId=2,Quantity=3}};
         clock.Reads=0;var preview=service.PreviewGuest("0901111111",sessionId,cart);
         Assert(preview.Items.Count==1 && preview.Items.Single().Quantity==5 && preview.Amount==175000m && preview.CheckedAt==clock.Value && clock.Reads==1,"Cart preview lost merged quantity/current prices/one clock.");
@@ -57,6 +61,10 @@ public static class MusicBoxOrderChecks
         Reject<InvalidOperationException>(()=>service.ReadMenuGuest("0901111111",sessionId));Reject<InvalidOperationException>(()=>service.PreviewGuest("0901111111",sessionId,cart));
         Assert(service.ReadMenuGuest("0909999999",sessionId).CanCreate,"Menu ignored changed current phone.");Sql(db,"UPDATE Customers SET PhoneNumber='0901111111';");
         Sql(db,"UPDATE RoomSessions SET Status='Completed',ActualEndTime='"+Utc(Time(13,30))+"';");
+        Assert(service.ReadWorkspaceStaff(actor).Sessions.Count==0,"Create-only selector exposed completed history.");
+        Sql(db,"INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Order.View';");
+        workspace=service.ReadWorkspaceStaff(actor);Assert(workspace.CanView && workspace.Sessions.Any(s=>s.SessionId==sessionId && !s.IsActive),"Order.View selector required Session.View or omitted history.");
+        Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Order.View');");
         Reject<InvalidOperationException>(()=>service.ReadMenuGuest("0901111111",sessionId));Reject<InvalidOperationException>(()=>service.ReadMenuStaff(actor,sessionId));
         Reject<InvalidOperationException>(()=>service.PreviewGuest("0901111111",sessionId,cart));Reject<InvalidOperationException>(()=>service.PreviewStaff(actor,sessionId,cart));
         Sql(db,"UPDATE RoomSessions SET Status='Active',ActualEndTime=NULL;");
@@ -69,6 +77,7 @@ public static class MusicBoxOrderChecks
         Sql(db,"UPDATE Services SET IsActive=1,Price=9223372036854775807 WHERE ServiceId=2;");
         Assert(service.PreviewGuest("0901111111",sessionId,Cart(2,10)).Amount==(decimal)long.MaxValue*10,"Cart total overflowed long.");
         Sql(db,"UPDATE Services SET Price=45000 WHERE ServiceId=2;DELETE FROM RolePermission WHERE RoleId='Staff';");
+        Reject<UnauthorizedAccessException>(()=>service.ReadWorkspaceStaff(actor));
         Reject<UnauthorizedAccessException>(()=>service.ReadMenuStaff(actor,sessionId));Reject<UnauthorizedAccessException>(()=>service.PreviewStaff(actor,sessionId,cart));
         // Staff must fail after revocation; the anonymous route remains a separate explicit API.
         Assert(service.ReadMenuGuest("0901111111",sessionId).CanCreate,"Staff revocation incorrectly disabled Guest route.");
@@ -184,6 +193,7 @@ INSERT INTO AspNetUserRoles VALUES('operator','Staff');DELETE FROM RolePermissio
             VerifyMenu(db,clock,actor,service,sessionId);
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Order.View');");Reject<UnauthorizedAccessException>(()=>service.ListStaff(actor,sessionId));
             auth.Logout(actor);Reject<UnauthorizedAccessException>(()=>service.ConfirmStaff(actor,stale.OrderId));
+            Reject<UnauthorizedAccessException>(()=>service.ReadWorkspaceStaff(actor));
             var savedOrders=Count(db,"SELECT COUNT(*) FROM Orders");var savedItems=Count(db,"SELECT COUNT(*) FROM OrderItems");var savedAudits=Count(db,"SELECT COUNT(*) FROM AuditLog");
             db.Initialize();Assert(Count(db,"PRAGMA foreign_key_check")==0 && Count(db,"PRAGMA user_version")==7 && Count(db,"SELECT COUNT(*) FROM Orders")==savedOrders && Count(db,"SELECT COUNT(*) FROM OrderItems")==savedItems && Count(db,"SELECT COUNT(*) FROM AuditLog")==savedAudits,"Reopening lost orders/items/audits, or FK/schema broken.");
             Console.WriteLine("PASS Orders: v6-v7 preservation/rollback/idempotence, private current-phone Active routes, live independent permissions, Guest Pending/Staff Completed, merged 1-10/cart/server snapshots/inactive items, open-hour ticks/after-hours pending, terminal guards, FK/check/unique, item/audit rollback, confirm-cancel races and clock after writer on temporary SQLite.");
