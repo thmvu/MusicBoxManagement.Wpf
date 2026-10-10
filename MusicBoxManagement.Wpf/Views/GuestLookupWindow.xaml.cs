@@ -8,8 +8,16 @@ namespace MusicBoxManagement.Wpf.Views
  {
   private readonly GuestLookupViewModel viewModel;
   private readonly OrderService orders;
+  private readonly BillingService billing;
   public GuestLookupWindow(GuestReservationService service)
-  {InitializeComponent();orders=service.ForOrders();viewModel=new GuestLookupViewModel(service);DataContext=viewModel;Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};}
+  {InitializeComponent();orders=service.ForOrders();billing=service.ForBilling();viewModel=new GuestLookupViewModel(service);DataContext=viewModel;Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};}
+  private async void Bill_Click(object sender,RoutedEventArgs args)
+  {
+   if(!viewModel.CanOpenOrders)return;
+   var active=viewModel.ActiveSession;var phone=viewModel.CurrentPhone;
+   new SessionBillWindow(new SessionBillViewModel(()=>billing.ReadGuest(phone,active.SessionId))){Owner=this}.ShowDialog();
+   await viewModel.SearchAsync();
+  }
   private async void Orders_Click(object sender,RoutedEventArgs args)
   {
    if(!viewModel.CanOpenOrders)return;

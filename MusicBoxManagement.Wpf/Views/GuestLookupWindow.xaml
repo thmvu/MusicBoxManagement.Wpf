@@ -45,6 +45,7 @@
       <TextBlock Text="Phiên đang sử dụng" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16"/>
       <TextBlock x:Name="SessionDetailsText" Text="{Binding SessionDetails}" TextWrapping="Wrap" LineHeight="24"/>
       <Button x:Name="OrdersButton" Content="Gọi món / xem đơn" Click="Orders_Click" IsEnabled="{Binding CanOpenOrders}" Visibility="{Binding HasActiveSession, Converter={StaticResource BoolVisibility}}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+      <Button x:Name="BillButton" Content="Xem tiền tạm tính" Click="Bill_Click" IsEnabled="{Binding CanOpenOrders}" Visibility="{Binding HasActiveSession, Converter={StaticResource BoolVisibility}}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
       <StackPanel Orientation="Horizontal" Margin="0,16,0,0" Visibility="{Binding ShowExtensionControls, Converter={StaticResource BoolVisibility}}">
        <TextBlock Text="Thêm thời gian (phút)" VerticalAlignment="Center" Margin="0,0,12,0"/>
        <ComboBox x:Name="ExtensionMinutesInput" ItemsSource="{Binding ExtensionChoices}" SelectedItem="{Binding ExtensionMinutes}" Width="90" IsEnabled="{Binding CanExtend}"/>

@@ -21,6 +21,7 @@
    </DataGrid>
    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"><StackPanel>
     <TextBlock Text="{Binding Details}" TextWrapping="Wrap" LineHeight="23"/>
+    <Button x:Name="BillButton" Content="Xem tiền tạm tính" Click="Bill_Click" IsEnabled="{Binding CanOpenBill}" HorizontalAlignment="Left" Margin="0,16,0,0"/>
     <StackPanel Margin="0,20,0,0" IsEnabled="{Binding CanSelect}"><TextBlock Text="Gia hạn phiên từ booking" FontWeight="SemiBold"/><WrapPanel Margin="0,8,0,0">
      <ComboBox x:Name="MinutesInput" Width="85" ItemsSource="{Binding MinuteOptions}" SelectedItem="{Binding Minutes}" Padding="8" Margin="0,0,8,0"/>
      <Button x:Name="ExtendButton" Content="Gia hạn (phút)" IsEnabled="{Binding CanExtend}" Click="Extend_Click"/></WrapPanel></StackPanel>

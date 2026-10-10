@@ -18,6 +18,7 @@ namespace MusicBoxManagement.Wpf.Services
         { this.database=database??throw new ArgumentNullException(nameof(database));this.clock=clock??throw new ArgumentNullException(nameof(clock));noShows=new NoShowService(database,clock); }
         internal GuestSessionService ForSessions() => new GuestSessionService(database, clock);
         internal OrderService ForOrders() => new OrderService(database, clock);
+        internal BillingService ForBilling() => new BillingService(database, clock);
         public GuestReservationLookup Lookup(string phoneNumber)
         {
             var phone=PhoneNumberNormalizer.Normalize(phoneNumber);

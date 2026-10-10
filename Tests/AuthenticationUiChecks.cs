@@ -137,6 +137,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyGuestSessionsUi(Path.Combine(testDirectory,"guest-sessions-ui.db"),outputDirectory);
             VerifyGuestOrdersUi(Path.Combine(testDirectory,"guest-orders-ui.db"),outputDirectory);
             VerifyStaffOrdersUi(Path.Combine(testDirectory,"staff-orders-ui.db"),outputDirectory);
+            VerifyBillingUi(Path.Combine(testDirectory,"billing-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -643,7 +644,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/Staff orders, Create-only/View-only/serving/cancel/cart/live permissions/stale/duplicate/post-commit/compact, Guest Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
+            Console.WriteLine("PASS WPF UI: Guest/Staff provisional bill/refresh/stale phone/live View/Completed/busy/compact, Guest/Staff orders, Create-only/View-only/serving/cancel/cart/live permissions/stale/duplicate/post-commit/compact, Guest Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
         }
         finally
         {
@@ -651,6 +652,95 @@ public static class MusicBoxAuthenticationUiChecks
             window.Close();
             application.Shutdown();
             Directory.Delete(testDirectory, true);
+        }
+    }
+
+    private static void VerifyBillingUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);
+        var admin=auth.SetupAdminAsync("admin","Admin UI",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('B01','Phòng tính tiền',1,'test.png',1,'test');
+INSERT INTO Services(Name,Category,Price,Description,IsActive) VALUES('Nước cam','Đồ uống',25000,'',1);
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'bill','bill','BILL',PasswordHash,'bill','Nhân viên xem phiên',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('bill','Staff');DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId NOT IN(SELECT PermissionId FROM Permission WHERE Code='Session.View');");
+        var login=auth.LoginAsync("bill",Password);PumpUntil(()=>login.IsCompleted);var actor=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,11,13,0,12,TimeSpan.FromHours(7))};
+        var session=new RoomSessionService(db,clock).CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111"}).Session;
+        var orders=new OrderService(db,clock);
+        var cart=new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=2}};
+        orders.CreateStaff(admin,session.RoomSessionId,cart);
+        var pending=orders.CreateGuest("0901111111",session.RoomSessionId,cart);
+        var cancelled=orders.CreateGuest("0901111111",session.RoomSessionId,cart);orders.CancelGuest("0901111111",cancelled.OrderId);
+        var billing=new BillingService(db,clock);clock.UtcNow=clock.UtcNow.AddSeconds(90);
+        var vm=new SessionBillViewModel(()=>billing.ReadGuest("+84 901.111-111",session.RoomSessionId));var form=new SessionBillWindow(vm);
+        Action refresh=()=>{Click(Field<Button>(form,"RefreshButton"));PumpUntil(()=>!vm.IsBusy);};
+        try
+        {
+            var audit=count("SELECT COUNT(*) FROM AuditLog;");form.Show();PumpUntil(()=>!vm.IsBusy && vm.HasBill);
+            Assert(vm.Bill.RoomCharge==3000 && vm.Bill.ServiceCharge==50000 && vm.Bill.TotalAmount==53000 && vm.Details.Contains("13:01:42"),"Guest bill used wrong time or charged Pending/Cancelled.");
+            Assert(vm.OrdersNote.Contains("1 đơn chờ") && count("SELECT COUNT(*) FROM AuditLog;")==audit && count("SELECT COUNT(*) FROM RoomSessions WHERE ActualEndTime IS NOT NULL;")==0,"Bill UI wrote data or hid Pending note.");
+            Image(form,outputDirectory,"bill-guest");form.Width=form.MinWidth;form.Height=form.MinHeight;form.UpdateLayout();
+            Image(form,outputDirectory,"bill-compact");var button=Field<Button>(form,"RefreshButton");
+            Assert(button.IsVisible && button.TranslatePoint(new Point(),form).Y+button.ActualHeight<form.ActualHeight-20,"Compact bill hid refresh.");
+            sql("UPDATE RoomTypes SET PricePerHour=999000; UPDATE Services SET Price=99000,IsActive=0;");
+            clock.UtcNow=clock.UtcNow.AddSeconds(30);orders.ConfirmStaff(admin,pending.OrderId);refresh();
+            Assert(vm.Bill.RoomCharge==4000 && vm.Bill.ServiceCharge==100000 && vm.Bill.PendingOrderCount==0,"Refresh missed time/served order or changed snapshot prices.");Image(form,outputDirectory,"bill-updated");
+            sql("UPDATE Customers SET PhoneNumber='0909999999';");refresh();
+            Assert(!vm.HasBill && vm.Bill==null && vm.TotalAmount=="" && vm.Details=="" && vm.CanRefresh,"Changed phone retained bill or blocked closing.");Image(form,outputDirectory,"bill-guest-stale");
+        }
+        finally{form.Close();}
+        sql("UPDATE Customers SET PhoneNumber='0901111111';");
+        var staffVm=new SessionBillViewModel(()=>billing.ReadStaff(actor,session.RoomSessionId));var staffForm=new SessionBillWindow(staffVm);
+        try
+        {
+            staffForm.Show();PumpUntil(()=>!staffVm.IsBusy && staffVm.HasBill);Assert(staffVm.Bill.TotalAmount==104000,"Session.View-only bill needed unrelated permissions.");Image(staffForm,outputDirectory,"bill-staff");
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff';");Click(Field<Button>(staffForm,"RefreshButton"));PumpUntil(()=>!staffVm.IsBusy);
+            Assert(!staffVm.HasBill && staffVm.TotalAmount=="" && staffVm.Status.Contains("quyền"),"Lost View retained bill or fell back to Guest.");Image(staffForm,outputDirectory,"bill-staff-denied");
+        }
+        finally{staffForm.Close();}
+        sql("INSERT INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.View';");
+        var parent=new GuestLookupWindow(new GuestReservationService(db,clock));var parentVm=(GuestLookupViewModel)parent.DataContext;
+        var staffParentVm=new SessionsViewModel(new StaffSessionService(db,clock),actor);var staffParent=new SessionsWindow(staffParentVm);
+        try
+        {
+            parent.Show();Field<TextBox>(parent,"PhoneInput").Text="0901111111";Click(Field<Button>(parent,"SearchButton"));PumpUntil(()=>!parentVm.IsBusy);
+            Field<TabControl>(parent,"LookupTabs").SelectedIndex=1;Assert(Field<Button>(parent,"BillButton").IsEnabled,"Guest Active bill entry disabled.");
+            staffParent.Show();PumpUntil(()=>!staffParentVm.IsBusy && staffParentVm.Items.Count==1);staffParentVm.Selected=staffParentVm.Items[0];
+            Assert(staffParentVm.CanOpenBill && !staffParentVm.CanExtend,"Staff bill entry needed Extend.");
+            foreach(var owner in new Window[]{parent,staffParent})
+            {
+                Exception failure=null;bool opened=false;var driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+                driver.Tick+=(sender,args)=>{
+                    var child=Application.Current.Windows.OfType<SessionBillWindow>().FirstOrDefault();if(child==null)return;
+                    var childVm=(SessionBillViewModel)child.DataContext;if(childVm.IsBusy)return;
+                    try{Assert(child.Owner==owner && childVm.HasBill && childVm.Bill.SessionId==session.RoomSessionId,"Bill entry captured wrong route/session.");opened=true;}
+                    catch(Exception error){failure=error;}
+                    finally{driver.Stop();child.Close();}
+                };
+                try{driver.Start();Click(Field<Button>(owner,"BillButton"));PumpUntil(()=>failure!=null || (opened && !parentVm.IsBusy && !staffParentVm.IsBusy));if(failure!=null)throw failure;}
+                finally{driver.Stop();}
+            }
+            parentVm.PhoneNumber="0902222222";Assert(!Field<Button>(parent,"BillButton").IsEnabled && parentVm.ActiveSession==null,"Phone change retained bill entry.");
+            Assert(!staffParentVm.CanOpenBill && staffParentVm.Selected==null,"Parent refresh retained stale session selection.");
+            sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime='2026-10-11T06:02:12.0000000+00:00';");
+            staffParentVm.StatusQuery="Completed";Click(Field<Button>(staffParent,"SearchButton"));PumpUntil(()=>!staffParentVm.IsBusy);staffParentVm.Selected=staffParentVm.Items[0];
+            Assert(!staffParentVm.CanOpenBill,"Completed fixture offered provisional bill.");
+            var completed=vm.RefreshAsync();PumpUntil(()=>completed.IsCompleted);Assert(!vm.HasBill && vm.TotalAmount=="","Completed session retained estimate.");
+        }
+        finally{parent.Close();staffParent.Close();}
+        using(var gate=new ManualResetEvent(false))
+        {
+            int calls=0;var guarded=new SessionBillViewModel(()=>{Interlocked.Increment(ref calls);gate.WaitOne();throw new InvalidOperationException("Phiên đã kết thúc.");});
+            var guardedForm=new SessionBillWindow(guarded);
+            try
+            {
+                guardedForm.Show();PumpUntil(()=>Volatile.Read(ref calls)==1);Click(Field<Button>(guardedForm,"RefreshButton"));guardedForm.Close();
+                Assert(guarded.IsBusy && guardedForm.IsVisible && calls==1,"Busy refresh duplicated read or closed in flight.");
+                gate.Set();PumpUntil(()=>!guarded.IsBusy);Assert(!guarded.HasBill && guarded.CanRefresh,"Read failure retained amount or left UI busy.");
+            }
+            finally{gate.Set();guardedForm.Close();}
         }
     }
 

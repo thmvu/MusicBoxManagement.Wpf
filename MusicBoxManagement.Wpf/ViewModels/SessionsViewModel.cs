@@ -31,6 +31,13 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanSearch => !busy && !confirming;
         public bool CanSelect => CanSearch && canView;
         public bool CanExtend => CanSelect && canExtend && selected != null && selected.IsExtendable;
+        public bool CanOpenBill => CanSelect && selected != null && selected.Session.Status == "Active";
+        internal SessionBillViewModel CreateBillViewModel()
+        {
+            var id = selected.Session.RoomSessionId;
+            var billing = service.ForBilling();
+            return new SessionBillViewModel(() => billing.ReadStaff(actor, id));
+        }
         public bool CanConfirm => !busy && confirming && canView && canExtend && preview != null;
         public bool IsConfirming => confirming;
         public bool CanClose => !busy;
@@ -107,7 +114,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private void SetStatus(string value) { status = value; Notify(nameof(Status)); }
         private void Busy(bool value) { busy = value; AccessChanged(); }
         private void AccessChanged()
-        { foreach (var p in new[] { nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(CanExtend), nameof(CanConfirm), nameof(IsConfirming), nameof(CanClose) }) Notify(p); }
+        { foreach (var p in new[] { nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(CanExtend), nameof(CanOpenBill), nameof(CanConfirm), nameof(IsConfirming), nameof(CanClose) }) Notify(p); }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 }

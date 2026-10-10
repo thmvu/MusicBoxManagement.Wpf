@@ -13,6 +13,7 @@ namespace MusicBoxManagement.Wpf.Services
         private readonly PermissionService permissions;
         private readonly RoomSessionService sessions;
         public StaffSessionService(SqliteDatabase database) : this(database, new SystemClock()) { }
+        internal BillingService ForBilling() => new BillingService(database, clock);
         public StaffSessionService(SqliteDatabase database, IClock clock)
         { this.database = database; this.clock = clock; permissions = new PermissionService(database); sessions = new RoomSessionService(database, clock); }
         public StaffSessionSearch Search(LoginSession actor, string phoneNumber = null, string status = "Active")

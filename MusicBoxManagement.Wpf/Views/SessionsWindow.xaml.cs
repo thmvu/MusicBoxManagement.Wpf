@@ -13,6 +13,12 @@ namespace MusicBoxManagement.Wpf.Views
             Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };
         }
         private async void Search_Click(object sender, RoutedEventArgs args) => await viewModel.SearchAsync();
+        private async void Bill_Click(object sender, RoutedEventArgs args)
+        {
+            if (!viewModel.CanOpenBill) return;
+            new SessionBillWindow(viewModel.CreateBillViewModel()) { Owner = this }.ShowDialog();
+            await viewModel.SearchAsync();
+        }
         private async void Extend_Click(object sender, RoutedEventArgs args) => await viewModel.PreviewAsync();
         private async void Confirm_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmAsync();
         private void Keep_Click(object sender, RoutedEventArgs args) => viewModel.Keep();
