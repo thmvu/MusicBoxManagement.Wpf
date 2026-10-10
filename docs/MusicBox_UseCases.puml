@@ -1,0 +1,187 @@
+@startuml MusicBox_Guest_Current
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam usecaseBackgroundColor #EDF1F3
+skinparam usecaseBorderColor #40515D
+skinparam ArrowColor #586873
+title Music Box WPF — Use case Khách hiện tại (6e.2)
+actor "Khách tại máy demo/quầy" as Guest
+rectangle "Music Box WPF — đã có" {
+  usecase "G01\nXem phòng và loại phòng" as G01
+  usecase "G02\nXem lịch trống/bận" as G02
+  usecase "G03\nĐặt phòng trước" as G03
+  usecase "G04\nTra cứu booking / Active bằng SĐT" as G04
+  usecase "G05\nHủy booking hợp lệ" as G05
+  usecase "G06\nGia hạn phiên từ booking" as G06
+  usecase "G07\nGọi món cho Active" as G07
+  usecase "G08\nXem đơn / hủy Pending" as G08
+  usecase "G09\nXem / cập nhật tiền tạm tính" as G09
+}
+Guest -- G01
+Guest -- G02
+Guest -- G03
+Guest -- G04
+Guest -- G05
+Guest -- G06
+Guest -- G07
+Guest -- G08
+Guest -- G09
+note right of G04
+  Không tài khoản/OTP.
+  Kiểm tra SĐT hiện hành mỗi thao tác.
+  Không mở lịch sử hóa đơn hoặc toàn bộ khách.
+end note
+note right of G06
+  Active từ Reservation, +30/+60.
+  Chưa quá ExpectedEndTime và đủ ca/lịch.
+  Walk-in không gia hạn.
+end note
+note right of G09
+  Giá snapshot, actual gồm giây/ticks.
+  Chỉ món Completed được cộng.
+  Chưa thanh toán hoặc kết thúc phiên.
+end note
+@enduml
+
+@startuml MusicBox_Internal_Current
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam usecaseBackgroundColor #EDF1F3
+skinparam usecaseBorderColor #40515D
+skinparam ArrowColor #586873
+title Music Box WPF — Use case nội bộ hiện tại (6e.2)
+actor "Nhân viên nội bộ\n(Staff/Manager/Admin)" as Employee
+actor "Người thiết lập ban đầu" as InitialOperator
+rectangle "Music Box WPF — đã có" {
+  package "Vận hành theo permission hiện hành" {
+    usecase "N01\nĐăng nhập / đăng xuất" as N01
+    usecase "N02\nĐặt phòng hộ" as N02
+    usecase "N03–N04\nTìm / xem / hủy booking" as N03
+    usecase "N05\nNhận phòng từ booking" as N05
+    usecase "N06\nNhận khách trực tiếp" as N06
+    usecase "N07\nXem lịch ngày / tuần" as N07
+    usecase "N08–N09\nXem phiên / gia hạn hộ" as N08
+    usecase "N10\nXem / phục vụ / hủy đơn chờ" as N10
+    usecase "N11\nGhi món đã phục vụ" as N11
+    usecase "N12\nXem / cập nhật tiền tạm tính" as N12
+    usecase "N13\nTìm / thêm / sửa khách" as N13
+  }
+  package "Danh mục theo quyền" {
+    usecase "D01\nSửa Standard / VIP" as D01
+    usecase "D02\nQuản lý phòng và ảnh / khóa-mở" as D02
+    usecase "D03\nQuản lý dịch vụ / ngừng bán" as D03
+  }
+  usecase "A01\nThiết lập Admin đầu tiên" as A01
+}
+Employee -- N01
+Employee -- N02
+Employee -- N03
+Employee -- N05
+Employee -- N06
+Employee -- N07
+Employee -- N08
+Employee -- N10
+Employee -- N11
+Employee -- N12
+Employee -- N13
+Employee -- D01
+Employee -- D02
+Employee -- D03
+InitialOperator -- A01
+note left of Employee
+  Đây là nhóm actor, không phải role mới.
+  Mỗi tài khoản có một Staff/Manager/Admin.
+  Liên kết không tự cấp quyền.
+  Manager/Admin mặc định có quyền danh mục;
+  Staff chỉ có nếu được cấp theo plan.
+end note
+note right of N02
+  Reservation.Create độc lập View/Customer CRUD.
+end note
+note right of N06
+  Session.WalkIn độc lập quyền khác.
+  Không duration hoặc booking giả.
+end note
+note right of N11
+  Order.Create độc lập Order.View/Confirm.
+  Tạo Completed chỉ cho món đã giao.
+end note
+note right of A01
+  Chỉ bootstrap khi chưa có tài khoản.
+  Chưa thay thế UI quản trị nhân viên.
+end note
+@enduml
+
+@startuml MusicBox_Remaining_Plan
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam usecaseBackgroundColor #F6F1E8
+skinparam usecaseBorderColor #7B6850
+skinparam ArrowColor #586873
+title Music Box WPF — Phần còn phải làm theo plan, KHÔNG phải hiện trạng đã xong
+actor "Nhân viên nội bộ\n(theo permission)" as Employee
+actor Manager
+actor Admin
+rectangle "Music Box WPF — bước 7/8" {
+  usecase "P01\nTrả phòng / xác nhận thanh toán" as P01
+  usecase "Tính lại tiền tại Confirm" as Recalculate
+  usecase "Tạo hóa đơn và hoàn tất phiên" as Invoice
+  usecase "P02\nTìm / xem / in hóa đơn" as P02
+  usecase "P03\nDashboard hoạt động / cảnh báo" as P03
+  usecase "P04\nXem báo cáo" as P04
+  usecase "Xuất Excel theo bộ lọc đang xem" as Export
+  usecase "P05\nXem lịch sử khách / lượt dùng" as P05
+  usecase "A02\nTạo / sửa / khóa tài khoản; gán role" as A02
+  usecase "A03\nReset mật khẩu nhân viên" as A03
+  usecase "A04\nChỉnh ma trận quyền Staff/Manager" as A04
+  usecase "A05\nXem nhật ký thao tác" as A05
+}
+Employee -- P01
+Employee -- P02
+Employee -- P03
+Employee -- P05
+Manager -- P04
+Manager -- Export
+Admin -- P04
+Admin -- Export
+Admin -- A02
+Admin -- A03
+Admin -- A04
+Admin -- A05
+P01 ..> Recalculate : <<include>>
+P01 ..> Invoice : <<include>>
+Export ..> P04 : <<extend>>
+note right of P01
+  Session.CheckOut riêng; Cash/BankTransfer.
+  Clock mới sau writer; Cancel Pending,
+  Invoice / Session / Reservation / audit
+  cùng transaction, replay một hóa đơn.
+  Include là bước bắt buộc của nhánh thành công.
+end note
+note right of Export
+  Bổ sung tùy chọn tại báo cáo đang xem,
+  sau khi kiểm tra Report.View + Report.Export.
+  Staff luôn bị chặn báo cáo/doanh thu.
+end note
+note right of A02
+  Một role/user, không hard delete.
+  Không tự khóa/hạ role, giữ Admin active cuối cùng.
+  Không quyền riêng mỗi user hoặc role mới.
+end note
+note bottom of P03
+  Hoạt động quán cho người có Dashboard.View.
+  Widget doanh thu chỉ Admin hoặc Manager có Report.View.
+  Không phần chi điện/thuê mặt bằng.
+end note
+legend bottom
+  Nền be = chưa có luồng hoàn chỉnh, vẫn bắt buộc theo plan.
+  Nhân viên nội bộ gồm Staff/Manager/Admin theo quyền.
+  SQLite/service/timer NoShow nằm trong hệ thống, không phải actor.
+endlegend
+@enduml

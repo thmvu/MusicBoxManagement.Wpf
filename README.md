@@ -2,6 +2,8 @@
 
 Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 
+Tài liệu rà soát luồng và use case đến bước 6e.2: [UseCases_And_Workflow_Review.md](docs/UseCases_And_Workflow_Review.md). Có bảng hiện trạng, đặc tả use case, luồng nghiệp vụ, phần còn thiếu và [nguồn sơ đồ UML](docs/MusicBox_UseCases.puml).
+
 ## Chạy ứng dụng
 
 1. Mở `MusicBoxManagement.Wpf.sln` trong Visual Studio có workload **.NET desktop development** và .NET Framework 4.7.2 Developer Pack.
