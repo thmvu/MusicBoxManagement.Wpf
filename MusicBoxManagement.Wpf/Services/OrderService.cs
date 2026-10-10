@@ -220,16 +220,20 @@ WHERE o.OrderId=@id" + (phone == null ? "" : " AND c.PhoneNumber=@phone") + ";";
             {
                 if (phone == null) permissions.Demand(actor, "Order.View", connection, transaction);
                 DemandSession(connection, transaction, sessionId, phone, phone != null);
-                var ids = new List<int>();
-                using (var command = connection.CreateCommand())
-                {
-                    command.Transaction = transaction;
-                    command.CommandText = "SELECT OrderId FROM Orders WHERE RoomSessionId=@session ORDER BY OrderId;";
-                    command.Parameters.AddWithValue("@session", sessionId);
-                    using (var reader = command.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetInt32(0));
-                }
-                return ids.Select(id => ReadOrder(connection, transaction, id)).ToList();
+                return ReadOrders(connection, transaction, sessionId);
             }
+        }
+        internal static List<ServiceOrder> ReadOrders(SQLiteConnection connection, SQLiteTransaction transaction, int sessionId)
+        {
+            var ids = new List<int>();
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText = "SELECT OrderId FROM Orders WHERE RoomSessionId=@session ORDER BY OrderId;";
+                command.Parameters.AddWithValue("@session", sessionId);
+                using (var reader = command.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetInt32(0));
+            }
+            return ids.Select(id => ReadOrder(connection, transaction, id)).ToList();
         }
         private static void DemandSession(SQLiteConnection connection, SQLiteTransaction transaction, int id, string phone, bool active)
         {

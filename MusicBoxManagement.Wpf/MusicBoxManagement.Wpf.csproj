@@ -143,6 +143,8 @@
     <Compile Include="Views\AuthenticationWindow.xaml.cs"><DependentUpon>AuthenticationWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\GuestSession.cs" />
     <Compile Include="ViewModels\GuestOrdersViewModel.cs" />
+    <Compile Include="Models\SessionBill.cs" />
+    <Compile Include="Services\BillingService.cs" />
     <Compile Include="ViewModels\StaffOrdersViewModel.cs" />
     <Compile Include="ViewModels\StaffOrderCreateViewModel.cs" />
     <Page Include="Views\StaffOrdersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>

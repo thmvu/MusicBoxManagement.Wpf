@@ -18,7 +18,7 @@ Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 - Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
 - Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
 
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2c đã có giao diện Khách gọi món/xem-hủy Pending và nhân viên xem/phục vụ/hủy/tạo hộ đơn Completed; tiền tạm tính, hóa đơn và báo cáo chưa có.
+Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v7**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2c đã có giao diện Khách gọi món/xem-hủy Pending và nhân viên xem/phục vụ/hủy/tạo hộ đơn Completed. Đã có BillingService tính tiền phòng thực tế + món Completed; chưa có giao diện tiền tạm tính, checkout/hóa đơn và báo cáo.
 
 ## Cấu trúc để học
 
@@ -359,3 +359,7 @@ Khách → Tra cứu SĐT → Đang sử dụng → Gọi món / xem đơn: ch�
 ## Bước 6d.2c — nhân viên xử lý đơn và ghi món đã phục vụ
 
 Đăng nhập → Đơn món → chọn phiên: Order.View xem đơn/chi tiết snapshot và lịch sử Completed; Order.Confirm xác nhận đã phục vụ, Order.Cancel hủy Pending sau xác nhận. Order.Create độc lập quyền khác cho chọn phiên Active và ghi đơn hộ Completed sau khi giao món. Nhân viên chỉ có quyền tạo vẫn mở được menu này, không đọc đơn cũ. Chặn thao tác lặp/stale/mất quyền, lỗi refresh sau commit giữ thông báo thành công. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 94 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2c](docs/Step6d2c_StaffOrderUi.md). Tiếp theo BillingService/tiền tạm tính dùng chung checkout; hóa đơn/dashboard/quản trị RBAC/báo cáo vẫn theo plan.
+
+## Bước 6e.1 — nền tảng tính tiền phiên
+
+BillingService đọc phiên Active đúng SĐT Guest hoặc Session.View của Staff trong transaction: tiền phòng theo actual/giá snapshot, giữ giây/ticks, làm tròn đồng AwayFromZero; cộng chỉ món Completed theo snapshot. Trả giờ tính, thời lượng, các khoản/tổng và số đơn chờ/đã hủy; preview không ghi hoặc kết thúc phiên. Có helper internal dùng cùng writer/công thức cho checkout tương lai. Schema v7; Debug/Release và 22 bộ kiểm tra đạt, UI cũ 94 ảnh trên dữ liệu tạm. Xem [báo cáo 6e.1](docs/Step6e1_BillingFoundation.md). Chưa có giao diện tiền tạm tính; tiếp theo nối Guest/Staff và nút cập nhật, rồi checkout/hóa đơn.
