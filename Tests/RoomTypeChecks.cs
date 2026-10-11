@@ -151,7 +151,7 @@ INSERT INTO AspNetUserRoles VALUES (@id, @role);", "@id", id, "@role", role, "@h
         var existingId = Count(database, "SELECT AuditLogId FROM AuditLog LIMIT 1;");
         var existingTime = (string)Sql(database, "SELECT CreatedAt FROM AuditLog LIMIT 1;");
         // Reconstruct v2 audit storage and include Guest/System to verify all actors.
-        Sql(database, @"DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms;
+        Sql(database, @"DROP TABLE Invoices; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms;
 ALTER TABLE AuditLog RENAME TO AuditLog_saved;
 CREATE TABLE AuditLog (
 AuditLogId INTEGER PRIMARY KEY, ActorType TEXT NOT NULL CHECK(ActorType IN ('User','Guest','System')),

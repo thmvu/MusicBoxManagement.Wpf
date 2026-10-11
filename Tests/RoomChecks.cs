@@ -63,7 +63,7 @@ INSERT INTO AspNetUserRoles VALUES (@id,@role);", "@id", id, "@role", role, "@ha
             Sql(database, "UPDATE RoomTypes SET Name='Standard giữ lại', PricePerHour=135000 WHERE RoomTypeId=1;");
             var users = Count(database, "SELECT COUNT(*) FROM AspNetUsers;");
             var audits = Count(database, "SELECT COUNT(*) FROM AuditLog;");
-            Sql(database, @"DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms; PRAGMA user_version=3;
+            Sql(database, @"DROP TABLE Invoices; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; DROP TABLE Rooms; PRAGMA user_version=3;
 CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE(ABORT,'fixture'); END;");
             Reject<SQLiteException>(() => database.Initialize(), "Migration conflict ignored.");
             Assert(Count(database, "PRAGMA user_version;") == 3 &&
@@ -279,7 +279,7 @@ CREATE TRIGGER Rooms_ImmutableCode BEFORE UPDATE ON RoomTypes BEGIN SELECT RAISE
         var roomsBefore = Count(database, "SELECT COUNT(*) FROM Rooms;");
         var auditBefore = Count(database, "SELECT COUNT(*) FROM AuditLog;");
         // Reconstruct v4 and inject a failure after v5 has already created Customers.
-        Sql(database, "DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; PRAGMA user_version=4; CREATE TABLE Reservations(Fixture TEXT);");
+        Sql(database, "DROP TABLE Invoices; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; DROP TABLE RoomSessions; DROP TABLE Reservations; DROP TABLE Customers; PRAGMA user_version=4; CREATE TABLE Reservations(Fixture TEXT);");
         Reject<SQLiteException>(() => database.Initialize(), "v5 migration conflict ignored.");
         Assert(Count(database, "PRAGMA user_version;") == 4 && Count(database, "SELECT COUNT(*) FROM sqlite_master WHERE name='Customers';") == 0,
             "Failed v5 migration left partial schema/version.");

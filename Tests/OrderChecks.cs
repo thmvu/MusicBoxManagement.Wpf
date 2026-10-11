@@ -98,11 +98,11 @@ INSERT INTO AspNetUserRoles VALUES('operator','Staff');DELETE FROM RolePermissio
             clock.Value=Time(13).AddSeconds(12).AddTicks(1234);
             // Reconstruct a populated v6 database; a v7 conflict must rollback every schema change.
             var logs=Count(db,"SELECT COUNT(*) FROM AuditLog");
-            Sql(db,"DROP TABLE OrderItems;DROP TABLE Orders;PRAGMA user_version=6;CREATE TABLE OrderItems(Fixture TEXT);");
+            Sql(db,"DROP TABLE Invoices; DROP TABLE OrderItems;DROP TABLE Orders;PRAGMA user_version=6;CREATE TABLE OrderItems(Fixture TEXT);");
             Reject<SQLiteException>(()=>db.Initialize());
             Assert(Count(db,"PRAGMA user_version")==6 && Count(db,"SELECT COUNT(*) FROM sqlite_master WHERE name='Orders'")==0 && Count(db,"SELECT COUNT(*) FROM RoomSessions")==1,"Failed v7 migration left partial schema or lost sessions.");
             Sql(db,"DROP TABLE OrderItems;");db.Initialize();db.Initialize();
-            Assert(Count(db,"PRAGMA user_version")==7 && Count(db,"SELECT COUNT(*) FROM Services")==2 && Count(db,"SELECT COUNT(*) FROM Customers")==1 && Count(db,"SELECT COUNT(*) FROM AuditLog")==logs && Count(db,"SELECT COUNT(*) FROM Orders")==0,"Migration lost v6 rows or seeded orders.");
+            Assert(Count(db,"PRAGMA user_version")==SqliteDatabase.CurrentSchemaVersion && Count(db,"SELECT COUNT(*) FROM Services")==2 && Count(db,"SELECT COUNT(*) FROM Customers")==1 && Count(db,"SELECT COUNT(*) FROM AuditLog")==logs && Count(db,"SELECT COUNT(*) FROM Orders")==0,"Migration lost v6 rows or seeded orders.");
             var service=new OrderService(db,clock);
             Reject<UnauthorizedAccessException>(()=>service.CreateStaff(null,sessionId,Cart()));
             Reject<UnauthorizedAccessException>(()=>service.CreateStaff(actor,sessionId,Cart()));
@@ -195,7 +195,7 @@ INSERT INTO AspNetUserRoles VALUES('operator','Staff');DELETE FROM RolePermissio
             auth.Logout(actor);Reject<UnauthorizedAccessException>(()=>service.ConfirmStaff(actor,stale.OrderId));
             Reject<UnauthorizedAccessException>(()=>service.ReadWorkspaceStaff(actor));
             var savedOrders=Count(db,"SELECT COUNT(*) FROM Orders");var savedItems=Count(db,"SELECT COUNT(*) FROM OrderItems");var savedAudits=Count(db,"SELECT COUNT(*) FROM AuditLog");
-            db.Initialize();Assert(Count(db,"PRAGMA foreign_key_check")==0 && Count(db,"PRAGMA user_version")==7 && Count(db,"SELECT COUNT(*) FROM Orders")==savedOrders && Count(db,"SELECT COUNT(*) FROM OrderItems")==savedItems && Count(db,"SELECT COUNT(*) FROM AuditLog")==savedAudits,"Reopening lost orders/items/audits, or FK/schema broken.");
+            db.Initialize();Assert(Count(db,"PRAGMA foreign_key_check")==0 && Count(db,"PRAGMA user_version")==SqliteDatabase.CurrentSchemaVersion && Count(db,"SELECT COUNT(*) FROM Orders")==savedOrders && Count(db,"SELECT COUNT(*) FROM OrderItems")==savedItems && Count(db,"SELECT COUNT(*) FROM AuditLog")==savedAudits,"Reopening lost orders/items/audits, or FK/schema broken.");
             Console.WriteLine("PASS Orders: v6-v7 preservation/rollback/idempotence, private current-phone Active routes, live independent permissions, Guest Pending/Staff Completed, merged 1-10/cart/server snapshots/inactive items, open-hour ticks/after-hours pending, terminal guards, FK/check/unique, item/audit rollback, confirm-cancel races and clock after writer on temporary SQLite.");
         }
         finally{SQLiteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm","-journal"})if(File.Exists(file+suffix))File.Delete(file+suffix);}

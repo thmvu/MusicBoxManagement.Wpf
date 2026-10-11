@@ -33,7 +33,7 @@ public static class MusicBoxServiceChecks
             var catalog = new ServiceCatalogService(db);
             Assert(Count(db, "PRAGMA user_version;") == SqliteDatabase.CurrentSchemaVersion && catalog.ListForManagement(admin).Count == 0, "Schema/default catalog incorrect.");
             // Reconstruct v5; a conflicting table must leave the migration version/data intact.
-            Sql(db, "UPDATE RoomTypes SET PricePerHour=123000 WHERE RoomTypeId=1; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; PRAGMA user_version=5; CREATE TABLE Services(Fixture TEXT);");
+            Sql(db, "UPDATE RoomTypes SET PricePerHour=123000 WHERE RoomTypeId=1; DROP TABLE Invoices; DROP TABLE OrderItems; DROP TABLE Orders; DROP TABLE Services; PRAGMA user_version=5; CREATE TABLE Services(Fixture TEXT);");
             Reject<SQLiteException>(() => db.Initialize());
             Assert(Count(db, "PRAGMA user_version;") == 5 && Count(db, "SELECT PricePerHour FROM RoomTypes WHERE RoomTypeId=1;") == 123000,
                 "Failed migration changed existing data/version.");

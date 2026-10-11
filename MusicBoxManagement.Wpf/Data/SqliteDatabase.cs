@@ -7,7 +7,7 @@ namespace MusicBoxManagement.Wpf.Data
 {
     public sealed class SqliteDatabase
     {
-        public const int CurrentSchemaVersion = 7;
+        public const int CurrentSchemaVersion = 8;
         public string FilePath { get; }
 
         public static string DefaultPath => Path.Combine(
@@ -88,6 +88,7 @@ PRAGMA user_version = 1;";
                 if (version < 5) RoomUsageSchema.Create(command);
                 if (version < 6) ServiceSchema.Create(command);
                 if (version < 7) OrderSchema.Create(command);
+                if (version < 8) InvoiceSchema.Create(command);
                 transaction.Commit();
             }
         }

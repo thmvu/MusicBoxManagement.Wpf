@@ -2,6 +2,8 @@
 
 Ngày rà soát: **11/10/2026**. Mốc mã nguồn: **6071be0**, hoàn thành 6e.2.
 
+**Cập nhật sau bản rà soát:** [Bước 7a.1](Step7a1_CheckoutFoundation.md) đã bổ sung service checkout/hóa đơn thật và kiểm tra đồng thời trên schema v8. Các đánh giá dưới đây giữ mốc 6e.2 để đối chiếu; P01 chưa hoàn tất qua giao diện WPF, bước tiếp theo là UI checkout. Không còn dùng câu “chưa có service checkout” ở bản rà soát cũ để mô tả tầng service hiện tại.
+
 Tài liệu mô tả việc người dùng thực sự làm được qua giao diện hiện tại, đồng thời giữ các chức năng chưa triển khai trong phạm vi bản cuối. Nền tảng: WPF .NET Framework 4.7.2 + SQLite v7; chế độ Khách dùng tại máy demo/quầy.
 
 ## 1. Nhận xét chính
