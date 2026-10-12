@@ -13,7 +13,7 @@
   <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/></Style>
  </Window.Resources>
  <Grid Margin="28"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*" MinHeight="140"/><RowDefinition Height="*" MinHeight="235"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <DockPanel Margin="0,0,0,18"><Button DockPanel.Dock="Right" Content="Đóng" Click="Close_Click" IsEnabled="{Binding CanSearch}"/><TextBlock Text="Hóa đơn đã thanh toán" FontSize="28" FontWeight="SemiBold"/></DockPanel>
+  <DockPanel Margin="0,0,0,18"><Button DockPanel.Dock="Right" Content="Đóng" Click="Close_Click" IsEnabled="{Binding CanSearch}"/><Button x:Name="PrintButton" DockPanel.Dock="Right" Content="Xem trước / In" Click="Print_Click" Margin="0,0,12,0" IsEnabled="{Binding CanPrint}" Visibility="{Binding CanPrint, Converter={StaticResource Visible}}"/><TextBlock Text="Hóa đơn đã thanh toán" FontSize="28" FontWeight="SemiBold"/></DockPanel>
   <WrapPanel Grid.Row="1" Margin="0,0,0,12" IsEnabled="{Binding CanSearch}">
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Mã hóa đơn đầy đủ"/><TextBox x:Name="NumberInput" Width="215" Text="{Binding NumberQuery, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,6,0,0" MaxLength="50"/></StackPanel>
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Từ ngày thanh toán"/><DatePicker x:Name="FromInput" Width="160" SelectedDate="{Binding FromDate}" Margin="0,6,0,0" Padding="6"/></StackPanel>

@@ -41,6 +41,8 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="System.Printing" />
+    <Reference Include="ReachFramework" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
@@ -150,6 +152,10 @@
     <Compile Include="Services\CheckoutService.cs" />
     <Compile Include="Models\InvoiceHistory.cs" />
     <Compile Include="Services\InvoiceService.cs" />
+    <Compile Include="Printing\InvoiceDocument.cs" />
+    <Compile Include="Printing\InvoicePrinter.cs" />
+    <Compile Include="ViewModels\InvoicePrintViewModel.cs" />
+    <Compile Include="Views\InvoicePrintWindow.cs" />
     <Compile Include="ViewModels\InvoicesViewModel.cs" />
     <Page Include="Views\InvoicesWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\InvoicesWindow.xaml.cs"><DependentUpon>InvoicesWindow.xaml</DependentUpon></Compile>

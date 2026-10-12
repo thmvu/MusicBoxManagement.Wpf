@@ -32,6 +32,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanSearch => !busy;
         public bool CanSelect => !busy && access;
         public bool HasDetails => details != null;
+        public bool CanPrint => !busy && details != null && details.CanPrint;
         public bool ShowHint => details == null;
         public string Status => status;
         public string DetailText => details == null ? "" : details.StoreName + "\nHóa đơn " + details.Invoice.InvoiceNumber
@@ -76,6 +77,18 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (busy) return; number = phone = null; from = to = null; FilterChanged();
             foreach (var name in new[] { nameof(NumberQuery), nameof(PhoneQuery), nameof(FromDate), nameof(ToDate) }) Notify(name);
         }
+        public async Task<InvoicePrintViewModel> PreparePrintAsync()
+        {
+            if (!CanPrint) return null;
+            var id = details.Invoice.InvoiceId; busy = true; Changed();
+            try
+            {
+                var printable = await Task.Run(() => service.ReadForPrint(actor, id));
+                return new InvoicePrintViewModel(service, actor, printable);
+            }
+            catch (Exception error) { Fail(error); status = "Chưa mở được bản in. " + status; return null; }
+            finally { busy = false; Changed(); }
+        }
         private void FilterChanged() { Clear(); status = "Bộ lọc đã đổi. Bấm Tìm / Cập nhật để đọc kết quả mới."; Changed(); }
         private void ClearDetail() { details = null; Lines.Clear(); }
         private void Clear() { selected = null; Items.Clear(); ClearDetail(); access = false; }
@@ -94,7 +107,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private static string Local(DateTimeOffset value) => value.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy", Vietnamese);
         private static string Money(decimal value) => value.ToString("N0", Vietnamese) + " đ";
         private void Changed()
-        { foreach (var name in new[] { nameof(Selected), nameof(Detail), nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(HasDetails), nameof(ShowHint), nameof(Status), nameof(DetailText), nameof(Amounts) }) Notify(name); }
+        { foreach (var name in new[] { nameof(Selected), nameof(Detail), nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(HasDetails), nameof(CanPrint), nameof(ShowHint), nameof(Status), nameof(DetailText), nameof(Amounts) }) Notify(name); }
         private void Notify([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

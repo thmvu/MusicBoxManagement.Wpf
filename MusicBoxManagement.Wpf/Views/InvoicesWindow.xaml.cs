@@ -18,6 +18,11 @@ namespace MusicBoxManagement.Wpf.Views
         private async void Selection_Changed(object sender, SelectionChangedEventArgs args)
         { if (viewModel != null) await viewModel.SelectAsync(InvoicesTable.SelectedItem as InvoiceSummary); }
         private void Clear_Click(object sender, RoutedEventArgs args) => viewModel.ClearFilters();
+        private async void Print_Click(object sender, RoutedEventArgs args)
+        {
+            var printable = await viewModel.PreparePrintAsync();
+            if (printable != null) new InvoicePrintWindow(printable) { Owner = this }.ShowDialog();
+        }
         private void Close_Click(object sender, RoutedEventArgs args) { if (!viewModel.IsBusy) Close(); }
     }
 }
