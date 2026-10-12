@@ -22,4 +22,12 @@ namespace MusicBoxManagement.Wpf.Models
         public SessionBill Bill { get; internal set; }
         public IReadOnlyList<ServiceOrder> CompletedOrders { get; internal set; }
     }
+    public sealed class CheckoutSessionChoice
+    {
+        public int SessionId { get; internal set; }
+        public string RoomCode { get; internal set; }
+        public DateTimeOffset ActualStartTime { get; internal set; }
+        public string Label => "Phiên #" + SessionId + " — " + RoomCode + " — nhận lúc "
+            + ActualStartTime.ToOffset(TimeSpan.FromHours(7)).ToString("HH:mm:ss dd/MM/yyyy");
+    }
 }

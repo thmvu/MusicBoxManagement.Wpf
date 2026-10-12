@@ -2,7 +2,7 @@
 
 Ngày rà soát: **11/10/2026**. Mốc mã nguồn: **6071be0**, hoàn thành 6e.2.
 
-**Cập nhật sau bản rà soát:** [Bước 7a.1](Step7a1_CheckoutFoundation.md) đã bổ sung service checkout/hóa đơn thật và kiểm tra đồng thời trên schema v8. Các đánh giá dưới đây giữ mốc 6e.2 để đối chiếu; P01 chưa hoàn tất qua giao diện WPF, bước tiếp theo là UI checkout. Không còn dùng câu “chưa có service checkout” ở bản rà soát cũ để mô tả tầng service hiện tại.
+**Cập nhật 12/10/2026 sau bản rà soát:** [Bước 7a.1](Step7a1_CheckoutFoundation.md) có service checkout/hóa đơn thật; [bước 7a.2](Step7a2_CheckoutUi.md) đã nối UI trả phòng/xác nhận thu tiền và receipt trên schema v8. P01 đã có luồng qua WPF; P02 tìm/xem/in hóa đơn lịch sử vẫn đang làm tiếp. Các đánh giá/bảng bên dưới giữ mốc 6e.2 để đối chiếu, không dùng câu “chưa có checkout” của snapshot cũ để mô tả phiên bản hiện tại.
 
 Tài liệu mô tả việc người dùng thực sự làm được qua giao diện hiện tại, đồng thời giữ các chức năng chưa triển khai trong phạm vi bản cuối. Nền tảng: WPF .NET Framework 4.7.2 + SQLite v7; chế độ Khách dùng tại máy demo/quầy.
 

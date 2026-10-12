@@ -36,6 +36,11 @@ namespace MusicBoxManagement.Wpf.Services
             result.ReadWorkspaceStaff(session);
             return result;
         }
+        public CheckoutService ForCheckout(LoginSession session)
+        {
+            permissions.Demand(session, "Session.CheckOut");
+            return new CheckoutService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession session, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

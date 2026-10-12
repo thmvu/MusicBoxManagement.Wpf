@@ -148,6 +148,9 @@
     <Compile Include="Data\InvoiceSchema.cs" />
     <Compile Include="Models\Invoice.cs" />
     <Compile Include="Services\CheckoutService.cs" />
+    <Compile Include="ViewModels\CheckoutViewModel.cs" />
+    <Page Include="Views\CheckoutWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\CheckoutWindow.xaml.cs"><DependentUpon>CheckoutWindow.xaml</DependentUpon></Compile>
     <Compile Include="ViewModels\SessionBillViewModel.cs" />
     <Page Include="Views\SessionBillWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\SessionBillWindow.xaml.cs"><DependentUpon>SessionBillWindow.xaml</DependentUpon></Compile>

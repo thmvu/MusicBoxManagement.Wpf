@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
@@ -28,6 +29,22 @@ namespace MusicBoxManagement.Wpf.Services
                 var bill = billing.CalculateActive(connection, transaction, sessionId);
                 return new CheckoutPreview { Bill = bill,
                     CompletedOrders = OrderService.ReadOrders(connection, transaction, sessionId).Where(o => o.Status == "Completed").ToList().AsReadOnly() };
+            }
+        }
+        public IReadOnlyList<CheckoutSessionChoice> ListActiveStaff(LoginSession actor)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+            using (var command = connection.CreateCommand())
+            {
+                permissions.Demand(actor, "Session.CheckOut", connection, transaction);
+                command.Transaction = transaction;
+                command.CommandText = "SELECT RoomSessionId,RoomCodeSnapshot,ActualStartTime FROM RoomSessions WHERE Status='Active' ORDER BY RoomSessionId DESC;";
+                var result = new List<CheckoutSessionChoice>();
+                using (var reader = command.ExecuteReader()) while (reader.Read())
+                    result.Add(new CheckoutSessionChoice { SessionId = reader.GetInt32(0), RoomCode = reader.GetString(1),
+                        ActualStartTime = DateTimeOffset.ParseExact(reader.GetString(2), "O", CultureInfo.InvariantCulture) });
+                return result.AsReadOnly();
             }
         }
         public Invoice ConfirmStaff(LoginSession actor, int sessionId, string paymentMethod)

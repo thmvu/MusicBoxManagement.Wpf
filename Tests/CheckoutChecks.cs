@@ -60,6 +60,8 @@ INSERT INTO AspNetUserRoles VALUES('cashier','Staff');DELETE FROM RolePermission
             orders.CreateStaff(admin,first.RoomSessionId,Cart(2));var pending=orders.CreateGuest(phone,first.RoomSessionId,Cart(2));
             var cancelled=orders.CreateGuest(phone,first.RoomSessionId,Cart(1));orders.CancelGuest(phone,cancelled.OrderId);
             clock.Value=At(13).AddSeconds(90).AddTicks(1234);clock.Reads=0;var audit=Count(db,"SELECT COUNT(*) FROM AuditLog;");
+            var choices=new StaffReservationService(db,clock).ForCheckout(actor).ListActiveStaff(actor);
+            Assert(choices.Count==1 && choices.Single().SessionId==first.RoomSessionId && choices.Single().RoomCode==first.RoomCodeSnapshot && clock.Reads==0 && typeof(CheckoutSessionChoice).GetProperty("CustomerId")==null && typeof(CheckoutSessionChoice).GetProperty("PhoneNumber")==null,"Checkout selector needed other rights/read clock or exposed customer catalog.");
             var preview=checkout.PreviewStaff(actor,first.RoomSessionId);
             Assert(preview.Bill.RoomCharge==3000 && preview.Bill.ServiceCharge==50000 && preview.Bill.PendingOrderCount==1 && preview.CompletedOrders.Single().Items.Single().UnitPrice==25000 && clock.Reads==1,"Preview needed unrelated rights or wrong bill/snapshot/clock.");
             Assert(Count(db,"SELECT COUNT(*) FROM Invoices;")==0 && Count(db,"SELECT COUNT(*) FROM AuditLog;")==audit && (string)Sql(db,"SELECT Status FROM Orders WHERE OrderId="+pending.OrderId)=="Pending" && Count(db,"SELECT COUNT(*) FROM RoomSessions WHERE ActualEndTime IS NOT NULL;")==0,"Preview wrote/cancelled/ended.");
@@ -74,6 +76,7 @@ INSERT INTO AspNetUserRoles VALUES('cashier','Staff');DELETE FROM RolePermission
             Assert(paid.RoomCharge==4000 && paid.ServiceCharge==100000 && paid.TotalAmount==104000 && paid.PaidAt==clock.Value.ToUniversalTime() && paid.PaidAt.Offset==TimeSpan.Zero && paid.PaymentMethod=="BankTransfer" && paid.ProcessedByNameSnapshot=="Thu ngân đổi tên" && paid.ProcessedByUserId==actor.UserId && clock.Reads==1,"Confirm did not read fresh time/orders/snapshots/cashier.");
             Assert((string)Sql(db,"SELECT ActualEndTime FROM RoomSessions WHERE RoomSessionId="+first.RoomSessionId)==Utc(paid.PaidAt) && (string)Sql(db,"SELECT Status FROM Reservations WHERE ReservationId="+first.ReservationId)=="Completed" && (string)Sql(db,"SELECT Status FROM RoomSessions WHERE RoomSessionId="+first.RoomSessionId)=="Completed","Booked checkout did not finish source/session.");
             Assert(Count(db,"SELECT COUNT(*) FROM AuditLog WHERE Action IN('Session.CheckOut','Invoice.Create') AND CreatedAt='"+Utc(paid.PaidAt)+"';")==2,"Checkout audit used another clock.");
+            Assert(checkout.ListActiveStaff(actor).Count==0,"Completed session remained in checkout selector.");
             var guestAfter=new GuestReservationService(db,clock).Lookup(phone);
             var history=new StaffSessionService(db,clock).Search(admin,phone,"Completed").Items.Single();
             Assert(guestAfter.ActiveSession==null && guestAfter.Items.Count==0 && history.Session.ActualEndTime==paid.PaidAt && history.Session.RoomSessionId==first.RoomSessionId,"Real checkout did not clear Guest Active/booking or show Completed history.");
@@ -85,6 +88,7 @@ INSERT INTO AspNetUserRoles VALUES('cashier','Staff');DELETE FROM RolePermission
             Reject<InvalidOperationException>(()=>checkout.PreviewStaff(actor,first.RoomSessionId));
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('Session.View','Order.Confirm','Invoice.View');");
             Reject<UnauthorizedAccessException>(()=>checkout.ConfirmStaff(actor,first.RoomSessionId,"Cash"));Reject<UnauthorizedAccessException>(()=>checkout.PreviewStaff(actor,first.RoomSessionId));
+            Reject<UnauthorizedAccessException>(()=>checkout.ListActiveStaff(actor));Reject<UnauthorizedAccessException>(()=>new StaffReservationService(db,clock).ForCheckout(actor));
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';UPDATE AspNetUsers SET SecurityStamp='changed' WHERE Id='cashier';");Reject<UnauthorizedAccessException>(()=>checkout.ConfirmStaff(actor,first.RoomSessionId,"Cash"));
             Sql(db,"UPDATE AspNetUsers SET SecurityStamp='cashier' WHERE Id='cashier';");
             Reject<SQLiteException>(()=>Sql(db,"UPDATE Invoices SET TotalAmount='1';"));Reject<SQLiteException>(()=>Sql(db,"DELETE FROM Invoices;"));

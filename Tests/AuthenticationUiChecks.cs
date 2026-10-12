@@ -24,6 +24,12 @@ public static class MusicBoxAuthenticationUiChecks
     private sealed class BookingClock : IClock
     { public DateTimeOffset UtcNow { get { return new DateTimeOffset(2026,10,5,2,0,0,TimeSpan.Zero); } } }
     private sealed class LookupClock : IClock { public DateTimeOffset UtcNow {get;set;} }
+    private sealed class CheckoutUiGate : IClock
+    {
+        public DateTimeOffset Value;public int Calls;
+        public readonly ManualResetEventSlim Entered=new ManualResetEventSlim(false),Release=new ManualResetEventSlim(false);
+        public DateTimeOffset UtcNow{get{Interlocked.Increment(ref Calls);Entered.Set();if(!Release.Wait(10000))throw new Exception("Checkout UI gate timed out.");return Value;}}
+    }
     private static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
     private static T Field<T>(Window window, string name) { return (T)window.FindName(name); }
     private static void Click(Button button) { button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
@@ -65,7 +71,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -130,6 +136,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "CalendarButton").Visibility == Visibility.Collapsed, "Guest saw internal calendar.");
             Assert(Field<Button>(window, "WalkInButton").Visibility == Visibility.Collapsed, "Guest saw walk-in operation.");
             Assert(Field<Button>(window, "SessionsButton").Visibility == Visibility.Collapsed, "Guest saw private sessions.");
+            Assert(Field<Button>(window, "CheckoutButton").Visibility == Visibility.Collapsed, "Guest saw checkout.");
             Image(window, outputDirectory, "guest");
             VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
@@ -138,6 +145,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyGuestOrdersUi(Path.Combine(testDirectory,"guest-orders-ui.db"),outputDirectory);
             VerifyStaffOrdersUi(Path.Combine(testDirectory,"staff-orders-ui.db"),outputDirectory);
             VerifyBillingUi(Path.Combine(testDirectory,"billing-ui.db"),outputDirectory);
+            VerifyCheckoutUi(Path.Combine(testDirectory,"checkout-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -228,6 +236,19 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(()=>reservationStage==1 || driverError!=null);driver.Stop();if(driverError!=null)throw driverError;
             // Create and View are independent: the shortcut must remain for a Create-only role.
             Action<string> staffEntrySql=statement=>{using(var c=database.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
+            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");
+            Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Assert(Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"CheckOut-only entry required View/Order rights.");
+            bool checkoutOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var child=application.Windows.OfType<CheckoutWindow>().FirstOrDefault();if(child==null)return;
+                var vm=(CheckoutViewModel)child.DataContext;if(vm.IsBusy)return;
+                try{Assert(vm.Sessions.Count==0 && !vm.CanPreview && vm.Status.Contains("Không có"),"Main CheckOut-only route returned wrong empty state.");Image(child,outputDirectory,"checkout-main-empty");checkoutOpened=true;}
+                catch(Exception error){driverError=error;}
+                finally{driver.Stop();child.Close();}
+            };
+            driver.Start();Click(Field<Button>(window,"CheckoutButton"));PumpUntil(()=>driverError!=null || (checkoutOpened && Field<Button>(window,"CheckoutButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
+            staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('"+string.Join("','",PermissionCatalog.Defaults("Staff"))+"');");
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff'; DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View'));");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Collapsed && Field<Button>(window,"StaffBookingButton").Visibility==Visibility.Visible,"Create-only shortcut required View.");
@@ -644,7 +665,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: Guest/Staff provisional bill/refresh/stale phone/live View/Completed/busy/compact, Guest/Staff orders, Create-only/View-only/serving/cancel/cart/live permissions/stale/duplicate/post-commit/compact, Guest Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
+            Console.WriteLine("PASS WPF UI: checkout CheckOut-only/ack/payment/fresh money/duplicate/stale/rollback/replay/post-commit/busy/compact, Guest/Staff provisional bill, orders, Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
         }
         finally
         {
@@ -653,6 +674,80 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyCheckoutUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin UI",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;cmd.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=s;return Convert.ToInt64(cmd.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('Q1','Booking',1,'test.png',1,'test'),('Q2','Walk-in',1,'test.png',1,'test'),('Q3','Sau commit',1,'test.png',1,'test'),('Q4','Lịch sử',1,'test.png',1,'test');
+INSERT INTO Services(Name,Category,Price,IsActive) VALUES('Nước cam','Đồ uống',25000,1);
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'cashier','cashier','CASHIER',PasswordHash,'cashier','Thu ngân UI',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('cashier','Staff');DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");
+        var login=auth.LoginAsync("cashier",Password);PumpUntil(()=>login.IsCompleted);var actor=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,12,13,0,0,TimeSpan.FromHours(7))};var sessions=new RoomSessionService(db,clock);var orders=new OrderService(db,clock);
+        var source=new ReservationService(db,clock).CreateGuest(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111",StartTime=clock.UtcNow,DurationMinutes=60});
+        var first=sessions.CheckIn(admin,source.ReservationId);var second=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=2,FullName="Khách",PhoneNumber="0902222222"}).Session;
+        var third=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=3,FullName="Khách",PhoneNumber="0903333333"}).Session;
+        sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=4,FullName="Cũ",PhoneNumber="0904444444"});sql("UPDATE RoomSessions SET Status='Completed',ActualEndTime=ActualStartTime WHERE RoomId=4;");
+        var cart=new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=1}};
+        orders.CreateStaff(admin,first.RoomSessionId,cart);var pending=orders.CreateGuest("0901111111",first.RoomSessionId,new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=2}});
+        var secondOrder=orders.CreateGuest("0902222222",second.RoomSessionId,cart);
+        clock.UtcNow=clock.UtcNow.AddSeconds(90);var service=new CheckoutService(db,clock);var vm=new CheckoutViewModel(service,actor);var form=new CheckoutWindow(vm);
+        Action reload=()=>{Click(Field<Button>(form,"ReloadButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action preview=()=>{Click(Field<Button>(form,"PreviewButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action confirm=()=>{Field<CheckBox>(form,"AcknowledgementInput").IsChecked=true;Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action<int> select=id=>{Field<ComboBox>(form,"SessionInput").SelectedItem=vm.Sessions.First(s=>s.SessionId==id);};
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Sessions.Count==3);select(first.RoomSessionId);preview();
+            Assert(vm.IsConfirming && !vm.CanChoose && !vm.CanConfirm && vm.Lines.Single().Name=="Nước cam" && vm.PendingWarning.Contains("1 đơn") && vm.Amounts.Contains("28.000"),"CheckOut-only preview/ack/rows/Pending wrong.");
+            Click(Field<Button>(form,"ConfirmButton"));Assert(count("SELECT COUNT(*) FROM Invoices;")==0,"Unchecked acknowledgement wrote invoice.");Image(form,outputDirectory,"checkout-preview");
+            form.Width=form.MinWidth;form.Height=form.MinHeight;form.UpdateLayout();
+            PumpUntil(()=>Field<DataGrid>(form,"ItemsTable").Columns.Sum(c=>c.ActualWidth)<=Field<DataGrid>(form,"ItemsTable").ActualWidth);
+            Image(form,outputDirectory,"checkout-compact");
+            var button=Field<Button>(form,"ConfirmButton");Assert(button.IsVisible && button.TranslatePoint(new Point(),form).Y+button.ActualHeight<form.ActualHeight-30,"Compact checkout clipped Confirm.");
+            var ack=Field<CheckBox>(form,"AcknowledgementInput");var scroll=Field<ScrollViewer>(form,"ConfirmationScroll");
+            Assert(ack.TranslatePoint(new Point(),form).Y+ack.ActualHeight<=scroll.TranslatePoint(new Point(),form).Y+scroll.ActualHeight,"Compact checkout hid acknowledgement below viewport.");
+            Click(Field<Button>(form,"KeepButton"));Assert(!vm.IsConfirming && vm.CanChoose && count("SELECT COUNT(*) FROM Invoices;")==0,"Keep ended session.");
+            preview();Field<CheckBox>(form,"AcknowledgementInput").IsChecked=true;preview();Assert(!vm.Acknowledged && !vm.CanConfirm,"Recalculation retained old acknowledgement.");
+            Field<ComboBox>(form,"PaymentInput").SelectedValue="BankTransfer";orders.ConfirmStaff(admin,pending.OrderId);clock.UtcNow=clock.UtcNow.AddSeconds(30);confirm();
+            Assert(vm.HasReceipt && vm.Receipt.PaymentMethod=="BankTransfer" && vm.Receipt.TotalAmount==79000 && vm.ReceiptText.Contains("79.000") && !vm.CanConfirm && vm.Selected==null && vm.Sessions.Count==2 && count("SELECT COUNT(*) FROM Invoices;")==1,"Fresh amount/payment/duplicate/receipt/refresh failed.");Image(form,outputDirectory,"checkout-paid");
+            select(second.RoomSessionId);Assert(!vm.HasReceipt && vm.Lines.Count==0,"Changing session retained receipt or old items.");preview();
+            sql("DELETE FROM RolePermission WHERE RoleId='Staff';");confirm();Assert(vm.Sessions.Count==0 && vm.Lines.Count==0 && !vm.HasReceipt && !vm.IsConfirming && vm.CanClose && count("SELECT COUNT(*) FROM Invoices;")==1,"Revoked checkout kept data or wrote invoice.");Image(form,outputDirectory,"checkout-revoked");
+            sql("INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");reload();select(second.RoomSessionId);preview();
+            sql("CREATE TRIGGER ui_fail_checkout BEFORE INSERT ON AuditLog WHEN NEW.Action='Invoice.Create' BEGIN SELECT RAISE(ABORT,'fixture');END;");confirm();
+            Assert(!vm.HasReceipt && vm.Sessions.Count==0 && count("SELECT COUNT(*) FROM Invoices;")==1 && count("SELECT COUNT(*) FROM RoomSessions WHERE RoomSessionId="+second.RoomSessionId+" AND Status='Active';")==1 && count("SELECT COUNT(*) FROM Orders WHERE OrderId="+secondOrder.OrderId+" AND Status='Pending';")==1,"Failed audit left partial checkout or stale UI.");Image(form,outputDirectory,"checkout-rollback");sql("DROP TRIGGER ui_fail_checkout;");
+            reload();select(second.RoomSessionId);preview();var existing=service.ConfirmStaff(admin,second.RoomSessionId,"Cash");Field<ComboBox>(form,"PaymentInput").SelectedValue="BankTransfer";confirm();
+            Assert(vm.HasReceipt && vm.Receipt.InvoiceId==existing.InvoiceId && vm.Receipt.PaymentMethod=="Cash" && count("SELECT COUNT(*) FROM Invoices;")==2,"Other writer replay created or changed invoice.");Image(form,outputDirectory,"checkout-replay");
+            select(third.RoomSessionId);preview();sql("CREATE TRIGGER ui_revoke_checkout AFTER INSERT ON AuditLog WHEN NEW.Action='Invoice.Create' BEGIN DELETE FROM RolePermission WHERE RoleId='Staff';END;");confirm();
+            Assert(vm.HasReceipt && vm.Receipt.RoomSessionId==third.RoomSessionId && vm.Status.Contains("Đã trả phòng thành công") && vm.Status.Contains("chưa tải lại") && vm.Sessions.Count==0 && vm.Lines.Count==0 && !vm.CanConfirm && count("SELECT COUNT(*) FROM Invoices;")==3,"Post-commit refresh failure lost paid receipt or enabled resend.");Image(form,outputDirectory,"checkout-post-commit");
+            reload();Assert(vm.HasReceipt && vm.Receipt.RoomSessionId==third.RoomSessionId && !vm.CanConfirm && vm.Status.Contains("đã trả phòng thành công"),"Revoked manual refresh discarded committed receipt or paid status.");
+        }
+        finally{form.Close();}
+        sql("DROP TRIGGER ui_revoke_checkout;INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('Q5','Busy',1,'test.png',1,'test');");
+        sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=5,FullName="Khách",PhoneNumber="0905555555"});
+        var gate=new CheckoutUiGate{Value=clock.UtcNow};var guardedVm=new CheckoutViewModel(new CheckoutService(db,gate),actor);var guardedForm=new CheckoutWindow(guardedVm);
+        try
+        {
+            guardedForm.Show();PumpUntil(()=>!guardedVm.IsBusy && guardedVm.Sessions.Count==1);guardedVm.Selected=guardedVm.Sessions[0];Click(Field<Button>(guardedForm,"PreviewButton"));PumpUntil(()=>gate.Entered.IsSet);
+            Click(Field<Button>(guardedForm,"PreviewButton"));guardedForm.Close();Assert(guardedVm.IsBusy && guardedForm.IsVisible && gate.Calls==1,"Busy checkout duplicated preview or closed in flight.");gate.Release.Set();PumpUntil(()=>!guardedVm.IsBusy);Assert(guardedVm.IsConfirming && !guardedVm.CanConfirm && count("SELECT COUNT(*) FROM Invoices;")==3,"Busy preview wrote or reused acknowledgement.");
+            gate.Entered.Reset();gate.Release.Reset();gate.Calls=0;guardedVm.Acknowledged=true;Click(Field<Button>(guardedForm,"ConfirmButton"));PumpUntil(()=>gate.Entered.IsSet);
+            Click(Field<Button>(guardedForm,"ConfirmButton"));guardedForm.Close();Assert(guardedVm.IsBusy && guardedForm.IsVisible && gate.Calls==1,"Busy confirmation duplicated writer or closed before result.");
+            gate.Release.Set();PumpUntil(()=>!guardedVm.IsBusy);Assert(guardedVm.HasReceipt && guardedVm.Receipt.PaymentMethod=="Cash" && count("SELECT COUNT(*) FROM Invoices;")==4,"Busy confirmation failed receipt/Cash/single invoice.");
+        }
+        finally{gate.Release.Set();PumpUntil(()=>!guardedVm.IsBusy);guardedForm.Close();gate.Entered.Dispose();gate.Release.Dispose();}
+        sql("INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('Q6','Stale',1,'test.png',1,'test');");
+        var staleSession=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=6,FullName="Khách",PhoneNumber="0906666666"}).Session;
+        var staleVm=new CheckoutViewModel(service,actor);var staleForm=new CheckoutWindow(staleVm);
+        try
+        {
+            staleForm.Show();PumpUntil(()=>!staleVm.IsBusy && staleVm.Sessions.Count==1);staleVm.Selected=staleVm.Sessions[0];service.ConfirmStaff(admin,staleSession.RoomSessionId,"Cash");
+            Click(Field<Button>(staleForm,"PreviewButton"));PumpUntil(()=>!staleVm.IsBusy);
+            Assert(staleVm.Sessions.Count==0 && staleVm.Lines.Count==0 && !staleVm.IsConfirming && !staleVm.HasReceipt && !staleVm.CanConfirm,"Completed before preview retained stale session/confirmation.");Image(staleForm,outputDirectory,"checkout-stale-preview");
+        }
+        finally{staleForm.Close();}
     }
 
     private static void VerifyBillingUi(string file,string outputDirectory)
