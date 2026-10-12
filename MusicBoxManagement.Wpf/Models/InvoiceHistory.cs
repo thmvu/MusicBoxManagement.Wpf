@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MusicBoxManagement.Wpf.Models
 {
@@ -11,6 +12,8 @@ namespace MusicBoxManagement.Wpf.Models
         public DateTimeOffset PaidAt { get; internal set; }
         public string PaymentMethod { get; internal set; }
         public decimal TotalAmount { get; internal set; }
+        public string PaidLabel => PaidAt.ToOffset(TimeSpan.FromHours(7)).ToString("HH:mm:ss dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"));
+        public string PaymentLabel => PaymentMethod == "Cash" ? "Tiền mặt" : "Chuyển khoản";
     }
     public sealed class InvoiceSearch
     {

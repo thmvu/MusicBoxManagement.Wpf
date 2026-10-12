@@ -36,6 +36,7 @@ INSERT INTO Services(Name,Category,Price,IsActive) VALUES('Món gốc','Đồ u�
 INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'reader','reader','READER',PasswordHash,'reader','Người xem hóa đơn',1 FROM AspNetUsers LIMIT 1;
 INSERT INTO AspNetUserRoles VALUES('reader','Staff');DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
             var actor=auth.LoginAsync("reader",password).GetAwaiter().GetResult();var clock=new Clock{Value=At(12,13).AddSeconds(12).AddTicks(1234)};
+            new StaffReservationService(db,clock).ForInvoices(actor);
             var sessions=new RoomSessionService(db,clock);var orders=new OrderService(db,clock);var checkout=new CheckoutService(db,clock);var service=new InvoiceService(db,clock);
             var first=sessions.CreateWalkIn(admin,new WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111"}).Session;
             orders.CreateStaff(admin,first.RoomSessionId,Cart(2));orders.CreateStaff(admin,first.RoomSessionId,Cart(1));
@@ -69,6 +70,7 @@ INSERT INTO AspNetUserRoles VALUES('reader','Staff');DELETE FROM RolePermission 
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.Print';");
             Reject<UnauthorizedAccessException>(()=>service.ReadForPrint(actor,paid.InvoiceId));Reject<UnauthorizedAccessException>(()=>service.Search(actor));Reject<UnauthorizedAccessException>(()=>service.Read(actor,paid.InvoiceId));
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");Reject<UnauthorizedAccessException>(()=>service.Read(actor,paid.InvoiceId));
+            Reject<UnauthorizedAccessException>(()=>new StaffReservationService(db,clock).ForInvoices(actor));
             Sql(db,"DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
             Reject<UnauthorizedAccessException>(()=>service.Search(null));Reject<UnauthorizedAccessException>(()=>service.Read(null,paid.InvoiceId));
 

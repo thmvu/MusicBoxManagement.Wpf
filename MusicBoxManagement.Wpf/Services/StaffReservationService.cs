@@ -41,6 +41,11 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(session, "Session.CheckOut");
             return new CheckoutService(database, clock);
         }
+        public InvoiceService ForInvoices(LoginSession session)
+        {
+            permissions.Demand(session, "Invoice.View");
+            return new InvoiceService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession session, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

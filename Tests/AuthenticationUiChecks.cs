@@ -71,7 +71,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "InvoicesButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -137,6 +137,7 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "WalkInButton").Visibility == Visibility.Collapsed, "Guest saw walk-in operation.");
             Assert(Field<Button>(window, "SessionsButton").Visibility == Visibility.Collapsed, "Guest saw private sessions.");
             Assert(Field<Button>(window, "CheckoutButton").Visibility == Visibility.Collapsed, "Guest saw checkout.");
+            Assert(Field<Button>(window, "InvoicesButton").Visibility == Visibility.Collapsed, "Guest saw invoice history.");
             Image(window, outputDirectory, "guest");
             VerifyNavigationLayout(window, false, outputDirectory);
             VerifyGuestBooking(Path.Combine(testDirectory,"booking.db"),outputDirectory);
@@ -146,6 +147,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyStaffOrdersUi(Path.Combine(testDirectory,"staff-orders-ui.db"),outputDirectory);
             VerifyBillingUi(Path.Combine(testDirectory,"billing-ui.db"),outputDirectory);
             VerifyCheckoutUi(Path.Combine(testDirectory,"checkout-ui.db"),outputDirectory);
+            VerifyInvoicesUi(Path.Combine(testDirectory,"invoices-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -248,6 +250,17 @@ public static class MusicBoxAuthenticationUiChecks
                 finally{driver.Stop();child.Close();}
             };
             driver.Start();Click(Field<Button>(window,"CheckoutButton"));PumpUntil(()=>driverError!=null || (checkoutOpened && Field<Button>(window,"CheckoutButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
+            staffEntrySql("DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
+            Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Assert(Field<Button>(window,"InvoicesButton").IsVisible && !Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"Invoice.View-only entry required operational rights.");
+            bool invoicesOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var child=application.Windows.OfType<InvoicesWindow>().FirstOrDefault();if(child==null)return;var vm=(InvoicesViewModel)child.DataContext;if(vm.IsBusy)return;
+                try{Assert(vm.Items.Count==0 && !vm.HasDetails && vm.CanSearch,"Main invoice empty state wrong.");Image(child,outputDirectory,"invoices-main-empty");invoicesOpened=true;}
+                catch(Exception error){driverError=error;}
+                finally{driver.Stop();child.Close();}
+            };
+            driver.Start();Click(Field<Button>(window,"InvoicesButton"));PumpUntil(()=>driverError!=null || (invoicesOpened && Field<Button>(window,"InvoicesButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('"+string.Join("','",PermissionCatalog.Defaults("Staff"))+"');");
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff'; DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View'));");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
@@ -665,7 +678,7 @@ public static class MusicBoxAuthenticationUiChecks
             Click(Field<Button>(window, "LoginButton"));
             PumpUntil(() => !driver.IsEnabled && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible, "Canceling login left Guest mode.");
-            Console.WriteLine("PASS WPF UI: checkout CheckOut-only/ack/payment/fresh money/duplicate/stale/rollback/replay/post-commit/busy/compact, Guest/Staff provisional bill, orders, Active/extension, Sessions, WalkIn, sidebar, check-in, calendars, Staff/Guest booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
+            Console.WriteLine("PASS WPF UI: invoice history View-only/filters/snapshots/precision/current phone/stale/revoked/busy/compact, checkout, Guest/Staff bill/orders/extension, Sessions, WalkIn, sidebar, check-in, calendars, booking/lookup/cancel, NoShow, auth and catalogs. Rendered "+Directory.GetFiles(outputDirectory,"*.png").Length+" views.");
         }
         finally
         {
@@ -674,6 +687,66 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyInvoicesUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin hóa đơn",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText=s;command.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText=s;return Convert.ToInt64(command.ExecuteScalar());}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('V1','Phòng',1,'test.png',1,'test');INSERT INTO Services(Name,Category,Price,IsActive) VALUES('Món gốc','Đồ uống',25000,1);
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'viewer','viewer','VIEWER',PasswordHash,'viewer','Chỉ xem hóa đơn',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('viewer','Staff');DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
+        var login=auth.LoginAsync("viewer",Password);PumpUntil(()=>login.IsCompleted);var actor=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,12,13,0,12,TimeSpan.FromHours(7)).AddTicks(1234)};
+        var sessions=new RoomSessionService(db,clock);var orders=new OrderService(db,clock);var checkout=new CheckoutService(db,clock);
+        var first=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0901111111"}).Session;
+        orders.CreateStaff(admin,first.RoomSessionId,new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=2}});orders.CreateGuest("0901111111",first.RoomSessionId,new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=1}});
+        clock.UtcNow=clock.UtcNow.AddSeconds(90).AddTicks(2456);var paid=checkout.ConfirmStaff(admin,first.RoomSessionId,"Cash");
+        clock.UtcNow=new DateTimeOffset(2026,10,12,22,0,0,TimeSpan.FromHours(7));var second=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0902222222"}).Session;
+        clock.UtcNow=new DateTimeOffset(2026,10,13,0,0,0,TimeSpan.FromHours(7));var midnight=checkout.ConfirmStaff(admin,second.RoomSessionId,"BankTransfer");
+        clock.UtcNow=new DateTimeOffset(2026,10,13,13,0,0,TimeSpan.FromHours(7));var third=sessions.CreateWalkIn(admin,new MusicBoxManagement.Wpf.Models.WalkInRequest{RoomId=1,FullName="Khách",PhoneNumber="0903333333"}).Session;
+        sql("UPDATE RoomSessions SET HourlyRate=9223372036854775807 WHERE RoomSessionId="+third.RoomSessionId+";UPDATE Services SET Price=9223372036854775807;");orders.CreateStaff(admin,third.RoomSessionId,new[]{new MusicBoxManagement.Wpf.Models.OrderLineRequest{ServiceId=1,Quantity=10}});clock.UtcNow=clock.UtcNow.AddHours(2);var huge=checkout.ConfirmStaff(admin,third.RoomSessionId,"Cash");
+        sql("UPDATE RoomTypes SET Name='Tên loại mới',PricePerHour=999000;UPDATE Rooms SET RoomTypeId=2,IsActive=0,InactiveReason='Khóa sau dùng';UPDATE Services SET Name='Tên món mới',Price=99000,IsActive=0;UPDATE AspNetUsers SET FullName='Thu ngân đổi tên' WHERE Id='"+admin.UserId+"';");
+        var vm=new InvoicesViewModel(new StaffReservationService(db,clock).ForInvoices(actor),actor);var form=new InvoicesWindow(vm);
+        Action search=()=>{Click(Field<Button>(form,"SearchButton"));PumpUntil(()=>!vm.IsBusy);};
+        Action<int> select=id=>{Field<DataGrid>(form,"InvoicesTable").SelectedItem=vm.Items.First(i=>i.InvoiceId==id);PumpUntil(()=>!vm.IsBusy);};
+        var audit=count("SELECT COUNT(*) FROM AuditLog;");
+        try
+        {
+            form.Show();PumpUntil(()=>!vm.IsBusy && vm.Items.Count==3);select(paid.InvoiceId);
+            var datePicker=Field<DatePicker>(form,"FromInput");var dateBox=(System.Windows.Controls.Primitives.DatePickerTextBox)datePicker.Template.FindName("PART_TextBox",datePicker);
+            Assert(((TextBlock)dateBox.Template.FindName("DateHint",dateBox)).Text=="Chọn ngày","Invoice date hint was not Vietnamese.");
+            Assert(vm.HasDetails && !vm.Detail.CanPrint && vm.Lines.Single().ServiceNameSnapshot=="Món gốc" && vm.Lines.Single().UnitPrice==25000 && vm.DetailText.Contains("Standard") && vm.DetailText.Contains("Admin hóa đơn") && vm.Amounts.Contains("53.000") && vm.Detail.UsedTicks==900002456,"Invoice.View-only UI lost snapshots/money/ticks or needed Print/other rights.");Image(form,outputDirectory,"invoices-detail");
+            form.Width=form.MinWidth;form.Height=form.MinHeight;form.UpdateLayout();
+            PumpUntil(()=>Field<DataGrid>(form,"ItemsTable").Columns.Sum(c=>c.ActualWidth)<=Field<DataGrid>(form,"ItemsTable").ActualWidth);
+            Image(form,outputDirectory,"invoices-compact");var money=Field<TextBlock>(form,"AmountsText");Assert(money.IsVisible && money.TranslatePoint(new Point(),form).Y+money.ActualHeight<form.ActualHeight-30,"Compact invoice hid paid total.");
+            Field<TextBox>(form,"NumberInput").Text=" "+paid.InvoiceNumber.ToLowerInvariant()+" ";Assert(vm.Items.Count==0 && !vm.HasDetails && vm.Selected==null && vm.Lines.Count==0,"Code filter retained old invoice.");search();Assert(vm.Items.Count==1,"Exact invoice code failed.");select(paid.InvoiceId);
+            Field<TextBox>(form,"PhoneInput").Text="+84 901.111-111";search();Assert(vm.Items.Count==1,"Combined canonical phone filter failed.");
+            sql("UPDATE Customers SET PhoneNumber='0909999999' WHERE CustomerId="+first.CustomerId+";");search();Assert(vm.Items.Count==0 && !vm.HasDetails,"Old phone retained history results.");Field<TextBox>(form,"PhoneInput").Text="0909999999";search();Assert(vm.Items.Count==1,"Current phone did not find same CustomerId history.");
+            Click(Field<Button>(form,"ClearButton"));Assert(vm.Items.Count==0 && vm.NumberQuery==null && vm.PhoneQuery==null && vm.FromDate==null && vm.ToDate==null,"Clear filter retained private state.");
+            Field<DatePicker>(form,"FromInput").SelectedDate=new DateTime(2026,10,13);Field<DatePicker>(form,"ToInput").SelectedDate=new DateTime(2026,10,13);search();Assert(vm.Items.Count==2 && vm.Items.Any(i=>i.PaidLabel.Contains("00:00:00 13/10/2026")),"PaidAt midnight day filter/label displayed UTC date.");select(midnight.InvoiceId);Assert(vm.Lines.Count==0 && vm.Amounts.Contains("240.000") && vm.DetailText.Contains("Chuyển khoản"),"Empty item invoice or payment label wrong.");Image(form,outputDirectory,"invoices-midnight");
+            select(huge.InvoiceId);Assert(vm.Amounts.Contains(huge.TotalAmount.ToString("N0",System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))) && vm.Lines.Single().Amount==10m*long.MaxValue,"UI lost large decimal money.");
+            var itemGrid=Field<DataGrid>(form,"ItemsTable");form.UpdateLayout();
+            var formattedMoney=new FormattedText(vm.Lines.Single().Amount.ToString("N0",System.Globalization.CultureInfo.GetCultureInfo("vi-VN")),System.Globalization.CultureInfo.GetCultureInfo("vi-VN"),FlowDirection.LeftToRight,new Typeface("Segoe UI"),itemGrid.FontSize,Brushes.Black,VisualTreeHelper.GetDpi(form).PixelsPerDip);
+            PumpUntil(()=>Field<DataGrid>(form,"ItemsTable").Columns[4].ActualWidth>=formattedMoney.WidthIncludingTrailingWhitespace);
+            Image(form,outputDirectory,"invoices-large");
+            Field<DatePicker>(form,"ToInput").SelectedDate=new DateTime(2026,10,12);search();Assert(vm.Items.Count==0 && !vm.HasDetails && vm.Status.Contains("Ngày"),"Reversed dates read or kept old results.");Click(Field<Button>(form,"ClearButton"));Field<TextBox>(form,"PhoneInput").Text="bad";search();Assert(vm.Items.Count==0 && vm.Status.Contains("SĐT"),"Invalid phone accepted.");
+            Click(Field<Button>(form,"ClearButton"));search();sql("UPDATE RoomSessions SET ActualEndTime='"+paid.PaidAt.AddSeconds(1).ToString("O",System.Globalization.CultureInfo.InvariantCulture)+"' WHERE RoomSessionId="+first.RoomSessionId+";");select(paid.InvoiceId);Assert(vm.Items.Count==0 && !vm.HasDetails && vm.Lines.Count==0,"Stale invalid invoice read kept details.");Image(form,outputDirectory,"invoices-stale");sql("UPDATE RoomSessions SET ActualEndTime='"+paid.PaidAt.ToString("O",System.Globalization.CultureInfo.InvariantCulture)+"' WHERE RoomSessionId="+first.RoomSessionId+";");
+            search();select(paid.InvoiceId);sql("DELETE FROM RolePermission WHERE RoleId='Staff';");search();Assert(vm.Items.Count==0 && !vm.HasDetails && vm.Lines.Count==0 && vm.NumberQuery==null && vm.PhoneQuery==null && !vm.CanSelect && vm.CanSearch,"Revoked View retained invoice/input data or blocked retry/close.");Image(form,outputDirectory,"invoices-revoked");
+            Assert(count("SELECT COUNT(*) FROM Invoices;")==3 && count("SELECT COUNT(*) FROM AuditLog;")==audit,"Invoice viewer wrote invoice/audit.");
+        }
+        finally{form.Close();}
+        sql("INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
+        var gate=new CheckoutUiGate{Value=clock.UtcNow};gate.Release.Set();var busyVm=new InvoicesViewModel(new InvoiceService(db,gate),actor);var busyForm=new InvoicesWindow(busyVm);
+        try
+        {
+            busyForm.Show();PumpUntil(()=>!busyVm.IsBusy && busyVm.Items.Count==3);gate.Entered.Reset();gate.Release.Reset();gate.Calls=0;
+            Field<DataGrid>(busyForm,"InvoicesTable").SelectedItem=busyVm.Items.First();PumpUntil(()=>gate.Entered.IsSet);
+            Click(Field<Button>(busyForm,"SearchButton"));busyVm.PhoneQuery="0909999999";busyForm.Close();Assert(busyVm.IsBusy && busyForm.IsVisible && gate.Calls==1 && busyVm.PhoneQuery==null,"Busy read duplicated request/changed filter/closed.");
+            gate.Release.Set();PumpUntil(()=>!busyVm.IsBusy);Assert(busyVm.HasDetails && count("SELECT COUNT(*) FROM Invoices;")==3,"Busy detail failed or wrote data.");
+        }
+        finally{gate.Release.Set();PumpUntil(()=>!busyVm.IsBusy);busyForm.Close();gate.Entered.Dispose();gate.Release.Dispose();}
     }
 
     private static void VerifyCheckoutUi(string file,string outputDirectory)

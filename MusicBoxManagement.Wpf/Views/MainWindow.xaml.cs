@@ -31,6 +31,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningSessions;
         private bool isOpeningOrders;
         private bool isOpeningCheckout;
+        private bool isOpeningInvoices;
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
@@ -123,6 +124,7 @@ namespace MusicBoxManagement.Wpf.Views
                 WalkInButton.Visibility = access.Permissions.ContainsKey("Session.WalkIn") ? Visibility.Visible : Visibility.Collapsed;
                 SessionsButton.Visibility = access.Permissions.ContainsKey("Session.View") ? Visibility.Visible : Visibility.Collapsed;
                 CheckoutButton.Visibility = access.Permissions.ContainsKey("Session.CheckOut") ? Visibility.Visible : Visibility.Collapsed;
+                InvoicesButton.Visibility = access.Permissions.ContainsKey("Invoice.View") ? Visibility.Visible : Visibility.Collapsed;
                 OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
@@ -175,6 +177,7 @@ namespace MusicBoxManagement.Wpf.Views
             WalkInButton.Visibility = Visibility.Collapsed;
             SessionsButton.Visibility = Visibility.Collapsed;
             CheckoutButton.Visibility = Visibility.Collapsed;
+            InvoicesButton.Visibility = Visibility.Collapsed;
             OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
             PermissionsTable.ItemsSource = null;
@@ -373,6 +376,19 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền trả phòng. Hãy kiểm tra lại quyền.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được màn hình trả phòng. Hãy thử lại.", "Music Box"); }
             finally { isOpeningCheckout = false; CheckoutButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+        private async void ShowInvoices_Click(object sender, RoutedEventArgs args)
+        {
+            if (isOpeningInvoices) return; isOpeningInvoices = true; InvoicesButton.IsEnabled = false;
+            try
+            {
+                var actor = session; var route = await Task.Run(() => reservations.ForInvoices(actor));
+                if (session != actor) return;
+                new InvoicesWindow(new InvoicesViewModel(route, actor)) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền xem hóa đơn. Hãy kiểm tra lại quyền.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Không mở được danh sách hóa đơn. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningInvoices = false; InvoicesButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private void ShowLookup_Click(object sender,RoutedEventArgs args)
