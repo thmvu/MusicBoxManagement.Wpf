@@ -99,7 +99,8 @@ VALUES(@session,@number,@room,@service,@total,@method,@user,@name,@now);";
                 transaction.Commit(); return invoice;
             }
         }
-        private static Invoice ReadInvoice(SQLiteConnection connection, SQLiteTransaction transaction, int sessionId)
+        // Snapshot reader: callers demand their own live permission in this transaction.
+        internal static Invoice ReadInvoice(SQLiteConnection connection, SQLiteTransaction transaction, int sessionId)
         {
             using (var command = connection.CreateCommand())
             {
