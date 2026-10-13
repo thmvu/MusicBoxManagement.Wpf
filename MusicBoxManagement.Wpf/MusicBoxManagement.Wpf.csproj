@@ -152,6 +152,8 @@
     <Compile Include="Services\CheckoutService.cs" />
     <Compile Include="Models\InvoiceHistory.cs" />
     <Compile Include="Services\InvoiceService.cs" />
+    <Compile Include="Models\DashboardSnapshot.cs" />
+    <Compile Include="Services\DashboardService.cs" />
     <Compile Include="Printing\InvoiceDocument.cs" />
     <Compile Include="Printing\InvoicePrinter.cs" />
     <Compile Include="ViewModels\InvoicePrintViewModel.cs" />

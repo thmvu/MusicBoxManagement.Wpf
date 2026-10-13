@@ -55,16 +55,7 @@ namespace MusicBoxManagement.Wpf.Services
                 command.Parameters.AddWithValue("@now", Utc(now));
                 command.Parameters.AddWithValue("@from", Utc(room.Range.Start));
                 command.Parameters.AddWithValue("@to", Utc(room.Range.End));
-                if (room.CurrentStatus != "Inactive")
-                {
-                    command.CommandText = "SELECT COUNT(*) FROM RoomSessions WHERE RoomId=@room AND Status='Active';";
-                    if (Convert.ToInt64(command.ExecuteScalar()) > 0) room.CurrentStatus = "Occupied";
-                    else
-                    {
-                        command.CommandText = "SELECT COUNT(*) FROM Reservations WHERE RoomId=@room AND Status='Confirmed' AND StartTime>@cutoff AND StartTime<=@now AND EndTime>@now;";
-                        if (Convert.ToInt64(command.ExecuteScalar()) > 0) room.CurrentStatus = "Reserved";
-                    }
-                }
+                room.CurrentStatus = ScheduleRules.CurrentRoomStatus(connection, transaction, room.RoomId, room.CurrentStatus != "Inactive", now);
                 command.CommandText = "SELECT HoldStart,HoldEnd FROM (" + ScheduleRules.HoldsSql + ") WHERE RoomId=@room AND HoldStart<@to AND HoldEnd>@from ORDER BY HoldStart;";
                 using (var reader = command.ExecuteReader()) while (reader.Read())
                     holds.Add(new ScheduleInterval { Start = Parse(reader.GetString(0)), End = Parse(reader.GetString(1)) });

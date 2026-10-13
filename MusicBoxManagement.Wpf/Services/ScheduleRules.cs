@@ -13,6 +13,22 @@ UNION ALL
 SELECT RoomId,CustomerId,ActualStartTime,ExpectedEndTime,ReservationId FROM RoomSessions
  WHERE Status='Active' AND ReservationId IS NOT NULL";
 
+        internal static string CurrentRoomStatus(SQLiteConnection connection, SQLiteTransaction transaction,
+            int roomId, bool isActive, DateTimeOffset now)
+        {
+            if (!isActive) return "Inactive";
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction; command.Parameters.AddWithValue("@room", roomId);
+                command.CommandText = "SELECT COUNT(*) FROM RoomSessions WHERE RoomId=@room AND Status='Active';";
+                if (Convert.ToInt64(command.ExecuteScalar()) > 0) return "Occupied";
+                command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
+                command.Parameters.AddWithValue("@now", Utc(now));
+                command.CommandText = "SELECT COUNT(*) FROM Reservations WHERE RoomId=@room AND Status='Confirmed' AND StartTime>@cutoff AND StartTime<=@now AND EndTime>@now;";
+                return Convert.ToInt64(command.ExecuteScalar()) > 0 ? "Reserved" : "Available";
+            }
+        }
+
         // Warning only: never stored as ExpectedEndTime or used as a future hold.
         internal static DateTimeOffset WalkInReturnBy(SQLiteConnection connection, SQLiteTransaction transaction,
             int roomId, int customerId, DateTimeOffset actualStart, DateTimeOffset now)
