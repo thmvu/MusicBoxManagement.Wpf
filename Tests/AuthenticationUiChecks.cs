@@ -71,7 +71,7 @@ public static class MusicBoxAuthenticationUiChecks
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
         var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "InvoicesButton", "CalendarButton", "RefreshAccessButton" }
+            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "InvoicesButton", "AccountsButton", "CalendarButton", "RefreshAccessButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -149,6 +149,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyCheckoutUi(Path.Combine(testDirectory,"checkout-ui.db"),outputDirectory);
             VerifyInvoicesUi(Path.Combine(testDirectory,"invoices-ui.db"),outputDirectory);
             VerifyDashboardUi(Path.Combine(testDirectory,"dashboard-ui.db"),outputDirectory);
+            VerifyAccountsUi(Path.Combine(testDirectory,"accounts-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -262,7 +263,14 @@ public static class MusicBoxAuthenticationUiChecks
                 finally{driver.Stop();child.Close();}
             };
             driver.Start();Click(Field<Button>(window,"InvoicesButton"));PumpUntil(()=>driverError!=null || (invoicesOpened && Field<Button>(window,"InvoicesButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
+            Assert(Field<Button>(window,"AccountsButton").Visibility==Visibility.Collapsed,"Non-Admin saw account administration.");
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('"+string.Join("','",PermissionCatalog.Defaults("Staff"))+"');");
+            Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            var accountsOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{var child=application.Windows.OfType<AccountsWindow>().FirstOrDefault();if(child==null)return;var model=(AccountsViewModel)child.DataContext;if(model.IsBusy)return;
+                try{Assert(model.Items.Count==1&&model.CanNew,"Main account route failed for Admin.");Image(child,outputDirectory,"accounts-main");accountsOpened=true;}
+                catch(Exception error){driverError=error;}finally{driver.Stop();child.Close();}};
+            driver.Start();Click(Field<Button>(window,"AccountsButton"));PumpUntil(()=>driverError!=null || (accountsOpened&&Field<Button>(window,"AccountsButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff'; DELETE FROM RolePermission WHERE RoleId='Staff' AND PermissionId IN(SELECT PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View'));");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Collapsed && Field<Button>(window,"StaffBookingButton").Visibility==Visibility.Visible,"Create-only shortcut required View.");
@@ -663,7 +671,17 @@ public static class MusicBoxAuthenticationUiChecks
             if (driverError != null) throw driverError;
             PumpUntil(() => Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Assert(stage == 2 && ((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot != null, "Correct login did not load dashboard.");
-            Click(Field<Button>(window, "LogoutButton"));
+            var selfResetStage=0;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+            driver.Tick+=(sender,args)=>{
+                var child=application.Windows.OfType<AccountsWindow>().FirstOrDefault();if(child==null)return;var model=(AccountsViewModel)child.DataContext;if(model.IsBusy)return;
+                try{
+                    if(selfResetStage==0&&model.Items.Count>0){Field<DataGrid>(child,"AccountsTable").SelectedItem=model.Items.Single(u=>u.Role=="Admin");Click(Field<Button>(child,"ResetButton"));Field<PasswordBox>(child,"PasswordInput").Password="Main-Self-Reset-2026!";Field<PasswordBox>(child,"RepeatInput").Password="Main-Self-Reset-2026!";Click(Field<Button>(child,"PrepareButton"));selfResetStage=1;}
+                    else if(selfResetStage==1&&model.CanConfirm){Click(Field<Button>(child,"ConfirmButton"));selfResetStage=2;}
+                    else if(selfResetStage==2&&model.RequiresRelogin){Image(child,outputDirectory,"accounts-main-self-reset");selfResetStage=3;driver.Stop();child.Close();}
+                }catch(Exception error){driverError=error;driver.Stop();child.Close();}
+            };
+            driver.Start();Click(Field<Button>(window,"AccountsButton"));PumpUntil(()=>driverError!=null||(selfResetStage==3&&Field<Grid>(window,"GuestPanel").Visibility==Visibility.Visible&&Field<Button>(window,"LoginButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
+            Assert(((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot==null&&Field<Button>(window,"AccountsButton").Visibility==Visibility.Collapsed,"Main self-reset did not return to Guest/clear dashboard.");
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
 
             // Canceling a login dialog must leave the application in Guest mode.
@@ -691,6 +709,61 @@ public static class MusicBoxAuthenticationUiChecks
             Directory.Delete(testDirectory, true);
         }
     }
+
+    private static void VerifyAccountsUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin tài khoản",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText=s;command.ExecuteNonQuery();}};
+        Func<string,long> count=s=>{using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText=s;return Convert.ToInt64(command.ExecuteScalar());}};
+        var service=new StaffReservationService(db).ForAccounts(admin);var vm=new AccountsViewModel(service,admin);var form=new AccountsWindow(vm);form.Show();
+        Action ready=()=>PumpUntil(()=>!vm.IsBusy);Action reload=()=>{Click(Field<Button>(form,"ReloadButton"));ready();};
+        Action prepare=()=>{Click(Field<Button>(form,"PrepareButton"));ready();};
+        Action<string> passwords=value=>{Field<PasswordBox>(form,"PasswordInput").Password=value;Field<PasswordBox>(form,"RepeatInput").Password=value;};
+        Action confirm=()=>{Click(Field<Button>(form,"ConfirmButton"));ready();};
+        Action<string> select=id=>{Field<DataGrid>(form,"AccountsTable").SelectedItem=vm.Items.Single(u=>u.UserId==id);form.UpdateLayout();};
+        try
+        {
+            PumpUntil(()=>!vm.IsBusy&&vm.Items.Count==1);Image(form,outputDirectory,"accounts-list");
+            Click(Field<Button>(form,"NewButton"));vm.UserName="staff.ui";vm.FullName="Nhân viên UI";passwords(Password);prepare();
+            Assert(vm.CanConfirm&&Field<PasswordBox>(form,"PasswordInput").Password==Password,"Preparing account cleared password unexpectedly or skipped confirmation.");Image(form,outputDirectory,"accounts-create-confirm");
+            Field<PasswordBox>(form,"RepeatInput").Password="not-matching";confirm();Assert(vm.IsConfirming&&vm.Status.Contains("chưa khớp")&&vm.Items.Count==1,"Mismatched passwords saved or lost confirmation.");
+            passwords(Password);Click(Field<Button>(form,"ConfirmButton"));Click(Field<Button>(form,"ConfirmButton"));ready();
+            Assert(vm.Items.Count==2&&vm.Status.Contains("Đã lưu")&&Field<PasswordBox>(form,"PasswordInput").Password==""&&Field<PasswordBox>(form,"RepeatInput").Password=="","Create/duplicate/password clearing failed.");
+            var user=vm.Items.Single(u=>u.UserName=="staff.ui");var staffLogin=auth.LoginAsync(user.UserName,Password).GetAwaiter().GetResult();
+            select(user.UserId);vm.FullName="Đã sửa";vm.Role="Manager";prepare();Click(Field<Button>(form,"KeepButton"));Assert(!vm.IsConfirming&&GetAccountRole(db,user.UserId)=="Staff","Keep wrote account.");
+            prepare();confirm();Assert(vm.Items.Single(u=>u.UserId==user.UserId).Role=="Manager","Role edit did not commit.");
+            Assert(!new PermissionService(db).HasPermission(staffLogin,"Dashboard.View"),"Old role session stayed valid.");
+            select(user.UserId);vm.IsActive=false;prepare();confirm();Assert(!vm.Items.Single(u=>u.UserId==user.UserId).IsActive,"Lock UI failed.");
+            select(user.UserId);vm.IsActive=true;prepare();confirm();Assert(vm.Items.Single(u=>u.UserId==user.UserId).IsActive,"Unlock UI failed.");
+            select(user.UserId);Click(Field<Button>(form,"ResetButton"));passwords("Accounts-New-Ui!");prepare();Image(form,outputDirectory,"accounts-reset-confirm");confirm();
+            Assert(vm.Status.Contains("Đã đặt lại")&&auth.LoginAsync(user.UserName,"Accounts-New-Ui!").GetAwaiter().GetResult()!=null,"Reset UI lost password or failed.");
+            select(user.UserId);vm.FullName="Form cũ";prepare();var original=service.List(admin).Single(u=>u.UserId==user.UserId);
+            service.UpdateAsync(admin,original,new MusicBoxManagement.Wpf.Models.AccountEdit{UserName=original.UserName,FullName="Người khác sửa",Role=original.Role,IsActive=true}).GetAwaiter().GetResult();
+            confirm();Assert(vm.Items.Count==0&&!vm.HasForm&&vm.Status.Contains("thay đổi"),"Stale confirmation overwrote changes or retained form.");reload();
+            select(admin.UserId);Assert(!vm.CanChangeRoleState,"UI lets Admin change own role/state.");vm.IsActive=false;prepare();confirm();Assert(vm.Status.Contains("tự khóa")&&vm.Items.Count==0,"Service self-lock guard bypassed by VM.");reload();
+            form.Width=form.MinWidth;form.Height=form.MinHeight;select(user.UserId);var compactTable=Field<DataGrid>(form,"AccountsTable");PumpUntil(()=>compactTable.Columns.Sum(c=>c.ActualWidth)<=compactTable.ActualWidth);Image(form,outputDirectory,"accounts-compact");
+            select(user.UserId);vm.FullName="Rollback";prepare();sql("CREATE TRIGGER FailAccountUi BEFORE INSERT ON AuditLog WHEN NEW.Action='User.Update' BEGIN SELECT RAISE(ABORT,'fixture');END;");confirm();
+            Assert(service.List(admin).Single(u=>u.UserId==user.UserId).FullName=="Người khác sửa"&&vm.Items.Count==0,"Audit failure persisted UI changes.");sql("DROP TRIGGER FailAccountUi;");reload();
+            select(user.UserId);vm.FullName="Đã commit";prepare();
+            sql("CREATE TRIGGER RevokeActorAfterCommit BEFORE INSERT ON AuditLog WHEN NEW.Action='User.Update' BEGIN UPDATE AspNetUsers SET SecurityStamp='post-commit' WHERE Id='"+admin.UserId+"';END;");confirm();
+            Assert(vm.Status.Contains("Đã lưu")&&vm.Status.Contains("Chưa tải lại")&&vm.Items.Count==0,"Refresh error after commit falsely reported save failure.");Image(form,outputDirectory,"accounts-post-commit");
+            sql("DROP TRIGGER RevokeActorAfterCommit;");var newAdmin=auth.LoginAsync("admin",Password).GetAwaiter().GetResult();
+            var denied=new AccountsViewModel(service,staffLogin);var task=denied.ReloadAsync();PumpUntil(()=>task.IsCompleted);Assert(denied.Items.Count==0&&!denied.CanNew,"Denied role retained account list.");
+            vm=new AccountsViewModel(service,newAdmin);form.Close();form=new AccountsWindow(vm);form.Show();PumpUntil(()=>!vm.IsBusy&&vm.Items.Count==2);
+            select(newAdmin.UserId);Click(Field<Button>(form,"ResetButton"));passwords("Admin-New-Ui-2026!");prepare();confirm();
+            Assert(vm.RequiresRelogin&&!vm.CanReload&&vm.Items.Count==0&&!vm.HasForm&&vm.Status.Contains("Đóng cửa sổ"),"Self reset did not clear private data/relogin state.");Image(form,outputDirectory,"accounts-self-reset");form.Close();
+            var third=auth.LoginAsync("admin","Admin-New-Ui-2026!").GetAwaiter().GetResult();
+            var gate=new CheckoutUiGate{Value=DateTimeOffset.UtcNow};vm=new AccountsViewModel(new AccountManagementService(db,gate),third);form=new AccountsWindow(vm);form.Show();PumpUntil(()=>!vm.IsBusy&&vm.Items.Count==2);
+            Click(Field<Button>(form,"NewButton"));vm.UserName="busy.ui";vm.FullName="Busy";passwords(Password);prepare();
+            Click(Field<Button>(form,"ConfirmButton"));PumpUntil(()=>gate.Entered.IsSet);Click(Field<Button>(form,"ConfirmButton"));form.Close();Assert(form.IsVisible&&vm.IsBusy,"Busy close/duplicate guard failed.");
+            gate.Release.Set();ready();Assert(count("SELECT COUNT(*) FROM AspNetUsers WHERE UserName='busy.ui';")==1,"Busy creation duplicated user.");gate.Entered.Dispose();gate.Release.Dispose();
+            Click(Field<Button>(form,"NewButton"));vm.UserName="revoked.ui";vm.FullName="Revoke";passwords(Password);
+            sql("UPDATE AspNetUsers SET SecurityStamp='revoke' WHERE Id='"+third.UserId+"';");prepare();Assert(vm.Items.Count==0&&!vm.HasForm&&Field<PasswordBox>(form,"PasswordInput").Password==""&&vm.Status.Contains("Không còn quyền"),"Revoked rights kept credentials/form/list.");Image(form,outputDirectory,"accounts-revoked");
+        }
+        finally {if(!vm.IsBusy)form.Close();}
+    }
+    private static string GetAccountRole(SqliteDatabase db,string id)
+    {using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText="SELECT RoleId FROM AspNetUserRoles WHERE UserId=@id;";command.Parameters.AddWithValue("@id",id);return (string)command.ExecuteScalar();}}
 
     private static void VerifyDashboardUi(string file,string outputDirectory)
     {

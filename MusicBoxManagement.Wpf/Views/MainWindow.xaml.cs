@@ -33,6 +33,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningOrders;
         private bool isOpeningCheckout;
         private bool isOpeningInvoices;
+        private bool isOpeningAccounts;
         private readonly DashboardViewModel dashboard;
         private readonly SemaphoreSlim accessGate = new SemaphoreSlim(1, 1);
         private LoginSession session;
@@ -134,6 +135,7 @@ namespace MusicBoxManagement.Wpf.Views
                 SessionsButton.Visibility = access.Permissions.ContainsKey("Session.View") ? Visibility.Visible : Visibility.Collapsed;
                 CheckoutButton.Visibility = access.Permissions.ContainsKey("Session.CheckOut") ? Visibility.Visible : Visibility.Collapsed;
                 InvoicesButton.Visibility = access.Permissions.ContainsKey("Invoice.View") ? Visibility.Visible : Visibility.Collapsed;
+                AccountsButton.Visibility = access.Permissions.ContainsKey("User.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
@@ -191,6 +193,7 @@ namespace MusicBoxManagement.Wpf.Views
             SessionsButton.Visibility = Visibility.Collapsed;
             CheckoutButton.Visibility = Visibility.Collapsed;
             InvoicesButton.Visibility = Visibility.Collapsed;
+            AccountsButton.Visibility = Visibility.Collapsed;
             OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
             dashboard.Reset(null);
@@ -405,6 +408,21 @@ namespace MusicBoxManagement.Wpf.Views
             finally { isOpeningInvoices = false; InvoicesButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
+        private async void ShowAccounts_Click(object sender, RoutedEventArgs args)
+        {
+            if (isOpeningAccounts) return; isOpeningAccounts = true; AccountsButton.IsEnabled = false;
+            try
+            {
+                var actor = session; var route = await Task.Run(() => reservations.ForAccounts(actor));
+                if (session != actor) return;
+                var model = new AccountsViewModel(route, actor); new AccountsWindow(model) { Owner = this }.ShowDialog();
+                if (model.RequiresRelogin && session == actor)
+                { ReturnToGuest(); ModeText.Text = "Đã reset mật khẩu. Hãy đăng nhập lại."; await PrepareLoginAsync(); }
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền quản trị tài khoản hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Chưa mở được quản trị tài khoản. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningAccounts = false; AccountsButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
         private void ShowLookup_Click(object sender,RoutedEventArgs args)
         {
             if(session!=null || isOpeningLookup)return;

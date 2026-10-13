@@ -1,6 +1,6 @@
 # Luồng code Music Box WPF — lần theo từ giao diện đến SQLite
 
-Cập nhật **14/10/2026**, sau bước **8b.1 service quản trị tài khoản** và 8a.2 UI dashboard. Đọc cùng [giải thích kiến trúc MVC/MVVM](Architecture_MVC_Services_Explanation.md). Tài liệu này tập trung vào **ai gọi hàm nào, truyền gì, nhận gì, dữ liệu đổi ở đâu**, thay vì chỉ định nghĩa tên các lớp.
+Cập nhật **14/10/2026**, sau bước **8b.2 UI quản trị tài khoản** và 8a.2 UI dashboard. Đọc cùng [giải thích kiến trúc MVC/MVVM](Architecture_MVC_Services_Explanation.md). Tài liệu này tập trung vào **ai gọi hàm nào, truyền gì, nhận gì, dữ liệu đổi ở đâu**, thay vì chỉ định nghĩa tên các lớp.
 
 Nền tảng: WPF .NET Framework 4.7.2, SQLite v8; Khách dùng tại quầy/demo, nhân viên đăng nhập. Các tên hàm dưới đây đối chiếu với mã nguồn hiện tại. Các dòng “SQL/Commit/binding” trong sơ đồ là bước xử lý, không phải tên lớp tự tạo.
 
@@ -111,7 +111,7 @@ kiểm tra đầu vào
 
 Kiểm tra lại sau băm mật khẩu là cần thiết: xác minh mật khẩu mất thời gian; tài khoản có thể bị khóa hoặc đổi stamp trong khoảng đó. LoginSession là phiên trong bộ nhớ, mang UserId/stamp; quyền và role dùng trong nghiệp vụ vẫn phải đọc DB hiện hành.
 
-SetupAdminAsync là đường tạo Admin đầu tiên trong transaction, có kiểm tra bootstrap đồng thời. Nó **không phải màn quản trị thêm/sửa/khóa mọi nhân viên**. Service quản trị đã có ở 8b.1 (mục 5.15), UI Admin sẽ nối ở 8b.2.
+SetupAdminAsync là đường tạo Admin đầu tiên trong transaction, có kiểm tra bootstrap đồng thời. Nó **không phải màn quản trị thêm/sửa/khóa mọi nhân viên**. Quản trị đã có service 8b.1 và UI 8b.2 (mục 5.15).
 
 ## 4. Luồng dashboard mới — đi từng hàm
 
@@ -516,7 +516,27 @@ App.OnExit → NoShowWorker.Dispose → dừng timer
 
 Worker có guard chạy trùng và retry nhịp sau khi lỗi. Worker ghi NoShow thật; dashboard chỉ chiếu hiệu lực. Dashboard không tự refresh mỗi nhịp worker; timestamp và Làm mới cho biết khi cần cập nhật.
 
-### 5.15 Quản trị tài khoản — service đã có, UI nối tiếp
+### 5.15 Quản trị tài khoản — UI và service
+
+```text
+MainWindow.ShowAccounts_Click → StaffReservationService.ForAccounts
+  → Demand(User.Manage) → AccountManagementService → AccountsViewModel
+  → AccountsWindow.ShowDialog → Loaded → ReloadAsync → service.List
+Chọn dòng → Selection_Changed → Select(UserAccount với Revision)
+Thêm/Reset → New_Click/Reset_Click → StartNew/StartReset
+Prepare_Click → PrepareAsync → service.List kiểm tra quyền/Revision → confirmation
+Confirm_Click → đọc PasswordBox + nhập lại, xóa hai control
+  → mismatch? PasswordError, không ghi
+  → AccountsViewModel.ConfirmAsync(password)
+  → Task.Run → API service như dưới
+  → thành công: Clear + List tải lại, Status giữ đã lưu nếu reader lỗi
+  → tự reset: RequiresRelogin=true, xóa data, không gọi List bằng phiên cũ
+Đóng → MainWindow đọc RequiresRelogin
+  → ReturnToGuest/PrepareLoginAsync nếu tự reset
+  → RefreshAccessAsync nếu phiên còn hợp lệ
+```
+
+Mật khẩu không ở property của ViewModel; chỉ là tham số tạm của thao tác Confirm. Busy guard chặn click lặp/đóng; FormIdentity đổi mới xóa password khi chuyển ngữ cảnh. Prepare giữ bản sao AccountEdit; writer không tin quyền hoặc Revision lúc preview. Bảng active OneWay vì DTO đọc không cho sửa từ checkbox trong danh sách.
 
 ```text
 AccountManagementService.List(actor)
@@ -547,7 +567,7 @@ UpdateAsync(actor, original, edit) / ResetPasswordAsync(actor, original, passwor
 
 `SaveChanges()` cũ của bootstrap chỉ cho tạo mới. `SaveManagedChanges` là đường internal có kiểm tra User.Manage để cập nhật user cũ; service đã kiểm tra original/quyền và tiếp tục kiểm tra Admin còn lại/audit trong cùng writer. Nếu audit lỗi, SQL/hash/stamp/role đều rollback. Không có Delete user.
 
-Revision trong DTO là fingerprint bản ghi, không trả PasswordHash/SecurityStamp. Role/reset/khóa-mở đổi stamp; phiên trước bị từ chối, không sống lại sau unlock. Metadata đổi username/họ tên giữ stamp; tên hiện hành đọc từ DB. Tự khóa/hạ role bị chặn; tự reset hợp lệ nhưng phải đăng nhập mới khi UI nối xong.
+Revision trong DTO là fingerprint bản ghi, không trả PasswordHash/SecurityStamp. Role/reset/khóa-mở đổi stamp; phiên trước bị từ chối, không sống lại sau unlock. Metadata đổi username/họ tên giữ stamp; tên hiện hành đọc từ DB. Tự khóa/hạ role bị chặn; tự reset hợp lệ nhưng phải đăng nhập mới.
 
 ## 6. Quyền, transaction và lỗi — phần dùng chung mọi luồng
 
@@ -595,6 +615,6 @@ Muốn test không chạm DB thật, chạy Verify-Dashboard/Verify-Authenticati
 
 ## 8. Những phần còn làm tiếp
 
-Dashboard UI và service quản trị nhân viên đã có. UI Admin tạo/sửa/khóa/gán role/reset mật khẩu/bảo vệ Admin cuối cùng sẽ nối tiếp; ma trận quyền/audit UI, báo cáo/Excel, lịch sử khách, dữ liệu demo và hoàn thiện tài liệu vẫn còn trong plan. Tài liệu không gán tên event/ViewModel tưởng tượng cho giao diện chưa viết.
+Dashboard và quản trị nhân viên đã có service/UI. Ma trận quyền/audit UI, báo cáo/Excel, lịch sử khách, dữ liệu demo và hoàn thiện tài liệu vẫn còn trong plan. Tài liệu không gán tên event/ViewModel tưởng tượng cho giao diện chưa viết.
 
 Để bắt đầu học, chạy một lượt: **Khách đặt → nhân viên nhận phòng → Guest gọi món → nhân viên phục vụ → tiền tạm tính → checkout → xem/in hóa đơn → dashboard cập nhật**. Các mục 5.1/5.4/5.8/5.9/5.10/5.11/4 cho phép lần theo toàn bộ đường đi đó từ Click đến Commit rồi quay về binding.

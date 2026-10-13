@@ -72,6 +72,7 @@
                             <Button x:Name="OrdersButton" Style="{StaticResource SidebarButton}" Content="Đơn món" Click="ShowOrders_Click" Visibility="Collapsed"/>
                             <Button x:Name="CheckoutButton" Style="{StaticResource SidebarButton}" Content="Trả phòng" Click="ShowCheckout_Click" Visibility="Collapsed"/>
                             <Button x:Name="InvoicesButton" Style="{StaticResource SidebarButton}" Content="Hóa đơn" Click="ShowInvoices_Click" Visibility="Collapsed"/>
+                            <Button x:Name="AccountsButton" Style="{StaticResource SidebarButton}" Content="Nhân viên" Click="ShowAccounts_Click" Visibility="Collapsed"/>
                             <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
                             <Separator Background="#51616D" Margin="12,10,12,14"/>
                             <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Bảng điều hành" Click="RefreshAccess_Click"/>
