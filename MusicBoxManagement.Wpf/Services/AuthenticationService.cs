@@ -28,7 +28,7 @@ namespace MusicBoxManagement.Wpf.Services
             }
         }
 
-        private static UserManager<ApplicationUser> Manager(SqliteIdentityStore store)
+        internal static UserManager<ApplicationUser> Manager(SqliteIdentityStore store)
         {
             var manager = new UserManager<ApplicationUser>(store)
             {

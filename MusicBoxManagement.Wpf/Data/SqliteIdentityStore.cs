@@ -70,15 +70,30 @@ LEFT JOIN AspNetUserRoles ur ON ur.UserId = u.Id WHERE " + condition, "@value", 
             return Task.CompletedTask;
         }
 
-        internal void SaveChanges()
+        internal void SaveChanges() => SaveChangesCore(false);
+        internal void SaveManagedChanges(MusicBoxManagement.Wpf.Services.PermissionService permissions, LoginSession actor)
+        {
+            permissions.Demand(actor, "User.Manage", connection, Transaction);
+            SaveChangesCore(true);
+        }
+        private void SaveChangesCore(bool managed)
         {
             if (Transaction == null) throw new InvalidOperationException("Lưu tài khoản cần transaction ghi.");
             foreach (var user in pending.Values)
             {
                 if (user.Roles.Count != 1) throw new InvalidOperationException("Tài khoản phải có đúng một role.");
-                // The current milestone creates only the initial Admin. Updates
-                // need the account-management service and last-Admin rules later.
-                if (!newIds.Contains(user.Id)) throw new NotSupportedException("Chưa triển khai cập nhật tài khoản.");
+                if (!newIds.Contains(user.Id))
+                {
+                    if (!managed) throw new NotSupportedException("Cập nhật tài khoản cần service quản trị.");
+                    using (var command = Command(@"UPDATE AspNetUsers SET UserName=@name,NormalizedUserName=@normalized,
+PasswordHash=@hash,SecurityStamp=@stamp,FullName=@fullName,IsActive=@active WHERE Id=@id;",
+                        "@id", user.Id, "@name", user.UserName, "@normalized", NormalizeName(user.UserName), "@hash", user.PasswordHash,
+                        "@stamp", user.SecurityStamp, "@fullName", user.FullName, "@active", user.IsActive ? 1 : 0))
+                        if (command.ExecuteNonQuery() != 1) throw new InvalidOperationException("Tài khoản không còn tồn tại.");
+                    using (var command = Command("DELETE FROM AspNetUserRoles WHERE UserId=@id;", "@id", user.Id)) command.ExecuteNonQuery();
+                    using (var command = Command("INSERT INTO AspNetUserRoles(UserId,RoleId) VALUES(@id,@role);", "@id", user.Id, "@role", user.Roles.Single().RoleId)) command.ExecuteNonQuery();
+                    continue;
+                }
                 using (var command = Command(@"INSERT INTO AspNetUsers
 (Id, UserName, NormalizedUserName, PasswordHash, SecurityStamp, FullName, IsActive)
 VALUES (@id, @name, @normalized, @hash, @stamp, @fullName, @active);",

@@ -1,6 +1,6 @@
 # Luồng code Music Box WPF — lần theo từ giao diện đến SQLite
 
-Cập nhật **13/10/2026**, sau bước **8a.2 UI dashboard**. Đọc cùng [giải thích kiến trúc MVC/MVVM](Architecture_MVC_Services_Explanation.md). Tài liệu này tập trung vào **ai gọi hàm nào, truyền gì, nhận gì, dữ liệu đổi ở đâu**, thay vì chỉ định nghĩa tên các lớp.
+Cập nhật **14/10/2026**, sau bước **8b.1 service quản trị tài khoản** và 8a.2 UI dashboard. Đọc cùng [giải thích kiến trúc MVC/MVVM](Architecture_MVC_Services_Explanation.md). Tài liệu này tập trung vào **ai gọi hàm nào, truyền gì, nhận gì, dữ liệu đổi ở đâu**, thay vì chỉ định nghĩa tên các lớp.
 
 Nền tảng: WPF .NET Framework 4.7.2, SQLite v8; Khách dùng tại quầy/demo, nhân viên đăng nhập. Các tên hàm dưới đây đối chiếu với mã nguồn hiện tại. Các dòng “SQL/Commit/binding” trong sơ đồ là bước xử lý, không phải tên lớp tự tạo.
 
@@ -111,7 +111,7 @@ kiểm tra đầu vào
 
 Kiểm tra lại sau băm mật khẩu là cần thiết: xác minh mật khẩu mất thời gian; tài khoản có thể bị khóa hoặc đổi stamp trong khoảng đó. LoginSession là phiên trong bộ nhớ, mang UserId/stamp; quyền và role dùng trong nghiệp vụ vẫn phải đọc DB hiện hành.
 
-SetupAdminAsync là đường tạo Admin đầu tiên trong transaction, có kiểm tra bootstrap đồng thời. Nó **không phải màn quản trị thêm/sửa/khóa mọi nhân viên**; phần quản trị đầy đủ vẫn là bước tiếp theo của plan.
+SetupAdminAsync là đường tạo Admin đầu tiên trong transaction, có kiểm tra bootstrap đồng thời. Nó **không phải màn quản trị thêm/sửa/khóa mọi nhân viên**. Service quản trị đã có ở 8b.1 (mục 5.15), UI Admin sẽ nối ở 8b.2.
 
 ## 4. Luồng dashboard mới — đi từng hàm
 
@@ -516,6 +516,39 @@ App.OnExit → NoShowWorker.Dispose → dừng timer
 
 Worker có guard chạy trùng và retry nhịp sau khi lỗi. Worker ghi NoShow thật; dashboard chỉ chiếu hiệu lực. Dashboard không tự refresh mỗi nhịp worker; timestamp và Làm mới cho biết khi cần cập nhật.
 
+### 5.15 Quản trị tài khoản — service đã có, UI nối tiếp
+
+```text
+AccountManagementService.List(actor)
+  → read transaction → Demand User.Manage
+  → SqliteIdentityStore.FindByIdAsync → Project → UserAccount DTO
+
+CreateAsync(actor, edit, password)
+  → Demand + Validate/ValidatePassword
+  → AuthenticationService.Manager(store) → UserManager.CreateAsync/AddToRoleAsync
+  → pending user đã hash, chưa lưu DB
+  → writer → Demand hiện hành → DemandUnique
+  → SaveManagedChanges(permissions, actor) → DemandAdminRemains
+  → AuditService.WriteStaff(User.Create) → Commit → Project
+
+UpdateAsync(actor, original, edit) / ResetPasswordAsync(actor, original, password)
+  → ChangeAsync
+  → Demand + FindByIdAsync + DemandOriginal
+  → store.UpdateAsync(user) đặt cùng đối tượng vào pending
+  → sửa metadata/RemoveFromRoleAsync/AddToRoleAsync/UpdateSecurityStampAsync
+    hoặc RemovePasswordAsync/AddPasswordAsync trên pending
+  → writer → Demand quyền mới
+  → store mới đọc bản DB, DemandOriginal chống stale sau chờ lock
+  → DemandUnique → SaveManagedChanges → DemandAdminRemains
+  → audit Update hoặc ResetPassword → Commit → DTO mới
+```
+
+`store.UpdateAsync(user)` ở giai đoạn chuẩn bị chỉ đưa đối tượng vào dictionary pending, không chạy UPDATE SQL. Điều này giữ cùng đối tượng khi UserManager gọi lại FindByIdAsync; nếu không, các thay đổi role/hash có thể nằm trên một đối tượng khác với user service đang giữ.
+
+`SaveChanges()` cũ của bootstrap chỉ cho tạo mới. `SaveManagedChanges` là đường internal có kiểm tra User.Manage để cập nhật user cũ; service đã kiểm tra original/quyền và tiếp tục kiểm tra Admin còn lại/audit trong cùng writer. Nếu audit lỗi, SQL/hash/stamp/role đều rollback. Không có Delete user.
+
+Revision trong DTO là fingerprint bản ghi, không trả PasswordHash/SecurityStamp. Role/reset/khóa-mở đổi stamp; phiên trước bị từ chối, không sống lại sau unlock. Metadata đổi username/họ tên giữ stamp; tên hiện hành đọc từ DB. Tự khóa/hạ role bị chặn; tự reset hợp lệ nhưng phải đăng nhập mới khi UI nối xong.
+
 ## 6. Quyền, transaction và lỗi — phần dùng chung mọi luồng
 
 ### 6.1 ReadAccess thực sự đọc gì?
@@ -562,6 +595,6 @@ Muốn test không chạm DB thật, chạy Verify-Dashboard/Verify-Authenticati
 
 ## 8. Những phần còn làm tiếp
 
-Dashboard UI đã có, nhưng quản trị nhân viên đầy đủ chưa có: tạo/sửa/khóa/gán role/reset mật khẩu/bảo vệ Admin cuối cùng; ma trận quyền/audit UI, báo cáo/Excel, lịch sử khách, dữ liệu demo và hoàn thiện tài liệu. Các luồng đó còn trong plan, nên tài liệu không gán tên hàm tưởng tượng cho phần chưa viết.
+Dashboard UI và service quản trị nhân viên đã có. UI Admin tạo/sửa/khóa/gán role/reset mật khẩu/bảo vệ Admin cuối cùng sẽ nối tiếp; ma trận quyền/audit UI, báo cáo/Excel, lịch sử khách, dữ liệu demo và hoàn thiện tài liệu vẫn còn trong plan. Tài liệu không gán tên event/ViewModel tưởng tượng cho giao diện chưa viết.
 
 Để bắt đầu học, chạy một lượt: **Khách đặt → nhân viên nhận phòng → Guest gọi món → nhân viên phục vụ → tiền tạm tính → checkout → xem/in hóa đơn → dashboard cập nhật**. Các mục 5.1/5.4/5.8/5.9/5.10/5.11/4 cho phép lần theo toàn bộ đường đi đó từ Click đến Commit rồi quay về binding.
