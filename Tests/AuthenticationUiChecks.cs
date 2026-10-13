@@ -148,6 +148,7 @@ public static class MusicBoxAuthenticationUiChecks
             VerifyBillingUi(Path.Combine(testDirectory,"billing-ui.db"),outputDirectory);
             VerifyCheckoutUi(Path.Combine(testDirectory,"checkout-ui.db"),outputDirectory);
             VerifyInvoicesUi(Path.Combine(testDirectory,"invoices-ui.db"),outputDirectory);
+            VerifyDashboardUi(Path.Combine(testDirectory,"dashboard-ui.db"),outputDirectory);
             VerifyStaffReservations(Path.Combine(testDirectory,"staff-booking.db"),outputDirectory);
             VerifyCheckInUi(Path.Combine(testDirectory,"checkin-ui.db"),outputDirectory);
             VerifyWalkInUi(Path.Combine(testDirectory,"walkin-ui.db"),outputDirectory);
@@ -382,7 +383,8 @@ public static class MusicBoxAuthenticationUiChecks
             driver.Start(); Click(Field<Button>(window, "CustomersButton"));
             PumpUntil(() => (customerStage == 5 && Field<Button>(window, "CustomersButton").IsEnabled) || driverError != null);
             driver.Stop(); if (driverError != null) throw driverError;
-            Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Admin UI did not show all current permissions.");
+            PumpUntil(() => Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Assert(((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot != null, "Admin UI did not load dashboard.");
             Assert(Field<TextBlock>(window, "StaffIdentity").Text.Contains("Admin"), "Admin identity was not shown.");
             Image(window, outputDirectory, "staff");
             VerifyNavigationLayout(window, true, outputDirectory);
@@ -623,7 +625,7 @@ public static class MusicBoxAuthenticationUiChecks
             if (driverError != null) throw driverError;
             Click(Field<Button>(window, "LogoutButton"));
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
-            Assert(Field<DataGrid>(window, "PermissionsTable").Items.Count == 0, "Logout left employee data in the UI.");
+            Assert(((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot == null, "Logout left dashboard data in the UI.");
             Assert(Field<Button>(window, "EditRoomTypeButton").Visibility == Visibility.Collapsed, "Logout left an editing action in Guest mode.");
             Assert(Field<Button>(window, "RoomsButton").Visibility == Visibility.Collapsed, "Logout exposed room management.");
 
@@ -659,7 +661,8 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(() => Field<Grid>(window, "StaffPanel").Visibility == Visibility.Visible || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
-            Assert(stage == 2 && Field<DataGrid>(window, "PermissionsTable").Items.Count == 27, "Correct login did not enter staff area.");
+            PumpUntil(() => Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Assert(stage == 2 && ((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot != null, "Correct login did not load dashboard.");
             Click(Field<Button>(window, "LogoutButton"));
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
 
@@ -687,6 +690,47 @@ public static class MusicBoxAuthenticationUiChecks
             application.Shutdown();
             Directory.Delete(testDirectory, true);
         }
+    }
+
+    private static void VerifyDashboardUi(string file,string outputDirectory)
+    {
+        var db=new SqliteDatabase(file);var auth=new AuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin dashboard",Password).GetAwaiter().GetResult();
+        Action<string> sql=s=>{using(var c=db.OpenConnection())using(var command=c.CreateCommand()){command.CommandText=s;command.ExecuteNonQuery();}};
+        sql(@"INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,InactiveReason,CreatedAt) VALUES('D1','Phòng một',1,'test.png',1,NULL,'test'),('D2','Phòng hai',1,'test.png',1,NULL,'test'),('D3','Phòng khóa',1,'test.png',0,'Khóa','test');
+INSERT INTO Customers VALUES(1,'Khách một','0901111111'),(2,'Khách hai','0902222222');
+INSERT INTO Reservations VALUES(1,1,1,'2026-10-13T06:00:00.0000000+00:00','2026-10-13T07:00:00.0000000+00:00','CheckedIn',NULL,NULL,'test'),(2,2,1,'2026-10-13T07:30:00.0000000+00:00','2026-10-13T08:30:00.0000000+00:00','Confirmed',NULL,NULL,'test');
+INSERT INTO RoomSessions(CustomerId,RoomId,ReservationId,ActualStartTime,ExpectedEndTime,HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status) VALUES(1,1,1,'2026-10-13T06:00:00.0000000+00:00','2026-10-13T07:00:00.0000000+00:00',120000,'D1','STANDARD','Standard','Active'),(2,2,NULL,'2026-10-13T06:00:00.0000000+00:00',NULL,120000,'D2','STANDARD','Standard','Active');
+INSERT INTO Orders(RoomSessionId,Status,CreatedAt) VALUES(2,'Pending','2026-10-13T06:30:00.0000000+00:00');
+INSERT INTO AspNetUsers(Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive) SELECT 'dash','dash','DASH',PasswordHash,'dash','Dashboard-only',1 FROM AspNetUsers LIMIT 1;
+INSERT INTO AspNetUserRoles VALUES('dash','Staff');DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code IN ('Dashboard.View','Report.View');");
+        var login=auth.LoginAsync("dash",Password);PumpUntil(()=>login.IsCompleted);var staff=login.GetAwaiter().GetResult();
+        var clock=new LookupClock{UtcNow=new DateTimeOffset(2026,10,13,14,40,0,TimeSpan.FromHours(7))};
+        var vm=new DashboardViewModel(new StaffReservationService(db,clock).ForDashboard);vm.Reset(admin);
+        var control=new DashboardView{DataContext=vm};var form=new Window{Content=control,Width=1000,Height=730,Background=Brushes.White};
+        form.Show();
+        try
+        {
+            var read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);read.GetAwaiter().GetResult();form.UpdateLayout();
+            Assert(vm.Rooms.Count==3 && vm.Bookings.Count==2 && vm.Sessions.Count==2 && vm.Orders.Count==1 && vm.Alerts.Count==5 && vm.HasRevenue && vm.Revenue.Contains("0 đ") && vm.Updated.Contains("14:40:00"),"Dashboard UI missing counts/alerts/zero revenue/time.");
+            Assert(vm.Alerts.Any(a=>a.Title.Contains("Sắp hết hạn")) && vm.Alerts.Any(a=>a.Title.Contains("Quá giờ")||a.Title.Contains("quá giờ")) && vm.Rooms.Any(r=>r.Title.Contains("Đã khóa")),"Dashboard Vietnamese labels wrong.");
+            Image(form,outputDirectory,"dashboard-admin");form.Width=730;form.Height=460;form.UpdateLayout();Image(form,outputDirectory,"dashboard-compact");
+            vm.Reset(staff);read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);form.UpdateLayout();
+            Assert(vm.Snapshot!=null && !vm.HasRevenue && ((TextBlock)control.FindName("RevenueText")).Visibility==Visibility.Collapsed && vm.Rooms.Count==3,"Dashboard-only Staff needed other rights or exposed revenue.");Image(form,outputDirectory,"dashboard-staff");
+            sql("UPDATE AspNetUserRoles SET RoleId='Manager' WHERE UserId='dash';DELETE FROM RolePermission WHERE RoleId='Manager';INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code IN ('Dashboard.View','Report.View');");
+            read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(vm.HasRevenue,"Current Manager role did not receive revenue.");
+            sql("DELETE FROM RolePermission WHERE RoleId='Manager' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Report.View');");read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(!vm.HasRevenue && vm.Snapshot!=null,"Revoked report cached revenue or blocked operations.");
+            sql("DELETE FROM RolePermission WHERE RoleId='Manager';");read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(vm.Snapshot==null && vm.Rooms.Count==0 && vm.Alerts.Count==0 && !vm.HasRevenue && vm.Status.Contains("Không còn quyền"),"Revoked dashboard kept data.");Image(form,outputDirectory,"dashboard-revoked");
+            vm.Reset(admin);clock.UtcNow=new DateTimeOffset(2026,10,13,12,0,0,TimeSpan.FromHours(7));read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(vm.Alerts.Any(a=>a.Title.Contains("ngoài giờ")),"Outside-hours UI warning missing.");Image(form,outputDirectory,"dashboard-outside-hours");
+            var gate=new CheckoutUiGate{Value=clock.UtcNow};var factoryCalls=0;
+            var gated=new DashboardViewModel(actor=>{Interlocked.Increment(ref factoryCalls);return new DashboardService(db,gate);});gated.Reset(admin);control.DataContext=gated;
+            var waiting=gated.RefreshAsync();PumpUntil(()=>gate.Entered.IsSet);var duplicate=gated.RefreshAsync();Assert(duplicate.IsCompleted && factoryCalls==1 && !gated.CanRefresh,"Duplicate dashboard read not guarded.");
+            gated.Reset(null);gate.Release.Set();PumpUntil(()=>waiting.IsCompleted);Assert(gated.Snapshot==null && gated.Rooms.Count==0 && !gated.HasRevenue,"Logout during read reapplied old snapshot.");
+            gated.Reset(admin);read=gated.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(gated.Snapshot!=null,"Reset could not retry.");
+            gated.Reset(staff);sql("INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Dashboard.View';");read=gated.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(gated.Snapshot!=null && !gated.HasRevenue,"Actor switch reused Admin revenue.");
+            var failure=new DashboardViewModel(actor=>{throw new System.IO.IOException("Fixture unavailable");});failure.Reset(admin);control.DataContext=failure;read=failure.RefreshAsync();PumpUntil(()=>read.IsCompleted);Assert(failure.Snapshot==null && failure.CanRefresh && failure.Status.Contains("Chưa đọc"),"Dashboard failure retained data or blocked retry.");Image(form,outputDirectory,"dashboard-error");
+            gate.Entered.Dispose();gate.Release.Dispose();
+        }
+        finally {form.Close();}
     }
 
     private static void VerifyInvoicesUi(string file,string outputDirectory)

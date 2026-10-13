@@ -1,0 +1,22 @@
+<UserControl x:Class="MusicBoxManagement.Wpf.Views.DashboardView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Language="vi-VN">
+ <UserControl.Resources>
+  <BooleanToVisibilityConverter x:Key="Visible"/>
+  <DataTemplate x:Key="Line"><StackPanel Margin="10,7"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding Detail}" Foreground="#5C6873" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel></DataTemplate>
+  <Style TargetType="ListBox"><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#CAD3D8"/><Setter Property="ItemTemplate" Value="{StaticResource Line}"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
+ </UserControl.Resources>
+ <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel Margin="0,0,0,12"><DockPanel><Button x:Name="RefreshButton" DockPanel.Dock="Right" Content="Làm mới" Click="Refresh_Click" IsEnabled="{Binding CanRefresh}" Margin="14,0,0,0"/><TextBlock x:Name="StatsText" Text="{Binding Summary}" FontSize="17" TextWrapping="Wrap" VerticalAlignment="Center"/></DockPanel>
+   <TextBlock x:Name="RevenueText" Text="{Binding Revenue}" Visibility="{Binding HasRevenue, Converter={StaticResource Visible}}" FontSize="20" FontWeight="SemiBold" Margin="0,10,0,0" TextWrapping="Wrap"/>
+   <TextBlock Text="{Binding Updated}" Foreground="#5C6873" Margin="0,8,0,0" TextWrapping="Wrap"/>
+  </StackPanel>
+  <StackPanel Grid.Row="1" Margin="0,0,0,12"><TextBlock Text="{Binding AlertHeading}" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,6"/><ListBox x:Name="AlertsList" ItemsSource="{Binding Alerts}" MaxHeight="145" MinHeight="30"/></StackPanel>
+  <TabControl Grid.Row="2" BorderBrush="#CAD3D8" Background="White">
+   <TabItem Header="Phòng"><ListBox ItemsSource="{Binding Rooms}" BorderThickness="0"/></TabItem>
+   <TabItem Header="Booking hôm nay"><ListBox ItemsSource="{Binding Bookings}" BorderThickness="0"/></TabItem>
+   <TabItem Header="Phiên đang dùng"><ListBox ItemsSource="{Binding Sessions}" BorderThickness="0"/></TabItem>
+   <TabItem Header="Đơn món chờ"><ListBox ItemsSource="{Binding Orders}" BorderThickness="0"/></TabItem>
+  </TabControl>
+  <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,12,0,0"/>
+ </Grid>
+</UserControl>

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,6 +33,8 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningOrders;
         private bool isOpeningCheckout;
         private bool isOpeningInvoices;
+        private readonly DashboardViewModel dashboard;
+        private readonly SemaphoreSlim accessGate = new SemaphoreSlim(1, 1);
         private LoginSession session;
         private bool canEditRoomTypes;
         private bool isOpeningEditor;
@@ -52,6 +55,8 @@ namespace MusicBoxManagement.Wpf.Views
             this.guestBooking = guestBooking;
             this.guestLookup = guestLookup;
             this.reservations = reservations;
+            dashboard = new DashboardViewModel(reservations.ForDashboard);
+            DashboardHost.DataContext = dashboard;
             DataContext = viewModel;
         }
 
@@ -107,13 +112,17 @@ namespace MusicBoxManagement.Wpf.Views
         {
             var currentSession = session;
             if (currentSession == null) return;
-            RefreshAccessButton.IsEnabled = false;
+            await accessGate.WaitAsync();
             try
             {
+                currentSession = session;
+                if (currentSession == null) return;
+                dashboard.Reset(null);
+                StaffNavigation.IsEnabled = false;
+                RefreshAccessButton.IsEnabled = false;
                 var access = await Task.Run(() => permissions.GetStaffAccess(currentSession));
                 if (session != currentSession) return;
                 StaffIdentity.Text = access.FullName + " — " + access.Role;
-                PermissionsTable.ItemsSource = access.Permissions;
                 canEditRoomTypes = access.Permissions.ContainsKey("RoomType.Edit");
                 RoomTypesButton.Visibility = canEditRoomTypes ? Visibility.Visible : Visibility.Collapsed;
                 RoomsButton.Visibility = access.Permissions.ContainsKey("Room.Manage") ? Visibility.Visible : Visibility.Collapsed;
@@ -139,7 +148,11 @@ namespace MusicBoxManagement.Wpf.Views
                 LookupButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Collapsed;
                 LogoutButton.Visibility = Visibility.Visible;
-                AccessStatus.Text = "Tài khoản có " + access.Permissions.Count + " quyền hiện hành. Các chức năng được phép sử dụng nằm trong menu bên trái.";
+                var canViewDashboard = access.Permissions.ContainsKey("Dashboard.View");
+                DashboardHost.Visibility = canViewDashboard ? Visibility.Visible : Visibility.Collapsed;
+                StaffHeading.Text = canViewDashboard ? "Bảng điều hành" : "Khu vực nhân viên";
+                AccessStatus.Text = canViewDashboard ? "" : "Tài khoản chưa có quyền xem bảng điều hành. Chọn chức năng được phép trong menu bên trái.";
+                if (canViewDashboard) { dashboard.Reset(currentSession); await dashboard.RefreshAsync(); }
             }
             catch (UnauthorizedAccessException error)
             {
@@ -153,7 +166,7 @@ namespace MusicBoxManagement.Wpf.Views
                 ReturnToGuest();
                 MessageBox.Show(this, "Không kiểm tra được quyền. Hãy đăng nhập lại khi dữ liệu sẵn sàng.", "Music Box");
             }
-            finally { RefreshAccessButton.IsEnabled = true; }
+            finally { RefreshAccessButton.IsEnabled = true; StaffNavigation.IsEnabled = true; accessGate.Release(); }
         }
 
         private async void Logout_Click(object sender, RoutedEventArgs e)
@@ -180,7 +193,8 @@ namespace MusicBoxManagement.Wpf.Views
             InvoicesButton.Visibility = Visibility.Collapsed;
             OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
-            PermissionsTable.ItemsSource = null;
+            dashboard.Reset(null);
+            DashboardHost.Visibility = Visibility.Collapsed;
             StaffIdentity.Text = "";
             ModeText.Text = "Chế độ Khách";
             CurrentAreaText.Text = "Loại phòng";
@@ -321,9 +335,9 @@ namespace MusicBoxManagement.Wpf.Views
                 if (session != currentSession) return;
                 new ReservationsWindow(reservations, currentSession) { Owner = this }.ShowDialog();
             }
-            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem booking hoặc phiên đã hết hiệu lực.", "Music Box"); await RefreshAccessAsync(); }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem booking hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được booking. Hãy thử lại.", "Music Box"); }
-            finally { isOpeningReservations = false; ReservationsButton.IsEnabled = true; }
+            finally { isOpeningReservations = false; ReservationsButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private async void ShowCustomers_Click(object sender, RoutedEventArgs e)

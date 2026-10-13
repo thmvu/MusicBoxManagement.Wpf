@@ -154,6 +154,9 @@
     <Compile Include="Services\InvoiceService.cs" />
     <Compile Include="Models\DashboardSnapshot.cs" />
     <Compile Include="Services\DashboardService.cs" />
+    <Compile Include="ViewModels\DashboardViewModel.cs" />
+    <Page Include="Views\DashboardView.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\DashboardView.xaml.cs"><DependentUpon>DashboardView.xaml</DependentUpon></Compile>
     <Compile Include="Printing\InvoiceDocument.cs" />
     <Compile Include="Printing\InvoicePrinter.cs" />
     <Compile Include="ViewModels\InvoicePrintViewModel.cs" />
