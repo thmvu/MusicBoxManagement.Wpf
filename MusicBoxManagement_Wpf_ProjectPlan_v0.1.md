@@ -1,10 +1,61 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày: 02/10/2026. Lựa chọn đã chốt: **project riêng, WPF, .NET Framework 4.7.2, SQLite; giữ chế độ Khách tại máy demo/quầy**.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 14/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+
+## Tổng hợp hiện trạng ngày 14/10/2026
+
+Đây là hiện trạng mới nhất. Các báo cáo bước bên dưới là nhật ký theo thời điểm triển khai; câu “chưa có” ở một bước cũ không phủ nhận phần đã hoàn thành ở bước sau.
+
+| Nhóm | Đã hoàn thành | Còn lại |
+|---|---|---|
+| Nền tảng WPF | .NET Framework 4.7.2, SQLite v8, migration giữ dữ liệu, menu dọc Khách/nhân viên | Chuyển provider sang MySQL sau khi đủ service và kiểm tra |
+| Xác thực/RBAC | Bootstrap Admin, đăng nhập/đăng xuất, Staff/Manager/Admin, quyền hiện hành trong service, ghi audit cùng transaction | UI ma trận quyền Staff/Manager và xem nhật ký; chuyển Identity/quyền/audit sang MySQL |
+| Danh mục | Standard/VIP; thêm/sửa phòng, ảnh, đổi loại/khóa-mở có lý do; dịch vụ thêm/sửa/ngừng bán; khách thêm/sửa/tìm SĐT | Lịch sử khách, số lượt hoàn tất và lần sử dụng gần nhất; xử lý ảnh khi chuyển database |
+| Đặt phòng/lịch | Guest đặt/tra cứu/hủy theo SĐT, nhân viên đặt hộ/xem/hủy, NoShow, lịch ngày/tuần, lịch public trống/bận | Chuyển service và kiểm tra đồng thời trên MySQL |
+| Phiên sử dụng | Check-in, walk-in, gia hạn nội bộ/Guest, tra cứu Active theo SĐT, giờ cần trả và tiền tạm tính | Chuyển service/clock/overlap/snapshot sang MySQL |
+| Gọi món | Menu/giỏ/preview, Guest gửi Pending/xem-hủy, Staff tạo hộ/xác nhận-hủy theo quyền, snapshot tên/giá | Chuyển service và kiểm tra cạnh tranh với checkout trên MySQL |
+| Thanh toán/hóa đơn | Tính tiền, xác nhận checkout, Cash/BankTransfer, hóa đơn bất biến, tìm/xem/xem trước-in lại | Chuyển Billing/Checkout/Invoice và kiểm tra precision/rollback/replay trên MySQL |
+| Dashboard | Service/UI hoạt động, cảnh báo; doanh thu Admin hoặc Manager đủ quyền, Staff không xem tổng hợp | Chuyển nguồn đọc sang MySQL; báo cáo theo kỳ và Excel chưa hoàn thành |
+| Quản trị nhân viên | Service/UI thêm/sửa/khóa-mở/gán role/reset mật khẩu, bảo vệ self/last Admin, stale/quyền/audit | Ma trận quyền/nhật ký và chuyển kho tài khoản sang MySQL |
+| Aiven MySQL | Kết nối thử từ WPF, schema v1 tương ứng nghiệp vụ SQLite v8, database musicbox: 16 bảng, Standard/VIP, ba role/27 quyền; kiểm tra Debug/Release | Chưa chuyển service, chưa nhập dữ liệu SQLite và chưa đổi App sang MySQL |
+| Báo cáo đồ án | Tài liệu kiến trúc và hướng dẫn luồng code, báo cáo từng bước | ERD tổng thể/theo nhóm, từ điển dữ liệu, bản xuất sơ đồ, kịch bản demo và kiểm thử cuối |
+
+### Tiến độ ước tính và cách hiểu
+
+- Chức năng WPF theo plan nghiệp vụ ban đầu: khoảng **80–85%**.
+- Migration SQLite → MySQL Aiven: khoảng **10–15%**; kết nối và schema đã có, phần chuyển service/dữ liệu còn nhiều.
+- Nếu tính cả migration, chức năng còn thiếu và tài liệu báo cáo: ước tính còn **35–45% khối lượng công việc**.
+- Các tỷ lệ là ước lượng phục vụ theo dõi, chưa có bảng trọng số/giờ công; không cộng hoặc lấy trung bình các tỷ lệ trên để suy ra mức hoàn thành. Không coi build thành công hoặc có bảng cloud là đã chuyển ứng dụng.
+
+### Thứ tự làm tiếp
+
+1. Chuyển nền tảng transaction/quyền/audit/kho Identity sang MySQL; kiểm tra bootstrap/login/role/stamp/rollback/current permission và cạnh tranh.
+2. Chuyển danh mục rồi booking/calendar/session/extension/order/billing/checkout/invoice/dashboard/quản trị; giữ nghiệp vụ và các bộ kiểm tra hiện có, bổ sung kiểm tra tương ứng trên MySQL.
+3. Sao lưu SQLite cùng Content; nhập snapshot dữ liệu/ID/FK/tài khoản/giá/thời gian vào MySQL, đối chiếu đầy đủ, kiểm tra UI rồi mới chuyển App sang MySQL. Giữ SQLite để đối chiếu/khôi phục.
+4. Hoàn thiện ma trận quyền Staff/Manager, UI nhật ký, báo cáo/Excel, lịch sử khách hàng; không thêm quyền riêng từng user hoặc chi điện/mặt bằng.
+5. Hoàn thiện ERD và từ điển dữ liệu, demo/kiểm thử cuối. Có thể dựng ERD bản đầu song song với migration rồi cập nhật theo schema thực tế.
+
+### ERD là đầu việc bắt buộc cho báo cáo
+
+Người dùng xác nhận ngày 14/10/2026: sơ đồ ERD rất quan trọng để làm báo cáo. Giữ các đầu ra sau trong scope:
+
+- ERD tổng thể từ schema MySQL thực tế: bảng, PK/FK, quan hệ 1–n/1–1; ghi rõ unique phiên Active và hóa đơn theo phiên.
+- Sơ đồ theo nhóm tài khoản/RBAC, phòng/booking/session, món/hóa đơn để dễ đọc.
+- Từ điển dữ liệu: ý nghĩa cột, kiểu dữ liệu, null/default/unique/check và các snapshot.
+- Bản xuất sơ đồ để chèn báo cáo và nguồn sơ đồ chỉnh sửa được; cập nhật sau thay schema.
+
+Hiện chưa có bộ ERD bàn giao hoàn chỉnh. Không yêu cầu người dùng phải cài MySQL Server/Workbench để tạo tài liệu; có thể dùng công cụ xem database hoặc dựng sơ đồ từ schema trong repo.
+
+### Bằng chứng kiểm tra mới nhất
+
+- Quản trị nhân viên 8b.2: Debug/Release và 12 bộ liên quan đạt trên DB tạm; UI 131 ảnh. Xem `docs/Step8b2_AccountsUi.md`.
+- Kết nối Aiven: người dùng xác nhận thử thành công; schema musicbox khởi tạo đạt trên cloud.
+- Nền tảng MySQL: build Debug/Release, Verify-MySqlFoundation cả hai build đạt bằng DB GUID riêng; Verify-Foundation SQLite đạt. Xem `docs/MySql_Migration_01_Foundation.md`.
+- Lần cập nhật plan này chỉ sửa tài liệu; không chuyển dữ liệu hoặc chạy thêm luồng nghiệp vụ.
 
 ## Phạm vi và nguồn nghiệp vụ
 
-Quyết định ngày 14/10/2026: người dùng muốn chuyển database online sang MySQL Aiven, giữ WPF .NET Framework 4.7.2 và toàn bộ nghiệp vụ. Đã thêm kiểm tra kết nối riêng trong bản Debug; chưa chuyển schema/service hoặc dữ liệu, nền tảng vận hành hiện tại vẫn SQLite. Chuẩn bị chuyển từng bước trên dữ liệu thử trước khi chuyển dữ liệu thật. Xem `docs/Aiven_ConnectionCheck.md`.
+Quyết định ngày 14/10/2026: người dùng muốn chuyển database online sang MySQL Aiven, giữ WPF .NET Framework 4.7.2 và toàn bộ nghiệp vụ. Đã có kiểm tra kết nối trong Debug và schema MySQL riêng trên cloud; chưa chuyển service hoặc nhập dữ liệu SQLite, nền tảng vận hành hiện tại vẫn SQLite. Xem `docs/Aiven_ConnectionCheck.md` và `docs/MySql_Migration_01_Foundation.md`.
 
 Tham chiếu `docs/Reference_Web_ProjectPlan_v1.3.md` và các quyết định người dùng đã chốt. Đây là bản sao nguyên văn plan web để đối chiếu nghiệp vụ, không phải chỉ dẫn tiếp tục xây dựng ASP.NET/SQL Server trong project WPF. Chỉ thay nền tảng theo yêu cầu; tài liệu này chưa thay thế đầy đủ plan v1.3 và không xác nhận các thay đổi nghiệp vụ.
 
