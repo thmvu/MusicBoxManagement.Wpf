@@ -58,6 +58,8 @@
     <Compile Include="Views\MainWindow.xaml.cs"><DependentUpon>MainWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\AivenDatabase.cs" />
+    <Compile Include="Data\MySqlDatabase.cs" />
+    <EmbeddedResource Include="Data\MySqlSchema.sql" />
     <Compile Include="Data\RoomSchema.cs" />
     <Compile Include="Data\RoomUsageSchema.cs" />
     <Compile Include="Data\ServiceSchema.cs" />

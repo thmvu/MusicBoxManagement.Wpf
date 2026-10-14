@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+Migration Aiven MySQL đang ở bước 1: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite, chưa chuyển service hoặc dữ liệu. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
+
 Ngày 14/10/2026: thêm kiểm tra kết nối MySQL Aiven bằng MySqlConnector 2.6.2; mật khẩu đọc từ biến User Windows `MUSICBOX_AIVEN_PASSWORD`. Debug thử `SELECT VERSION()` sau khi mở cửa sổ; Release không tự thử. Các chức năng vẫn dùng SQLite. Xem [cấu hình và kiểm tra Aiven](docs/Aiven_ConnectionCheck.md).
 
 Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.

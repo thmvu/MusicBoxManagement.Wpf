@@ -9,6 +9,20 @@ namespace MusicBoxManagement.Wpf.Data
     {
         public static async Task<string> TestConnectionAsync()
         {
+            using (var connection = CreateConnection("defaultdb"))
+            {
+                await connection.OpenAsync();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT VERSION();";
+                    command.CommandTimeout = 15;
+                    return Convert.ToString(await command.ExecuteScalarAsync());
+                }
+            }
+        }
+
+        internal static MySqlConnection CreateConnection(string databaseName)
+        {
             var password = Environment.GetEnvironmentVariable(
                 "MUSICBOX_AIVEN_PASSWORD", EnvironmentVariableTarget.User);
             if (string.IsNullOrWhiteSpace(password))
@@ -26,22 +40,13 @@ namespace MusicBoxManagement.Wpf.Data
                 Port = 12628,
                 UserID = "avnadmin",
                 Password = password,
-                Database = "defaultdb",
+                Database = databaseName,
                 SslMode = MySqlSslMode.VerifyFull,
                 SslCa = certificatePath,
                 ConnectionTimeout = 15
             };
 
-            using (var connection = new MySqlConnection(settings.ConnectionString))
-            {
-                await connection.OpenAsync();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT VERSION();";
-                    command.CommandTimeout = 15;
-                    return Convert.ToString(await command.ExecuteScalarAsync());
-                }
-            }
+            return new MySqlConnection(settings.ConnectionString);
         }
     }
 }
