@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+Ngày 14/10/2026: thêm kiểm tra kết nối MySQL Aiven bằng MySqlConnector 2.6.2; mật khẩu đọc từ biến User Windows `MUSICBOX_AIVEN_PASSWORD`. Debug thử `SELECT VERSION()` sau khi mở cửa sổ; Release không tự thử. Các chức năng vẫn dùng SQLite. Xem [cấu hình và kiểm tra Aiven](docs/Aiven_ConnectionCheck.md).
+
 Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
 
 Tài liệu rà soát luồng và use case đến bước 6e.2: [UseCases_And_Workflow_Review.md](docs/UseCases_And_Workflow_Review.md). Có bảng hiện trạng, đặc tả use case, luồng nghiệp vụ, phần còn thiếu và [nguồn sơ đồ UML](docs/MusicBox_UseCases.puml).

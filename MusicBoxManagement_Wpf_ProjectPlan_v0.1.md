@@ -4,6 +4,8 @@ Ngày: 02/10/2026. Lựa chọn đã chốt: **project riêng, WPF, .NET Framewo
 
 ## Phạm vi và nguồn nghiệp vụ
 
+Quyết định ngày 14/10/2026: người dùng muốn chuyển database online sang MySQL Aiven, giữ WPF .NET Framework 4.7.2 và toàn bộ nghiệp vụ. Đã thêm kiểm tra kết nối riêng trong bản Debug; chưa chuyển schema/service hoặc dữ liệu, nền tảng vận hành hiện tại vẫn SQLite. Chuẩn bị chuyển từng bước trên dữ liệu thử trước khi chuyển dữ liệu thật. Xem `docs/Aiven_ConnectionCheck.md`.
+
 Tham chiếu `docs/Reference_Web_ProjectPlan_v1.3.md` và các quyết định người dùng đã chốt. Đây là bản sao nguyên văn plan web để đối chiếu nghiệp vụ, không phải chỉ dẫn tiếp tục xây dựng ASP.NET/SQL Server trong project WPF. Chỉ thay nền tảng theo yêu cầu; tài liệu này chưa thay thế đầy đủ plan v1.3 và không xác nhận các thay đổi nghiệp vụ.
 
 Giữ các nhóm chức năng: Standard/VIP, phòng/khách/dịch vụ, Reservation → RoomSession → Order → Invoice, walk-in, hủy/NoShow, snapshot, thu tiền mặt/chuyển khoản, lịch ngày/tuần, báo cáo/Excel, Admin/Manager/Staff, ma trận quyền và nhật ký.
