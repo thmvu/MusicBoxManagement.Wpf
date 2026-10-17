@@ -1,5 +1,7 @@
 # Chuyển Aiven MySQL — bước 2b: quản trị tài khoản
 
+Cập nhật tiếp theo: đã thêm đường loại phòng MySQL ở [bước 3a](MySql_Migration_03a_RoomTypes.md). App hiện vẫn dùng SQLite; phần Làm tiếp bên dưới là thứ tự đã chốt tại bước 2b.
+
 Ngày 17/10/2026. Đối chiếu plan WPF, bước 8b.1/8b.2 và bản nghiệp vụ tham chiếu mục 5/32/33/55.3–55.4. Giữ schema MySQL v1/SQLite v8 và toàn bộ quy tắc tài khoản đã chốt.
 
 ## Cách hoạt động dễ hiểu

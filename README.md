@@ -1,6 +1,8 @@
 # Music Box Management — WPF
 
-Cập nhật 17/10/2026: Aiven đã hoạt động lại; nền tảng schema và xác thực/quyền/audit/transaction MySQL đã kiểm tra online đạt cả Debug/Release. Đã thêm service quản trị tài khoản MySQL ở bước 2b; xem [báo cáo và kết quả kiểm tra](docs/MySql_Migration_02b_Accounts.md). App vẫn dùng SQLite, chưa nhập dữ liệu hoặc chuyển UI sang MySQL. Tiếp theo chuyển danh mục theo từng phần.
+Cập nhật 17/10/2026: Aiven đã có các đường service riêng cho xác thực/quyền/audit, quản trị tài khoản và loại phòng Standard/VIP. Bước mới nhất là [3a loại phòng MySQL](docs/MySql_Migration_03a_RoomTypes.md); phần tài khoản ở [2b](docs/MySql_Migration_02b_Accounts.md). Kết quả kiểm tra chi tiết nằm trong từng báo cáo.
+
+**Ứng dụng đang mở vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven. Tiếp theo chuyển phòng/ảnh, dịch vụ và khách, rồi các service nghiệp vụ; chỉ đổi App sau khi đủ service, chuyển/đối chiếu dữ liệu và kiểm tra UI riêng.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 

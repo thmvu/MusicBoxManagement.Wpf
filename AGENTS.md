@@ -224,3 +224,11 @@ App/worker/UI vẫn SQLite, schema MySQL v1/SQLite v8, không nhập/chỉnh d�
 Kiểm tra MySQL bước 2b đã đạt: Foundation/Authentication/Accounts đều Debug và Release trên DB GUID riêng; Authentication chạy lại với store 2b. Accounts gồm guard store/bootstrap, no-op/stale đồng thời/rollback Create-Update-Reset, quyền/stamp/self-last Admin/unique. Build bin/VerifyMySql2bDebug và bin/VerifyMySql2bRelease đạt; kết quả hồi quy SQLite chốt trong báo cáo 2b.
 
 Chốt 2b: 27/27 bộ hồi quy SQLite đạt trên bin/VerifyMySql2bDebug, AuthenticationUi render 131 màn hình, InvoicePrinting không gửi máy in thật. Kết quả cả MySQL và SQLite đã cập nhật trong báo cáo 2b; bước tiếp theo là danh mục loại phòng MySQL, chưa đổi App/provider hoặc nhập dữ liệu.
+
+## Migration MySQL Aiven bước 3a — 17/10/2026
+
+Đã thêm MySqlRoomTypeService List/GetForEdit/Update, giữ Standard/VIP và Code/ID cố định, DTO RoomTypeEdit không Code/ID, validation/trim/mô tả NULL/giá long-BIGINT. List chỉ đọc (caller khởi tạo database trước); GetForEdit dùng read-only snapshot và quyền RoomType.Edit hiện hành; Update Serializable, quyền cùng transaction, SELECT FOR UPDATE dòng loại phòng, so bản gốc chặn stale, no-op không audit, UPDATE/Audit Staff cùng commit. Lỗi audit rollback; deadlock/timeout báo tải lại, không retry vô hạn. Không sửa schema, App/UI/provider hoặc dữ liệu thật; app vẫn SQLite.
+
+Xem docs/MySql_Migration_03a_RoomTypes.md và Tests/Verify-MySqlRoomTypes.ps1. Khi sửa chạy MySqlRoomTypes/Foundation/Authentication trên GUID DB riêng, SQLite Foundation/Authentication/RoomTypes và AuthenticationUi; giữ đọc/sửa/quyền thu hồi/Staff được cấp/Code giả/stale/BIGINT/no-op/rollback/hai form đồng thời. Tiếp theo 3b phòng/ảnh/đổi loại/khóa-mở theo guard Active/Confirmed/grace và transaction/audit, rồi dịch vụ/khách/nhóm nghiệp vụ. Không đổi App sang Aiven trước khi đủ service, sao lưu/nhập/đối chiếu dữ liệu/ảnh và kiểm tra UI; giữ các scope báo cáo/RBAC/lịch sử/ERD/demo.
+
+Chốt 3a: build bin/VerifyMySql3aDebug/VerifyMySql3aRelease đạt; MySqlRoomTypes/Foundation/Authentication đạt online cả Debug/Release trên GUID DB riêng. SQLite Foundation/Authentication/RoomTypes/AuthenticationUi đạt, UI render 131 màn hình. Không đổi schema/UI/App/provider hoặc nhập dữ liệu thật. Đọc báo cáo 3a trước khi làm tiếp phòng/ảnh.

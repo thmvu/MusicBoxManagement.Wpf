@@ -8,7 +8,9 @@ Aiven đã hoạt động lại sau khi người dùng bật service. **MySqlFou
 
 Bước **2b quản trị tài khoản MySQL** đã có MySqlAccountManagementService và đường Identity store có guard: thêm/sửa/khóa-mở/gán Staff–Manager–Admin/reset mật khẩu, Revision chống form cũ, self/last Admin, stamp và audit cùng transaction. Kết quả kiểm tra chốt tại [báo cáo 2b](docs/MySql_Migration_02b_Accounts.md).
 
-App/worker/service nghiệp vụ vẫn dùng SQLite; schema giữ SQLite v8/MySQL v1. Chưa nhập dữ liệu hoặc nối UI sang MySQL. Tiếp theo chuyển danh mục: loại phòng, phòng/ảnh, dịch vụ và khách; sau đó các nhóm booking/session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; phần transaction/Identity/quyền/audit và quản trị tài khoản đã có đường MySQL riêng ở 2a/2b. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
+Bước **3a loại phòng MySQL** đã có MySqlRoomTypeService List/GetForEdit/Update, giữ Standard/VIP/Code cố định, validation/giá BIGINT/quyền hiện hành/stale, khóa dòng khi lưu và audit cùng transaction. Kết quả kiểm tra chốt tại [báo cáo 3a](docs/MySql_Migration_03a_RoomTypes.md).
+
+**Ứng dụng đang chạy vẫn dùng SQLite.** Schema giữ SQLite v8/MySQL v1; chưa nhập dữ liệu hoặc nối UI sang MySQL. Tiếp theo 3b phòng/ảnh (kèm đổi loại/khóa-mở/guard lịch), rồi dịch vụ và khách; sau đó các nhóm booking/session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; các đường service MySQL đã có được cập nhật ở 2a/2b/3a. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
 
 ## Tổng hợp hiện trạng ngày 14/10/2026
 

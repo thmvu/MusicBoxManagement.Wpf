@@ -62,6 +62,7 @@
     <Compile Include="Data\MySqlIdentityStore.cs" />
     <Compile Include="Services\MySqlAuthenticationService.cs" />
     <Compile Include="Services\MySqlAccountManagementService.cs" />
+    <Compile Include="Services\MySqlRoomTypeService.cs" />
     <Compile Include="Services\MySqlPermissionService.cs" />
     <Compile Include="Services\MySqlAuditService.cs" />
     <EmbeddedResource Include="Data\MySqlSchema.sql" />
