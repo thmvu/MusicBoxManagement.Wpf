@@ -1,5 +1,7 @@
 # Chuyển Aiven MySQL — bước 3a: loại phòng Standard/VIP
 
+Cập nhật 18/10/2026: đã chuyển tiếp đường phòng/ảnh sang MySQL ở [bước 3b](MySql_Migration_03b_Rooms.md). App vẫn dùng SQLite; mục Làm tiếp dưới đây là thứ tự tại bước 3a.
+
 Ngày 17/10/2026. Đối chiếu plan WPF, Step4a_RoomTypes và bản nghiệp vụ tham chiếu mục 5/18/32/47/55. Giữ MySQL schema v1 và SQLite v8.
 
 ## Trạng thái của bước này

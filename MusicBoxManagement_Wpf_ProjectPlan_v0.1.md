@@ -1,16 +1,18 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 17/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 18/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
 
-## Cập nhật migration ngày 17/10/2026
+## Cập nhật migration ngày 18/10/2026
 
-Aiven đã hoạt động lại sau khi người dùng bật service. **MySqlFoundation và MySqlAuthentication đã chạy đạt online Debug/Release** trên database GUID riêng; lỗi DNS trước đó đã được khắc phục. Xem [bước 2a](docs/MySql_Migration_02a_Authentication.md).
+Aiven đã hoạt động lại từ ngày 17/10 sau khi người dùng bật service. **MySqlFoundation và MySqlAuthentication đã chạy đạt online Debug/Release** trên database GUID riêng; lỗi DNS trước đó đã được khắc phục. Xem [bước 2a](docs/MySql_Migration_02a_Authentication.md).
 
 Bước **2b quản trị tài khoản MySQL** đã có MySqlAccountManagementService và đường Identity store có guard: thêm/sửa/khóa-mở/gán Staff–Manager–Admin/reset mật khẩu, Revision chống form cũ, self/last Admin, stamp và audit cùng transaction. Kết quả kiểm tra chốt tại [báo cáo 2b](docs/MySql_Migration_02b_Accounts.md).
 
 Bước **3a loại phòng MySQL** đã có MySqlRoomTypeService List/GetForEdit/Update, giữ Standard/VIP/Code cố định, validation/giá BIGINT/quyền hiện hành/stale, khóa dòng khi lưu và audit cùng transaction. Kết quả kiểm tra chốt tại [báo cáo 3a](docs/MySql_Migration_03a_RoomTypes.md).
 
-**Ứng dụng đang chạy vẫn dùng SQLite.** Schema giữ SQLite v8/MySQL v1; chưa nhập dữ liệu hoặc nối UI sang MySQL. Tiếp theo 3b phòng/ảnh (kèm đổi loại/khóa-mở/guard lịch), rồi dịch vụ và khách; sau đó các nhóm booking/session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; các đường service MySQL đã có được cập nhật ở 2a/2b/3a. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
+Bước **3b phòng MySQL** đã có MySqlRoomService đọc/thêm/sửa/thay ảnh/đổi loại/khóa-mở; quyền/stale/Active/Confirmed/grace/clock và audit cùng transaction, thư mục ảnh local cấu hình riêng. Giữ ảnh mới nếu COMMIT chưa rõ kết quả để tránh xóa ảnh có thể đã được tham chiếu; chưa upload ảnh online. Kết quả và giới hạn tại [báo cáo 3b](docs/MySql_Migration_03b_Rooms.md).
+
+**Ứng dụng đang chạy vẫn dùng SQLite.** Schema giữ SQLite v8/MySQL v1; chưa nhập dữ liệu hoặc nối UI sang MySQL. Tiếp theo 3c dịch vụ rồi khách; sau đó các nhóm booking/session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; các đường service MySQL đã có được cập nhật ở 2a/2b/3a/3b. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
 
 ## Tổng hợp hiện trạng ngày 14/10/2026
 
