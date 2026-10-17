@@ -52,7 +52,7 @@ namespace MusicBoxManagement.Wpf.Services
 
         internal StaffAccess ReadAccess(LoginSession session, SQLiteConnection connection, SQLiteTransaction transaction)
         {
-            if (session == null || session.IsSignedOut) throw new UnauthorizedAccessException("Cần đăng nhập khu vực nhân viên.");
+            if (session == null || session.IsSignedOut || session.DatabaseScope != null) throw new UnauthorizedAccessException("Cần đăng nhập khu vực nhân viên.");
             var access = new StaffAccess();
             string roleId;
             using (var command = connection.CreateCommand())

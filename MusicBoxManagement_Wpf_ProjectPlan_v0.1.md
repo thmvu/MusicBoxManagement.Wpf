@@ -1,10 +1,16 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 14/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 17/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+
+## Cập nhật migration ngày 17/10/2026
+
+Đã thêm mã nền tảng **2a xác thực/quyền/audit/transaction MySQL**, phiên gắn với database, kho Identity chỉ bootstrap và bộ kiểm tra MySQL riêng. Build Debug/Release đạt. **Chưa nghiệm thu integration:** hostname Aiven đang cấu hình báo DNS không tồn tại khi chạy kiểm tra; mật khẩu/chứng chỉ trên máy vẫn có. Chi tiết và cách kiểm tra: [MySql_Migration_02a_Authentication.md](docs/MySql_Migration_02a_Authentication.md).
+
+App/worker/service nghiệp vụ vẫn dùng SQLite; schema vẫn SQLite v8/MySQL v1. Chưa chuyển dữ liệu hoặc kho quản trị tài khoản MySQL. Làm tiếp: khôi phục kết nối và chạy kiểm tra 2a, sau đó chuyển quản trị tài khoản cùng các service. Bảng ngày 14/10 bên dưới giữ làm mốc; mục “chuyển Identity/quyền/audit” đã có mã nền 2a nhưng chưa được xác nhận đạt trên cloud. Không nâng tỷ lệ hoàn thành theo kết quả build.
 
 ## Tổng hợp hiện trạng ngày 14/10/2026
 
-Đây là hiện trạng mới nhất. Các báo cáo bước bên dưới là nhật ký theo thời điểm triển khai; câu “chưa có” ở một bước cũ không phủ nhận phần đã hoàn thành ở bước sau.
+Đây là bảng tổng hợp tại ngày 14/10; thay đổi migration mới hơn nằm ở mục cập nhật 17/10 phía trên. Các báo cáo bước bên dưới là nhật ký theo thời điểm triển khai; câu “chưa có” ở một bước cũ không phủ nhận phần đã hoàn thành ở bước sau.
 
 | Nhóm | Đã hoàn thành | Còn lại |
 |---|---|---|

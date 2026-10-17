@@ -34,10 +34,23 @@ namespace MusicBoxManagement.Wpf.Data
             catch { connection.Dispose(); throw; }
         }
 
+        // InnoDB protects each writer's rows/ranges; no application-wide write lock.
+        // Read entities and take IClock only after beginning this transaction.
+        public static MySqlTransaction BeginWriteTransaction(MySqlConnection connection)
+        {
+            return connection.BeginTransaction(IsolationLevel.Serializable);
+        }
+
+        // MySQL READ COMMITTED gives a new snapshot per SELECT, not per transaction.
+        public static MySqlTransaction BeginReadTransaction(MySqlConnection connection)
+        {
+            return connection.BeginTransaction(IsolationLevel.RepeatableRead, true);
+        }
+
         private static void Configure(MySqlConnection connection)
         {
             // Reject truncation/coercion; never silently weaken constraints.
-            Execute(connection, "SET SESSION sql_mode='STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'; SET SESSION time_zone='+00:00';");
+            Execute(connection, "SET SESSION sql_mode='STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'; SET SESSION time_zone='+00:00'; SET SESSION innodb_lock_wait_timeout=5;");
         }
 
         public void Initialize()

@@ -59,6 +59,10 @@
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\AivenDatabase.cs" />
     <Compile Include="Data\MySqlDatabase.cs" />
+    <Compile Include="Data\MySqlIdentityStore.cs" />
+    <Compile Include="Services\MySqlAuthenticationService.cs" />
+    <Compile Include="Services\MySqlPermissionService.cs" />
+    <Compile Include="Services\MySqlAuditService.cs" />
     <EmbeddedResource Include="Data\MySqlSchema.sql" />
     <Compile Include="Data\RoomSchema.cs" />
     <Compile Include="Data\RoomUsageSchema.cs" />
