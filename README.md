@@ -1,8 +1,8 @@
 # Music Box Management — WPF
 
-Cập nhật 17/10/2026: đã thêm mã nền tảng xác thực/quyền/audit/transaction MySQL (migration 2a), build Debug/Release đạt; integration Aiven chưa kiểm chứng vì hostname đang cấu hình báo DNS không tồn tại. App vẫn dùng SQLite. Xem [giải thích, kiểm tra và phần còn lại](docs/MySql_Migration_02a_Authentication.md).
+Cập nhật 17/10/2026: Aiven đã hoạt động lại; nền tảng schema và xác thực/quyền/audit/transaction MySQL đã kiểm tra online đạt cả Debug/Release. Đã thêm service quản trị tài khoản MySQL ở bước 2b; xem [báo cáo và kết quả kiểm tra](docs/MySql_Migration_02b_Accounts.md). App vẫn dùng SQLite, chưa nhập dữ liệu hoặc chuyển UI sang MySQL. Tiếp theo chuyển danh mục theo từng phần.
 
-Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite, chưa chuyển service hoặc dữ liệu. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
+Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 
 Ngày 14/10/2026: thêm kiểm tra kết nối MySQL Aiven bằng MySqlConnector 2.6.2; mật khẩu đọc từ biến User Windows `MUSICBOX_AIVEN_PASSWORD`. Debug thử `SELECT VERSION()` sau khi mở cửa sổ; Release không tự thử. Các chức năng vẫn dùng SQLite. Xem [cấu hình và kiểm tra Aiven](docs/Aiven_ConnectionCheck.md).
 

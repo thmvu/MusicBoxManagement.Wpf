@@ -70,8 +70,14 @@ LEFT JOIN AspNetUserRoles ur ON ur.UserId = u.Id WHERE " + condition, "@value", 
             return Task.CompletedTask;
         }
 
-        // Only bootstrap inserts until the MySQL administration service is ported.
-        internal void SaveChanges()
+        // Bootstrap cannot update existing accounts; administration uses the guarded path below.
+        internal void SaveChanges() => SaveChangesCore(false);
+        internal void SaveManagedChanges(MusicBoxManagement.Wpf.Services.MySqlPermissionService permissions, LoginSession actor)
+        {
+            permissions.Demand(actor, "User.Manage", connection, Transaction);
+            SaveChangesCore(true);
+        }
+        private void SaveChangesCore(bool managed)
         {
             if (Transaction == null || Transaction.Connection != connection ||
                 Transaction.IsolationLevel != System.Data.IsolationLevel.Serializable)
@@ -79,7 +85,18 @@ LEFT JOIN AspNetUserRoles ur ON ur.UserId = u.Id WHERE " + condition, "@value", 
             foreach (var user in pending.Values)
             {
                 if (!newIds.Contains(user.Id))
-                    throw new NotSupportedException("Cập nhật tài khoản cần service quản trị MySQL.");
+                {
+                    if (!managed) throw new NotSupportedException("Cập nhật tài khoản cần service quản trị MySQL.");
+                    if (user.Roles.Count != 1) throw new InvalidOperationException("Tài khoản phải có đúng một role.");
+                    using (var command = Command(@"UPDATE AspNetUsers SET UserName=@name,NormalizedUserName=@normalized,
+PasswordHash=@hash,SecurityStamp=@stamp,FullName=@fullName,IsActive=@active WHERE Id=@id;",
+                        "@id", user.Id, "@name", user.UserName, "@normalized", NormalizeName(user.UserName), "@hash", user.PasswordHash,
+                        "@stamp", user.SecurityStamp, "@fullName", user.FullName, "@active", user.IsActive ? 1 : 0))
+                        if (command.ExecuteNonQuery() != 1) throw new InvalidOperationException("Tài khoản không còn tồn tại.");
+                    using (var command = Command("DELETE FROM AspNetUserRoles WHERE UserId=@id;", "@id", user.Id)) command.ExecuteNonQuery();
+                    using (var command = Command("INSERT INTO AspNetUserRoles(UserId,RoleId) VALUES(@id,@role);", "@id", user.Id, "@role", user.Roles.Single().RoleId)) command.ExecuteNonQuery();
+                    continue;
+                }
                 if (user.Roles.Count != 1) throw new InvalidOperationException("Tài khoản phải có đúng một role.");
                 using (var command = Command(@"INSERT INTO AspNetUsers
 (Id,UserName,NormalizedUserName,PasswordHash,SecurityStamp,FullName,IsActive)

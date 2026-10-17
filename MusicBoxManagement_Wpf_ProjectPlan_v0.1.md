@@ -4,9 +4,11 @@ Ngày lập: 02/10/2026. Cập nhật tiến độ: 17/10/2026. Nền tảng gi�
 
 ## Cập nhật migration ngày 17/10/2026
 
-Đã thêm mã nền tảng **2a xác thực/quyền/audit/transaction MySQL**, phiên gắn với database, kho Identity chỉ bootstrap và bộ kiểm tra MySQL riêng. Build Debug/Release đạt. **Chưa nghiệm thu integration:** hostname Aiven đang cấu hình báo DNS không tồn tại khi chạy kiểm tra; mật khẩu/chứng chỉ trên máy vẫn có. Chi tiết và cách kiểm tra: [MySql_Migration_02a_Authentication.md](docs/MySql_Migration_02a_Authentication.md).
+Aiven đã hoạt động lại sau khi người dùng bật service. **MySqlFoundation và MySqlAuthentication đã chạy đạt online Debug/Release** trên database GUID riêng; lỗi DNS trước đó đã được khắc phục. Xem [bước 2a](docs/MySql_Migration_02a_Authentication.md).
 
-App/worker/service nghiệp vụ vẫn dùng SQLite; schema vẫn SQLite v8/MySQL v1. Chưa chuyển dữ liệu hoặc kho quản trị tài khoản MySQL. Làm tiếp: khôi phục kết nối và chạy kiểm tra 2a, sau đó chuyển quản trị tài khoản cùng các service. Bảng ngày 14/10 bên dưới giữ làm mốc; mục “chuyển Identity/quyền/audit” đã có mã nền 2a nhưng chưa được xác nhận đạt trên cloud. Không nâng tỷ lệ hoàn thành theo kết quả build.
+Bước **2b quản trị tài khoản MySQL** đã có MySqlAccountManagementService và đường Identity store có guard: thêm/sửa/khóa-mở/gán Staff–Manager–Admin/reset mật khẩu, Revision chống form cũ, self/last Admin, stamp và audit cùng transaction. Kết quả kiểm tra chốt tại [báo cáo 2b](docs/MySql_Migration_02b_Accounts.md).
+
+App/worker/service nghiệp vụ vẫn dùng SQLite; schema giữ SQLite v8/MySQL v1. Chưa nhập dữ liệu hoặc nối UI sang MySQL. Tiếp theo chuyển danh mục: loại phòng, phòng/ảnh, dịch vụ và khách; sau đó các nhóm booking/session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; phần transaction/Identity/quyền/audit và quản trị tài khoản đã có đường MySQL riêng ở 2a/2b. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
 
 ## Tổng hợp hiện trạng ngày 14/10/2026
 

@@ -1,5 +1,7 @@
 # Chuyển Aiven MySQL — bước 2a: xác thực, quyền và transaction
 
+Cập nhật sau khi người dùng bật lại Aiven ngày 17/10/2026: **Verify-MySqlFoundation và Verify-MySqlAuthentication đã chạy đạt online trên cả Debug/Release**, dùng database GUID riêng. Lỗi DNS ghi trong nhật ký dưới đây đã được khắc phục. Phần quản trị tài khoản được chuyển tiếp ở [bước 2b](MySql_Migration_02b_Accounts.md). App vẫn dùng SQLite.
+
 Ngày 17/10/2026. Đối chiếu plan WPF và bản nghiệp vụ tham chiếu mục 5/32/33/53/55.3–55.4. Đây là phần nền tảng của migration bước 2; chưa chuyển giao diện hoặc dữ liệu vận hành sang MySQL.
 
 ## Giải thích dễ hiểu
@@ -32,8 +34,8 @@ Giải thích kỹ thuật về [isolation của InnoDB](https://dev.mysql.com/d
 
 - Build Debug/Release đạt tại `bin/VerifyMySqlDebug` và `bin/VerifyMySqlRelease`.
 - Thêm `Tests/Verify-MySqlAuthentication.ps1` và `MySqlAuthenticationChecks.cs`. Chế độ `-PreflightOnly` đạt cả Debug/Release: kiểm tra đầu vào và chặn Guest/phiên SQLite/phiên MySQL database khác trước khi kết nối mạng; đường SQLite cũng chặn phiên MySQL trên file GUID tạm. Đây không phải kiểm tra integration cloud.
-- **Chưa kiểm chứng integration MySQL:** lúc chạy ngày 17/10/2026, hostname đang cấu hình `musicbox-mysql-baitapnet.j.aivencloud.com` báo DNS không tồn tại; kết nối thất bại trước khi khởi tạo database tạm. Biến mật khẩu User Windows và chứng chỉ vẫn tồn tại. Điều này không phủ nhận kết nối thành công đã được người dùng xác nhận trước đây.
-- Script mới dự kiến kiểm tra: bootstrap/rollback khi audit lỗi/hai kết nối cạnh tranh; username chuẩn hóa/mật khẩu sai/logout; quyền hiện hành và bất biến/dependencies; stamp/khóa/đổi role; transaction rollback và Dispose; snapshot đọc/read-only; bảo vệ quyền tới commit và chặn phiên khác database. Chỉ tên `musicbox_test_<GUID>` được phép dọn; không dùng database vận hành. Các tình huống này chưa được ghi là đạt khi Aiven chưa truy cập được.
+- **Sự cố trước khi bật lại Aiven (đã khắc phục):** lúc chạy ngày 17/10/2026, hostname đang cấu hình `musicbox-mysql-baitapnet.j.aivencloud.com` báo DNS không tồn tại; kết nối thất bại trước khi khởi tạo database tạm. Biến mật khẩu User Windows và chứng chỉ vẫn tồn tại. Điều này không phủ nhận kết nối thành công đã được người dùng xác nhận trước đây.
+- Script mới dự kiến kiểm tra: bootstrap/rollback khi audit lỗi/hai kết nối cạnh tranh; username chuẩn hóa/mật khẩu sai/logout; quyền hiện hành và bất biến/dependencies; stamp/khóa/đổi role; transaction rollback và Dispose; snapshot đọc/read-only; bảo vệ quyền tới commit và chặn phiên khác database. Chỉ tên `musicbox_test_<GUID>` được phép dọn; không dùng database vận hành. Các tình huống này đã chạy đạt sau khi bật lại Aiven; xem cập nhật đầu tài liệu.
 - Hồi quy SQLite: xem kết quả chốt cuối báo cáo; không chạm database người dùng.
 
 Chạy khi Aiven truy cập được:
@@ -48,7 +50,7 @@ Không gửi mật khẩu qua chat hoặc lưu vào Git. Nếu host/port thay đ
 
 ## Làm tiếp
 
-1. Khôi phục kết nối Aiven; chạy kiểm tra nền tảng/xác thực trên Debug và Release, xử lý lỗi phát hiện được. **Chưa đánh dấu bước 2a nghiệm thu.**
+1. Khôi phục kết nối Aiven; chạy kiểm tra nền tảng/xác thực trên Debug và Release, xử lý lỗi phát hiện được. **Đã chạy đạt sau khi Aiven hoạt động lại; xem cập nhật đầu tài liệu.**
 2. Chuyển AccountManagementService với UserManager, quyền Admin hiện hành, revision/self/last Admin/reset/đổi stamp/rollback và kiểm tra đồng thời; không mở đường cập nhật trực tiếp qua store.
 3. Chuyển lần lượt danh mục, availability/booking/calendar/session/order/billing/checkout/invoice/dashboard và worker; giữ kiểm tra overlap/phòng/khách/snapshot/clock sau transaction và quyền hiện hành.
 4. Sao lưu SQLite + Content, nhập/đối chiếu dữ liệu và kiểm tra UI riêng rồi mới chuyển App. Ma trận quyền, audit UI, báo cáo/Excel, lịch sử khách và ERD vẫn trong phạm vi.
@@ -58,4 +60,4 @@ Không gửi mật khẩu qua chat hoặc lưu vào Git. Nếu host/port thay đ
 - **27/27 bộ kiểm tra SQLite đạt** trên build Debug riêng: Accounts, Authentication, AuthenticationUi, Availability, Billing, Calendar, CheckIn, Checkout, Customers, Dashboard, Extension, Foundation, GuestBooking, GuestCalendar, GuestLookup, GuestSessions, InvoicePrinting, Invoices, Orders, Reservations, Rooms, RoomTypes, Services, Sessions, StaffBooking, StaffReservations, WalkIn.
 - AuthenticationUi render **131 màn hình**. InvoicePrinting dùng bộ giả lập, không gửi lệnh máy in thật. Các kiểm tra dùng dữ liệu tạm riêng.
 - Build mã cuối Debug/Release đạt; MySQL `-PreflightOnly` đạt cả hai build.
-- Kết nối integration Aiven vẫn không chạy được do DNS; **chưa xác nhận** bootstrap/login/RBAC/rollback/concurrency MySQL thực tế. Chưa thay nguồn dữ liệu của app.
+- Ban đầu integration bị DNS; sau khi người dùng bật lại Aiven, Foundation/Authentication đã đạt online Debug/Release. Chưa thay nguồn dữ liệu của app.

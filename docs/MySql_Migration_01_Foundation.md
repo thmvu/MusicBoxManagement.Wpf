@@ -1,5 +1,7 @@
 # Chuyển Aiven MySQL — bước 1: schema và kết nối
 
+Cập nhật 17/10/2026: Aiven đã hoạt động lại, Foundation/Authentication đã kiểm tra online đạt Debug/Release. Đã chuyển tiếp nền tảng xác thực ở [2a](MySql_Migration_02a_Authentication.md) và service quản trị tài khoản ở [2b](MySql_Migration_02b_Accounts.md). Các phần dưới là báo cáo tại thời điểm bước 1; app vẫn dùng SQLite.
+
 Ngày 14/10/2026. Người dùng yêu cầu chuyển Music Box sang MySQL Aiven sau khi WPF .NET Framework 4.7.2 đã kết nối thành công. Giữ chế độ Khách tại quầy, Identity/RBAC, toàn bộ nghiệp vụ theo plan WPF và Reference_Web_ProjectPlan_v1.3. Đây là bước đầu của migration, chưa chuyển service hoặc dữ liệu SQLite.
 
 ## Đã triển khai
