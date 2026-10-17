@@ -51,6 +51,11 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(session, "Dashboard.View");
             return new DashboardService(database, clock);
         }
+        public PermissionManagementService ForPermissions(LoginSession session)
+        {
+            permissions.Demand(session, "Permission.Manage");
+            return new PermissionManagementService(database, clock);
+        }
         public AccountManagementService ForAccounts(LoginSession session)
         {
             permissions.Demand(session, "User.Manage");

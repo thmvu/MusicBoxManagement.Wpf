@@ -1,8 +1,11 @@
 # Music Box Management — WPF
 
-Cập nhật 18/10/2026: đã thêm đường service phòng MySQL ở [bước 3b](docs/MySql_Migration_03b_Rooms.md): tạo/sửa/thay ảnh/đổi loại/khóa-mở với quyền, điều kiện sử dụng và audit cùng transaction. Trước đó đã có xác thực/quyền/audit, quản trị tài khoản và loại phòng Standard/VIP trên MySQL. Kết quả kiểm tra chi tiết nằm trong từng báo cáo.
+Cập nhật 18/10/2026 — làm song song theo yêu cầu người dùng:
 
-**Ứng dụng đang mở vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven. Ảnh vẫn là file local trong thư mục cấu hình cho từng database, chưa upload online. Tiếp theo chuyển dịch vụ và khách, rồi các service nghiệp vụ; chỉ đổi App sau khi đủ service, chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng.
+- **WPF có màn Ma trận quyền mới**: Admin → Ma trận quyền → Staff/Manager → chỉnh/xác nhận lưu; quyền mới áp dụng ở thao tác tiếp theo. Xem [cách dùng và kiểm tra 8c](docs/Step8c_PermissionMatrix.md).
+- **Aiven có service danh mục dịch vụ 3c**: thêm/sửa/ngừng bán, giữ snapshot và kiểm tra online. Xem [migration 3c](docs/MySql_Migration_03c_Services.md).
+
+**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF làm màn nhật ký, Aiven làm khách/SĐT; trước đổi App phải đủ service (gồm ma trận quyền mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 

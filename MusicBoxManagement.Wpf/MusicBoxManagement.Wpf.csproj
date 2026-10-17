@@ -64,6 +64,12 @@
     <Compile Include="Services\MySqlAccountManagementService.cs" />
     <Compile Include="Services\MySqlRoomTypeService.cs" />
     <Compile Include="Services\MySqlRoomService.cs" />
+    <Compile Include="Services\MySqlServiceCatalogService.cs" />
+    <Compile Include="Models\RolePermissionMatrix.cs" />
+    <Compile Include="Services\PermissionManagementService.cs" />
+    <Compile Include="ViewModels\PermissionsViewModel.cs" />
+    <Page Include="Views\PermissionsWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\PermissionsWindow.xaml.cs"><DependentUpon>PermissionsWindow.xaml</DependentUpon></Compile>
     <Compile Include="Services\MySqlPermissionService.cs" />
     <Compile Include="Services\MySqlAuditService.cs" />
     <EmbeddedResource Include="Data\MySqlSchema.sql" />
