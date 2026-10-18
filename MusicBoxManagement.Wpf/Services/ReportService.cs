@@ -22,6 +22,18 @@ namespace MusicBoxManagement.Wpf.Services
         }
 
         public RevenueReport ReadRevenue(LoginSession actor, DateTime fromDate, DateTime toDate, string roomTypeCode = null)
+            => ReadRevenueCore(actor, fromDate, toDate, roomTypeCode, false);
+
+        public ReportExcelFile ExportRevenue(LoginSession actor, DateTime fromDate, DateTime toDate,
+            string roomTypeCode = null, string mode = "Day")
+        {
+            var result = ReadRevenueCore(actor, fromDate, toDate, roomTypeCode, true);
+            if (mode != "Day" && mode != "Month" && mode != "RoomType")
+                throw new ArgumentException("Cách nhóm báo cáo không hợp lệ.");
+            return RevenueExcelWriter.Create(result, mode);
+        }
+
+        private RevenueReport ReadRevenueCore(LoginSession actor, DateTime fromDate, DateTime toDate, string roomTypeCode, bool forExport)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
@@ -30,6 +42,8 @@ namespace MusicBoxManagement.Wpf.Services
                 var access = permissions.ReadAccess(actor, connection, transaction);
                 if ((access.Role != "Admin" && access.Role != "Manager") || !access.Permissions.ContainsKey("Report.View"))
                     throw new UnauthorizedAccessException("Chỉ Admin hoặc Manager có quyền báo cáo được xem doanh thu tổng hợp.");
+                if (forExport && !access.Permissions.ContainsKey("Report.Export"))
+                    throw new UnauthorizedAccessException("Bạn không có quyền xuất báo cáo Excel.");
                 if (fromDate.Date > toDate.Date) throw new ArgumentException("Ngày bắt đầu không được sau ngày kết thúc.");
                 if (toDate.Date == DateTime.MaxValue.Date || fromDate.Date == DateTime.MinValue.Date)
                     throw new ArgumentException("Khoảng ngày vượt giới hạn thời gian được hỗ trợ.");
@@ -37,7 +51,7 @@ namespace MusicBoxManagement.Wpf.Services
                 if (type != null && type != "STANDARD" && type != "VIP") throw new ArgumentException("Loại phòng phải là Standard hoặc VIP.");
                 var from = DayStart(fromDate); var until = DayStart(toDate.Date.AddDays(1));
                 var result = new RevenueReport { FromDate = fromDate.Date, ToDate = toDate.Date, RoomTypeCode = type,
-                    CheckedAt = clock.UtcNow.ToUniversalTime() };
+                    CheckedAt = clock.UtcNow.ToUniversalTime(), CanExport = access.Permissions.ContainsKey("Report.Export") };
                 var days = new SortedDictionary<string, RevenueReportRow>(StringComparer.Ordinal);
                 var months = new SortedDictionary<string, RevenueReportRow>(StringComparer.Ordinal);
                 var types = new SortedDictionary<string, RevenueReportRow>(StringComparer.Ordinal);

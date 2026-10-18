@@ -3,9 +3,10 @@
 Cập nhật 18/10/2026 — làm song song theo yêu cầu người dùng:
 
 - **WPF có Doanh thu và top món 8e.4**: Admin/Manager Report.View, lọc PaidAt và dịch vụ (gồm ngừng bán), giá/tên snapshot, nhóm ServiceId và Top10 theo số lượng. Xem [cách dùng và kiểm tra](docs/Step8e4_ServiceSalesReports.md). Các báo cáo doanh thu/phòng/booking trước đó vẫn giữ.
+- **Excel doanh thu 8e.5a**: trong Báo cáo doanh thu, chọn kỳ/loại phòng/cách nhóm → Xem báo cáo → Xuất Excel. Cần Report.View + Report.Export, file có bộ lọc/thời điểm/tổng và giữ chính xác tiền lớn. Xem [cách xuất và kiểm tra](docs/Step8e5a_RevenueExcel.md).
 - **Aiven có booking nội bộ 4c.2a**: danh sách/chi tiết theo View, lọc ngày/SĐT/trạng thái, metadata quyền và hủy qua CancelStaff có audit; kế thừa catalog/preview/lịch trống public 4c.1. Xem [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md).
 
-**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF xuất Excel theo báo cáo/bộ lọc và lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
+**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF xuất Excel phòng/booking/món theo bộ lọc và lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 

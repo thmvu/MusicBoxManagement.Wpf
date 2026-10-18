@@ -44,6 +44,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Mode { get => mode; set { if (busy || mode == value) return; mode = value; FilterChanged(); } }
         public bool IsBusy => busy;
         public bool CanSearch => !busy;
+        public bool CanExport => !busy && report != null && report.CanExport;
         public RevenueReport Report => report;
         public string Status => status;
         public string Summary => report == null ? "" : "Tổng " + report.InvoiceCount + " hóa đơn  ·  Tiền phòng: "
@@ -81,13 +82,41 @@ namespace MusicBoxManagement.Wpf.ViewModels
             }
             finally { busy = false; Changed(); }
         }
+        public async Task ExportAsync(Func<string, string> choosePath)
+        {
+            if (!CanExport) return;
+            if (choosePath == null) throw new ArgumentNullException(nameof(choosePath));
+            var loaded = report; var grouping = mode;
+            busy = true; Changed();
+            try
+            {
+                // Recheck authorization before showing the dialog, then query/authorize again
+                // after it closes. No transaction is held while the user chooses a filename.
+                var preview = await Task.Run(() => service.ExportRevenue(actor, loaded.FromDate, loaded.ToDate, loaded.RoomTypeCode, grouping));
+                var path = choosePath(preview.FileName);
+                if (string.IsNullOrWhiteSpace(path)) { status = "Đã hủy xuất Excel; chưa ghi file."; return; }
+                await Task.Run(() => service.ExportRevenue(actor, loaded.FromDate, loaded.ToDate, loaded.RoomTypeCode, grouping).SaveTo(path));
+                status = "Đã xuất Excel theo bộ lọc đang xem. Bấm Xem báo cáo để cập nhật lại bảng.";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Clear(); from = to = null; roomType = null; mode = "Day";
+                status = "Không còn quyền xuất báo cáo hoặc phiên đã hết hiệu lực. Chưa ghi file; hãy tải lại quyền/báo cáo.";
+            }
+            catch (Exception error)
+            {
+                status = error is ArgumentException || error is InvalidOperationException ? error.Message
+                    : "Chưa xuất được Excel. Kiểm tra thư mục lưu hoặc đóng file đang mở rồi thử lại.";
+            }
+            finally { busy = false; Changed(); }
+        }
         private void FilterChanged() { Clear(); status = "Bộ lọc đã đổi. Bấm Xem báo cáo để tải lại."; Changed(); }
         private void Clear() { report = null; Rows.Clear(); }
         private static string Money(decimal value) => value.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " đ";
         private void Changed()
         {
             foreach (var property in new[] { nameof(FromDate), nameof(ToDate), nameof(RoomTypeCode), nameof(Mode), nameof(IsBusy),
-                nameof(CanSearch), nameof(Report), nameof(Summary), nameof(Status) }) Notify(property);
+                nameof(CanSearch), nameof(CanExport), nameof(Report), nameof(Summary), nameof(Status) }) Notify(property);
         }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }

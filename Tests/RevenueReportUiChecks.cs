@@ -165,6 +165,20 @@ public static class MusicBoxRevenueReportUiChecks
             var vm = new RevenueReportViewModel(service, manager); window = new RevenueReportWindow(vm); window.Show(); PumpUntil(() => !vm.IsBusy);
             // Further report assertions follow the implementation's public DTO contract.
             CheckReport(window, vm, day, first.TotalAmount, huge.TotalAmount, output);
+            Assert(!vm.CanExport && !Button(window,"ExportButton").IsEnabled,"View-only enabled export.");
+            Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");
+            Await(vm.SearchAsync());Assert(vm.CanExport&&Button(window,"ExportButton").IsEnabled,"Export grant not applied.");
+            var exportPath=Path.Combine(output,"RevenueUi.xlsx");var prompts=0;
+            Await(vm.ExportAsync(suggested=>{prompts++;Assert(vm.IsBusy&&!vm.CanExport&&!Button(window,"ExportButton").IsEnabled,"Export did not lock UI.");var oldMode=vm.Mode;vm.Mode="Day";Await(vm.ExportAsync(_=>{throw new Exception("Duplicate export opened dialog.");}));window.Close();Assert(window.IsVisible&&vm.Mode==oldMode,"Export accepted close/filter.");return exportPath;}));
+            Assert(prompts==1&&File.Exists(exportPath)&&File.ReadAllBytes(exportPath)[0]==80&&vm.Status.Contains("Đã xuất"),"Export save failed.");
+            Await(vm.ExportAsync(_=>null));Assert(vm.Status.Contains("hủy"),"Cancel did not report no write.");
+            var blocked=Path.Combine(directory,"blocked.xlsx");File.WriteAllText(blocked,"original");
+            Await(vm.ExportAsync(_=>{Sql(db,"DELETE FROM RolePermission WHERE RoleId='Manager' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Report.Export');");return blocked;}));
+            Assert(File.ReadAllText(blocked)=="original"&&vm.Report==null&&!vm.CanExport&&vm.Rows.Count==0,"Revoked during dialog wrote/retained report.");
+            vm.FromDate=day;vm.ToDate=day;Await(vm.SearchAsync());Assert(vm.Report!=null&&!vm.CanExport,"View after export revocation failed.");
+            Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");Await(vm.SearchAsync());
+            window.Width=960;window.Height=640;window.UpdateLayout();var exportButton=Button(window,"ExportButton");var exportPoint=exportButton.TransformToAncestor(window).Transform(new Point());
+            Assert(exportPoint.X>=0&&exportPoint.X+exportButton.ActualWidth<=window.ActualWidth&&exportPoint.Y+exportButton.ActualHeight<=window.ActualHeight,"Compact hides Export button.");Image(window,output,"reports-excel-compact");
             Assert(Convert.ToInt64(Sql(db, "SELECT COUNT(*) FROM AuditLog;")) == before, "Report UI wrote audit/business data."); window.Close();
             gate = new GateClock(); vm = new RevenueReportViewModel(new ReportService(db, gate), manager); window = new RevenueReportWindow(vm); window.Show();
             PumpUntil(() => gate.Entered.IsSet); var oldFrom = vm.FromDate; var oldTo = vm.ToDate; var oldType = vm.RoomTypeCode;

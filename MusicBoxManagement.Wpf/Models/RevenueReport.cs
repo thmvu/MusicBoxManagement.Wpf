@@ -10,6 +10,7 @@ namespace MusicBoxManagement.Wpf.Models
         public DateTime ToDate { get; internal set; }
         public string RoomTypeCode { get; internal set; }
         public DateTimeOffset CheckedAt { get; internal set; }
+        public bool CanExport { get; internal set; }
         public IReadOnlyList<RevenueReportRow> Days { get; internal set; }
         public IReadOnlyList<RevenueReportRow> Months { get; internal set; }
         public IReadOnlyList<RevenueReportRow> RoomTypes { get; internal set; }
