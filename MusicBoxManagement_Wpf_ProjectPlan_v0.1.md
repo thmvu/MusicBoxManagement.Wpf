@@ -8,10 +8,10 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
-| WPF đang chạy SQLite | **8e.3 booking/status**: service/UI 5 trạng thái, lọc StartTime Việt Nam, NoShow hiệu lực đúng +15 phút, chỉ đọc và Report.View hiện hành | Doanh thu/top món và Excel; lịch sử khách/tài liệu |
-| MySQL Aiven | **4c.1 booking reads**: catalog/preview/create/day/image theo IBookingService, public/staff tách quyền, lịch public 28 ô chỉ trống/bận | Danh sách/tra cứu/hủy Guest booking, calendar nội bộ và các nhóm nghiệp vụ |
+| WPF đang chạy SQLite | **8e.4 doanh thu/top món**: PaidAt Việt Nam, Completed + Invoice, giá/tên snapshot, nhóm ServiceId, dịch vụ ngừng bán và Top10, service/UI Report.View | Excel theo báo cáo/bộ lọc; lịch sử khách/tài liệu |
+| MySQL Aiven | **4c.2a booking nội bộ**: danh sách/chi tiết theo View, lọc ngày/SĐT/status, metadata quyền và hủy Staff qua writer thật | Guest hủy/lookup đầy đủ khi có service phiên; calendar nội bộ và các nhóm nghiệp vụ |
 
-Xem [8e.3](docs/Step8e3_BookingStatusReport.md) và [migration 4c.1](docs/MySql_Migration_04c1_BookingReads.md). App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng.
+Xem [8e.4](docs/Step8e4_ServiceSalesReports.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 
 ## Cập nhật migration ngày 18/10/2026
 

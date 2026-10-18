@@ -59,6 +59,12 @@
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\AivenDatabase.cs" />
     <Compile Include="Data\MySqlDatabase.cs" />
+    <Compile Include="Models\ServiceSalesReport.cs" />
+    <Compile Include="Services\MySqlStaffReservationService.cs" />
+    <Compile Include="Services\ServiceSalesReportService.cs" />
+    <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
+    <Page Include="Views\ServiceSalesReportWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\ServiceSalesReportWindow.xaml.cs"><DependentUpon>ServiceSalesReportWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\MySqlIdentityStore.cs" />
     <Compile Include="Services\MySqlAuthenticationService.cs" />
     <Compile Include="Services\MySqlAccountManagementService.cs" />

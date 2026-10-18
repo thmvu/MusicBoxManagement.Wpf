@@ -2,10 +2,10 @@
 
 Cập nhật 18/10/2026 — làm song song theo yêu cầu người dùng:
 
-- **WPF có Báo cáo đặt phòng**: Admin/Manager có Report.View → chọn kỳ theo giờ bắt đầu; đếm đủ 5 trạng thái, tính Không đến ngay khi hết hạn nhận dù worker chậm. Xem [cách dùng và kiểm tra 8e.3](docs/Step8e3_BookingStatusReport.md).
-- **Aiven có catalog/preview/lịch trống 4c.1**: đường đặt phòng Khách và nhân viên, kiểm tra SĐT/lịch/quyền hiện hành, DTO lịch public không dữ liệu khách. Xem [migration 4c.1](docs/MySql_Migration_04c1_BookingReads.md).
+- **WPF có Doanh thu và top món 8e.4**: Admin/Manager Report.View, lọc PaidAt và dịch vụ (gồm ngừng bán), giá/tên snapshot, nhóm ServiceId và Top10 theo số lượng. Xem [cách dùng và kiểm tra](docs/Step8e4_ServiceSalesReports.md). Các báo cáo doanh thu/phòng/booking trước đó vẫn giữ.
+- **Aiven có booking nội bộ 4c.2a**: danh sách/chi tiết theo View, lọc ngày/SĐT/trạng thái, metadata quyền và hủy qua CancelStaff có audit; kế thừa catalog/preview/lịch trống public 4c.1. Xem [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md).
 
-**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF bổ sung báo cáo dịch vụ/top món và Excel; Aiven port danh sách/tra cứu/hủy Guest booking; trước đổi App phải đủ service (gồm ma trận quyền và đọc nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng.
+**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF xuất Excel theo báo cáo/bộ lọc và lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 

@@ -39,6 +39,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningReports;
         private bool isOpeningRoomReports;
         private bool isOpeningBookingReports;
+        private bool isOpeningServiceReports;
         private readonly DashboardViewModel dashboard;
         private readonly SemaphoreSlim accessGate = new SemaphoreSlim(1, 1);
         private LoginSession session;
@@ -146,6 +147,7 @@ namespace MusicBoxManagement.Wpf.Views
                 ReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
                 RoomReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
                 BookingReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
+                ServiceReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
                 OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
@@ -209,6 +211,7 @@ namespace MusicBoxManagement.Wpf.Views
             ReportsButton.Visibility = Visibility.Collapsed;
             RoomReportsButton.Visibility = Visibility.Collapsed;
             BookingReportsButton.Visibility = Visibility.Collapsed;
+            ServiceReportsButton.Visibility = Visibility.Collapsed;
             OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
             dashboard.Reset(null);
@@ -435,6 +438,20 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền xem báo cáo hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Chưa mở được báo cáo đặt phòng. Hãy thử lại.", "Music Box"); }
             finally { isOpeningBookingReports = false; BookingReportsButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+
+        private async void ShowServiceReports_Click(object sender, RoutedEventArgs args)
+        {
+            if (isOpeningServiceReports) return; isOpeningServiceReports = true; ServiceReportsButton.IsEnabled = false;
+            try
+            {
+                var actor = session; var route = await Task.Run(() => reservations.ForServiceReports(actor));
+                if (session != actor) return;
+                new ServiceSalesReportWindow(new ServiceSalesReportViewModel(route, actor)) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền xem báo cáo hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Chưa mở được báo cáo món. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningServiceReports = false; ServiceReportsButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private async void ShowRoomReports_Click(object sender, RoutedEventArgs args)

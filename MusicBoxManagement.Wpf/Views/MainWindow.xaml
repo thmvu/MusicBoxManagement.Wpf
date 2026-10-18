@@ -78,6 +78,7 @@
                             <Button x:Name="ReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo doanh thu" Click="ShowReports_Click" Visibility="Collapsed"/>
                             <Button x:Name="RoomReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo sử dụng phòng" Click="ShowRoomReports_Click" Visibility="Collapsed"/>
                             <Button x:Name="BookingReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo đặt phòng" Click="ShowBookingReports_Click" Visibility="Collapsed"/>
+                            <Button x:Name="ServiceReportsButton" Style="{StaticResource SidebarButton}" Content="Doanh thu và top món" Click="ShowServiceReports_Click" Visibility="Collapsed"/>
                             <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
                             <Separator Background="#51616D" Margin="12,10,12,14"/>
                             <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Bảng điều hành" Click="RefreshAccess_Click"/>
