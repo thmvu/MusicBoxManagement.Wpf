@@ -22,6 +22,12 @@ namespace MusicBoxManagement.Wpf.Services
         }
 
         public RoomUsageReport Read(LoginSession actor, DateTime fromDate, DateTime toDate, int? roomId = null)
+            => ReadCore(actor, fromDate, toDate, roomId, false);
+
+        public ReportExcelFile Export(LoginSession actor, DateTime fromDate, DateTime toDate, int? roomId = null)
+            => ReportExcelWriter.CreateRooms(ReadCore(actor, fromDate, toDate, roomId, true));
+
+        private RoomUsageReport ReadCore(LoginSession actor, DateTime fromDate, DateTime toDate, int? roomId, bool forExport)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
@@ -30,6 +36,8 @@ namespace MusicBoxManagement.Wpf.Services
                 var access = permissions.ReadAccess(actor, connection, transaction);
                 if ((access.Role != "Admin" && access.Role != "Manager") || !access.Permissions.ContainsKey("Report.View"))
                     throw new UnauthorizedAccessException("Chỉ Admin hoặc Manager có quyền báo cáo được xem thống kê phòng.");
+                if (forExport && !access.Permissions.ContainsKey("Report.Export"))
+                    throw new UnauthorizedAccessException("Bạn không có quyền xuất báo cáo Excel.");
                 if (fromDate.Date > toDate.Date) throw new ArgumentException("Ngày bắt đầu không được sau ngày kết thúc.");
                 if (fromDate.Date == DateTime.MinValue.Date || toDate.Date == DateTime.MaxValue.Date)
                     throw new ArgumentException("Khoảng ngày vượt giới hạn thời gian được hỗ trợ.");
@@ -83,7 +91,7 @@ namespace MusicBoxManagement.Wpf.Services
                     if (merged != null) usedTicks += OpenTicks(merged.Start, merged.End);
                     row.UsedMinutes = usedTicks / TimeSpan.TicksPerMinute;
                 }
-                return new RoomUsageReport { FromDate = fromDate.Date, ToDate = toDate.Date, RoomId = roomId, CheckedAt = now,
+                return new RoomUsageReport { FromDate = fromDate.Date, ToDate = toDate.Date, RoomId = roomId, CheckedAt = now, CanExport = access.Permissions.ContainsKey("Report.Export"),
                     RoomChoices = all.Select(r => new RoomUsageChoice { RoomId = r.RoomId, Label = r.RoomCode + " — " + r.RoomName + (r.IsActive ? "" : " (đã khóa)") }).ToList().AsReadOnly(),
                     Rooms = rows.AsReadOnly(), CompletedCount = rows.Sum(r => r.CompletedCount), UsedMinutes = rows.Sum(r => r.UsedMinutes), AvailableMinutes = rows.Sum(r => r.AvailableMinutes) };
             }

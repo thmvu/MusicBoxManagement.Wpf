@@ -30,7 +30,7 @@ namespace MusicBoxManagement.Wpf.Services
             var result = ReadRevenueCore(actor, fromDate, toDate, roomTypeCode, true);
             if (mode != "Day" && mode != "Month" && mode != "RoomType")
                 throw new ArgumentException("Cách nhóm báo cáo không hợp lệ.");
-            return RevenueExcelWriter.Create(result, mode);
+            return ReportExcelWriter.CreateRevenue(result, mode);
         }
 
         private RevenueReport ReadRevenueCore(LoginSession actor, DateTime fromDate, DateTime toDate, string roomTypeCode, bool forExport)

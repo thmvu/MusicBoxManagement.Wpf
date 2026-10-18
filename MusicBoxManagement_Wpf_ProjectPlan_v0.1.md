@@ -8,10 +8,10 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
-| WPF đang chạy SQLite | **8e.5a Excel doanh thu**: xuất đúng kỳ/RoomType snapshot/cách nhóm đang xem, quyền View+Export hiện hành trước/sau dialog; đã có các báo cáo 8e.1–8e.4 | Excel phòng/booking/món; lịch sử khách/tài liệu |
+| WPF đang chạy SQLite | **8e.5b Excel các báo cáo còn lại**: phòng/booking/món/top món đúng filter/tab, quyền View+Export trước/sau dialog; giữ Excel doanh thu 8e.5a | Lịch sử khách; tài liệu/ERD/demo và kiểm tra cuối |
 | MySQL Aiven | **4c.2a booking nội bộ**: danh sách/chi tiết theo View, lọc ngày/SĐT/status, metadata quyền và hủy Staff qua writer thật | Guest hủy/lookup đầy đủ khi có service phiên; calendar nội bộ và các nhóm nghiệp vụ |
 
-Xem [8e.5a](docs/Step8e5a_RevenueExcel.md), [8e.4](docs/Step8e4_ServiceSalesReports.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Lượt 8e.5a chỉ sửa nhánh WPF/Excel; MySQL giữ 4c.2a. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
+Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Lượt này chỉ sửa nhánh WPF/Excel; MySQL giữ 4c.2a. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 
 ## Cập nhật migration ngày 18/10/2026
 

@@ -21,6 +21,12 @@ namespace MusicBoxManagement.Wpf.Services
         }
 
         public BookingStatusReport Read(LoginSession actor, DateTime fromDate, DateTime toDate)
+            => ReadCore(actor, fromDate, toDate, false);
+
+        public ReportExcelFile Export(LoginSession actor, DateTime fromDate, DateTime toDate)
+            => ReportExcelWriter.CreateBookings(ReadCore(actor, fromDate, toDate, true));
+
+        private BookingStatusReport ReadCore(LoginSession actor, DateTime fromDate, DateTime toDate, bool forExport)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
@@ -29,6 +35,8 @@ namespace MusicBoxManagement.Wpf.Services
                 var access = permissions.ReadAccess(actor, connection, transaction);
                 if ((access.Role != "Admin" && access.Role != "Manager") || !access.Permissions.ContainsKey("Report.View"))
                     throw new UnauthorizedAccessException("Chỉ Admin hoặc Manager có quyền báo cáo được xem thống kê booking.");
+                if (forExport && !access.Permissions.ContainsKey("Report.Export"))
+                    throw new UnauthorizedAccessException("Bạn không có quyền xuất báo cáo Excel.");
                 if (fromDate.Date > toDate.Date) throw new ArgumentException("Ngày bắt đầu không được sau ngày kết thúc.");
                 if (fromDate.Date == DateTime.MinValue.Date || toDate.Date == DateTime.MaxValue.Date)
                     throw new ArgumentException("Khoảng ngày vượt giới hạn thời gian được hỗ trợ.");
@@ -64,7 +72,7 @@ ORDER BY ReservationId;";
                     row.Count = checked(row.Count + 1); total = checked(total + 1);
                 }
                 return new BookingStatusReport { FromDate = fromDate.Date, ToDate = toDate.Date, CheckedAt = now,
-                    TotalCount = total, Rows = Array.AsReadOnly(rows) };
+                    TotalCount = total, Rows = Array.AsReadOnly(rows), CanExport = access.Permissions.ContainsKey("Report.Export") };
             }
         }
         private static DateTimeOffset DayStart(DateTime value) => new DateTimeOffset(DateTime.SpecifyKind(value.Date, DateTimeKind.Unspecified), BookingHours.VietnamOffset).ToUniversalTime();

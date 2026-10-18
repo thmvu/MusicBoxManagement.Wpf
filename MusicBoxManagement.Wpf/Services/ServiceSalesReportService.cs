@@ -22,6 +22,12 @@ namespace MusicBoxManagement.Wpf.Services
         }
 
         public ServiceSalesReport Read(LoginSession actor, DateTime fromDate, DateTime toDate, int? serviceId = null)
+            => ReadCore(actor, fromDate, toDate, serviceId, false);
+
+        public ReportExcelFile Export(LoginSession actor, DateTime fromDate, DateTime toDate, int? serviceId = null, bool topItems = false)
+            => ReportExcelWriter.CreateServices(ReadCore(actor, fromDate, toDate, serviceId, true), topItems);
+
+        private ServiceSalesReport ReadCore(LoginSession actor, DateTime fromDate, DateTime toDate, int? serviceId, bool forExport)
         {
             using (var connection = database.OpenConnection())
             using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
@@ -30,11 +36,13 @@ namespace MusicBoxManagement.Wpf.Services
                 var access = permissions.ReadAccess(actor, connection, transaction);
                 if ((access.Role != "Admin" && access.Role != "Manager") || !access.Permissions.ContainsKey("Report.View"))
                     throw new UnauthorizedAccessException("Chỉ Admin hoặc Manager có quyền báo cáo được xem doanh thu món.");
+                if (forExport && !access.Permissions.ContainsKey("Report.Export"))
+                    throw new UnauthorizedAccessException("Bạn không có quyền xuất báo cáo Excel.");
                 if (fromDate.Date > toDate.Date || fromDate.Date == DateTime.MinValue.Date || toDate.Date == DateTime.MaxValue.Date)
                     throw new ArgumentException("Khoảng ngày báo cáo không hợp lệ.");
                 var from = DayStart(fromDate); var until = DayStart(toDate.Date.AddDays(1));
                 var result = new ServiceSalesReport { FromDate = fromDate.Date, ToDate = toDate.Date, ServiceId = serviceId,
-                    CheckedAt = clock.UtcNow.ToUniversalTime() };
+                    CheckedAt = clock.UtcNow.ToUniversalTime(), CanExport = access.Permissions.ContainsKey("Report.Export") };
                 command.Transaction = transaction;
                 command.CommandText = "SELECT ServiceId,Name,IsActive FROM Services ORDER BY Name,ServiceId;";
                 var choices = new List<ServiceReportChoice> { new ServiceReportChoice { Label = "Tất cả dịch vụ" } };

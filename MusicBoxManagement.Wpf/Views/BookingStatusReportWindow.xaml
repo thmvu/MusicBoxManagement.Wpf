@@ -4,7 +4,7 @@
  WindowStartupLocation="CenterOwner" Background="#F2F4F5" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Loaded="Window_Loaded">
  <Grid Margin="24">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <DockPanel Margin="0,0,0,16"><Button x:Name="CloseButton" DockPanel.Dock="Right" Content="Đóng" Click="Close_Click"/><TextBlock Text="Báo cáo đặt phòng" FontSize="28" FontWeight="SemiBold"/></DockPanel>
+  <DockPanel Margin="0,0,0,16"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="ExportButton" Content="Xuất Excel" IsEnabled="{Binding CanExport}" Click="Export_Click" Margin="0,0,12,0"/><Button x:Name="CloseButton" Content="Đóng" Click="Close_Click"/></StackPanel><TextBlock Text="Báo cáo đặt phòng" FontSize="28" FontWeight="SemiBold"/></DockPanel>
   <WrapPanel Grid.Row="1" Margin="0,0,0,12" IsEnabled="{Binding CanSearch}">
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Từ ngày (giờ Việt Nam)"/><DatePicker x:Name="FromInput" SelectedDate="{Binding FromDate}" Width="180" Padding="5" Margin="0,6,0,0"/></StackPanel>
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Đến ngày"/><DatePicker x:Name="ToInput" SelectedDate="{Binding ToDate}" Width="180" Padding="5" Margin="0,6,0,0"/></StackPanel>

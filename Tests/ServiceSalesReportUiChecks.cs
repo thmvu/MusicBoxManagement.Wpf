@@ -112,6 +112,24 @@ public static class MusicBoxServiceSalesReportUiChecks
         }
         finally { if (driver != null) driver.Stop(); main.Close(); }
     }
+    private static void CheckExcel(ServiceSalesReportWindow window, ServiceSalesReportViewModel vm, SqliteDatabase db, DateTime day, string output)
+    {
+        Assert(!vm.CanExport && !Button(window,"ExportButton").IsEnabled,"View-only enabled export.");
+        Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");Await(vm.SearchAsync());
+        Assert(vm.CanExport && Button(window,"ExportButton").IsEnabled,"Export grant not applied.");
+        var target=Path.Combine(output,"ServiceSalesReportExport.xlsx");var prompts=0;
+        Await(vm.ExportAsync(suggested=>{prompts++;Assert(vm.IsBusy&&!vm.CanExport&&!Button(window,"ExportButton").IsEnabled,"Export did not lock UI.");var start=vm.FromDate;vm.FromDate=day.AddYears(-1);Await(vm.ExportAsync(_=>{throw new Exception("Duplicate export opened dialog.");}));window.Close();Assert(window.IsVisible&&vm.FromDate==start,"Export accepted filter/close.");var tab=vm.SelectedTab;vm.SelectedTab=1;Assert(vm.SelectedTab==tab,"Busy accepted tab change.");return target;}));
+        Assert(prompts==1&&File.Exists(target)&&File.ReadAllBytes(target)[0]==80&&vm.Status.Contains("Đã xuất"),"Export save failed.");
+        vm.SelectedTab=1;Assert(((TabControl)window.FindName("ReportTabs")).SelectedIndex==1,"Top tab not bound.");Await(vm.ExportAsync(suggested=>{Assert(suggested.Contains("TopMon"),"Export ignored selected tab.");return Path.Combine(output,"TopMonExport.xlsx");}));vm.SelectedTab=0;
+        Await(vm.ExportAsync(_=>null));Assert(vm.Status.Contains("hủy"),"Cancel failed.");
+        var blocked=Path.Combine(output,"ServiceSalesReportBlocked.xlsx");File.WriteAllText(blocked,"original");
+        Await(vm.ExportAsync(_=>{Sql(db,"DELETE FROM RolePermission WHERE RoleId='Manager' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Report.Export');");return blocked;}));
+        Assert(File.ReadAllText(blocked)=="original"&&vm.Report==null&&!vm.CanExport&&vm.Rows.Count==0,"Revoked during dialog wrote/retained report.");
+        vm.FromDate=day;vm.ToDate=day;Await(vm.SearchAsync());Assert(vm.Report!=null&&!vm.CanExport,"View after export revoke failed.");
+        Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");Await(vm.SearchAsync());
+        window.Width=960;window.Height=640;window.UpdateLayout();Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle,new Action(()=>{}));window.UpdateLayout();
+        var button=Button(window,"ExportButton");var point=button.TransformToAncestor(window).Transform(new Point());Assert(button.IsVisible&&point.X>=0&&point.X+button.ActualWidth<=window.ActualWidth&&point.Y+button.ActualHeight<=window.ActualHeight,"Compact hides Excel button.");Image(window,output,"ServiceSalesReport-excel-compact");
+    }
     public static void Run(string appXaml, string output)
     {
         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
@@ -154,6 +172,7 @@ INSERT INTO OrderItems(OrderId,ServiceId,ServiceNameSnapshot,Quantity,UnitPrice)
             var grid=(DataGrid)window.FindName("TopTable");Assert(grid.ActualHeight>170&&grid.Items.Count==2,"Compact top table missing.");
             var last=grid.Columns[3].GetCellContent(vm.TopItems[0]);Assert(last!=null,"Revenue cell absent.");var point=last.TransformToAncestor(window).Transform(new Point());Assert(point.X+last.ActualWidth<=window.ActualWidth,"Revenue clipped.");Image(window,output,"sales-top-compact");
             tabs.SelectedIndex=0;Image(window,output,"sales-revenue-compact");
+            CheckExcel(window,vm,db,day,output);
             vm.FromDate=day.AddDays(1);vm.ToDate=day.AddDays(1);Await(vm.SearchAsync());Assert(vm.Rows.Count==0&&vm.Report.TotalRevenue==0,"Empty report failed.");Image(window,output,"sales-empty");
             vm.FromDate=day.AddDays(2);Await(vm.SearchAsync());Assert(vm.Report==null&&vm.Rows.Count==0,"Invalid dates retained data.");window.Close();
             gate=new GateClock();vm=new ServiceSalesReportViewModel(new ServiceSalesReportService(db,gate),manager);window=new ServiceSalesReportWindow(vm);window.Show();PumpUntil(()=>gate.Entered.IsSet);

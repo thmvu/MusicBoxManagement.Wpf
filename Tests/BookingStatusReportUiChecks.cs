@@ -149,6 +149,24 @@ public static class MusicBoxBookingStatusReportUiChecks
         Assert(countPoint.X >= 0 && countPoint.X + countCell.ActualWidth <= window.ActualWidth, "Compact report count column is clipped.");
         Image(window,output,"bookings-compact");
     }
+    private static void CheckExcel(BookingStatusReportWindow window, BookingStatusReportViewModel vm, SqliteDatabase db, DateTime day, string output)
+    {
+        Assert(!vm.CanExport && !Button(window,"ExportButton").IsEnabled,"View-only enabled export.");
+        Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");Await(vm.SearchAsync());
+        Assert(vm.CanExport && Button(window,"ExportButton").IsEnabled,"Export grant not applied.");
+        var target=Path.Combine(output,"BookingStatusReportExport.xlsx");var prompts=0;
+        Await(vm.ExportAsync(suggested=>{prompts++;Assert(vm.IsBusy&&!vm.CanExport&&!Button(window,"ExportButton").IsEnabled,"Export did not lock UI.");var start=vm.FromDate;vm.FromDate=day.AddYears(-1);Await(vm.ExportAsync(_=>{throw new Exception("Duplicate export opened dialog.");}));window.Close();Assert(window.IsVisible&&vm.FromDate==start,"Export accepted filter/close.");return target;}));
+        Assert(prompts==1&&File.Exists(target)&&File.ReadAllBytes(target)[0]==80&&vm.Status.Contains("Đã xuất"),"Export save failed.");
+
+        Await(vm.ExportAsync(_=>null));Assert(vm.Status.Contains("hủy"),"Cancel failed.");
+        var blocked=Path.Combine(output,"BookingStatusReportBlocked.xlsx");File.WriteAllText(blocked,"original");
+        Await(vm.ExportAsync(_=>{Sql(db,"DELETE FROM RolePermission WHERE RoleId='Manager' AND PermissionId=(SELECT PermissionId FROM Permission WHERE Code='Report.Export');");return blocked;}));
+        Assert(File.ReadAllText(blocked)=="original"&&vm.Report==null&&!vm.CanExport&&vm.Rows.Count==0,"Revoked during dialog wrote/retained report.");
+        vm.FromDate=day;vm.ToDate=day;Await(vm.SearchAsync());Assert(vm.Report!=null&&!vm.CanExport,"View after export revoke failed.");
+        Sql(db,"INSERT INTO RolePermission SELECT 'Manager',PermissionId FROM Permission WHERE Code='Report.Export';");Await(vm.SearchAsync());
+        window.Width=960;window.Height=640;window.UpdateLayout();Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle,new Action(()=>{}));window.UpdateLayout();
+        var button=Button(window,"ExportButton");var point=button.TransformToAncestor(window).Transform(new Point());Assert(button.IsVisible&&point.X>=0&&point.X+button.ActualWidth<=window.ActualWidth&&point.Y+button.ActualHeight<=window.ActualHeight,"Compact hides Excel button.");Image(window,output,"BookingStatusReport-excel-compact");
+    }
     public static void Run(string appXaml, string output)
     {
         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
@@ -186,7 +204,7 @@ INSERT INTO Reservations(ReservationId,CustomerId,RoomId,StartTime,EndTime,Statu
             var service = new BookingStatusReportService(db, clock);
             var denied = new BookingStatusReportViewModel(service, staff); Await(denied.SearchAsync()); Assert(denied.Rows.Count == 0 && denied.Report == null, "Misgranted Staff saw report.");
             window = new BookingStatusReportWindow(new BookingStatusReportViewModel(service, manager)); var vm = (BookingStatusReportViewModel)window.DataContext;
-            window.Show(); PumpUntil(() => !vm.IsBusy); CheckReport(window, vm, day, output); window.Close();
+            window.Show(); PumpUntil(() => !vm.IsBusy); CheckReport(window, vm, day, output); CheckExcel(window,vm,db,day,output); window.Close();
             gate = new GateClock(); vm = new BookingStatusReportViewModel(new BookingStatusReportService(db, gate), manager); window = new BookingStatusReportWindow(vm); window.Show();
             PumpUntil(() => gate.Entered.IsSet); var oldFrom = vm.FromDate; var oldTo = vm.ToDate;
             vm.FromDate = day.AddYears(-1); vm.ToDate = day.AddYears(1); Await(vm.SearchAsync()); window.Close();

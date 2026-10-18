@@ -63,10 +63,11 @@
     <Compile Include="Data\MySqlDatabase.cs" />
     <Compile Include="Models\ServiceSalesReport.cs" />
     <Compile Include="Models\ReportExcelFile.cs" />
-    <Compile Include="Services\RevenueExcelWriter.cs" />
+    <Compile Include="Services\ReportExcelWriter.cs" />
     <Compile Include="Services\MySqlStaffReservationService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
+    <Compile Include="ViewModels\ReportExportWorkflow.cs" />
     <Page Include="Views\ServiceSalesReportWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\ServiceSalesReportWindow.xaml.cs"><DependentUpon>ServiceSalesReportWindow.xaml</DependentUpon></Compile>
     <Compile Include="Data\MySqlIdentityStore.cs" />

@@ -8,6 +8,7 @@ namespace MusicBoxManagement.Wpf.Models
         public DateTime FromDate { get; internal set; }
         public DateTime ToDate { get; internal set; }
         public DateTimeOffset CheckedAt { get; internal set; }
+        public bool CanExport { get; internal set; }
         public int TotalCount { get; internal set; }
         public IReadOnlyList<BookingStatusRow> Rows { get; internal set; }
     }

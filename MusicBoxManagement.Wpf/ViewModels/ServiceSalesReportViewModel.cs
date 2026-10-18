@@ -15,6 +15,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private readonly LoginSession actor;
         private DateTime? from, to;
         private int? serviceId;
+        private int selectedTab;
         private bool busy;
         private ServiceSalesReport report;
         private string status = "Đang tải báo cáo…";
@@ -32,6 +33,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public int? SelectedServiceId { get => serviceId; set { if (busy || serviceId == value) return; serviceId = value; FilterChanged(); } }
         public bool IsBusy => busy;
         public bool CanSearch => !busy;
+        public bool CanExport => !busy && report != null && report.CanExport;
+        public int SelectedTab { get => selectedTab; set { if (busy || selectedTab == value || value < 0 || value > 1) return; selectedTab = value; Notify(); } }
         public ServiceSalesReport Report => report;
         public string Status => status;
         public string Summary => report == null ? "" : "Đã bán " + report.TotalQuantity.ToString("N0", CultureInfo.GetCultureInfo("vi-VN"))
@@ -63,11 +66,29 @@ namespace MusicBoxManagement.Wpf.ViewModels
             }
             finally { busy = false; Changed(); }
         }
+        public async Task ExportAsync(Func<string, string> choosePath)
+        {
+            if (!CanExport) return;
+            if (choosePath == null) throw new ArgumentNullException(nameof(choosePath));
+            var loaded = report; var topItems = selectedTab == 1; busy = true; Changed();
+            try
+            {
+                var saved = await ReportExportWorkflow.RunAsync(() => service.Export(actor, loaded.FromDate, loaded.ToDate, loaded.ServiceId, topItems), choosePath);
+                status = saved ? "Đã xuất Excel theo tab và bộ lọc đang xem. Bấm Xem báo cáo để cập nhật lại bảng." : "Đã hủy xuất Excel; chưa ghi file.";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Clear(); Services.Clear(); from = to = null; serviceId = null; selectedTab = 0;
+                status = "Không còn quyền xuất báo cáo hoặc phiên đã hết hiệu lực. Chưa ghi file; hãy tải lại quyền/báo cáo.";
+            }
+            catch (Exception error) { status = error is ArgumentException || error is InvalidOperationException ? error.Message : "Chưa xuất được Excel. Kiểm tra thư mục lưu hoặc đóng file đang mở rồi thử lại."; }
+            finally { busy = false; Changed(); }
+        }
         private void FilterChanged() { Clear(); status = "Bộ lọc đã đổi. Bấm Xem báo cáo để tải lại."; Changed(); }
         private void Clear() { report = null; Rows.Clear(); TopItems.Clear(); }
         private void Changed()
         {
-            foreach (var property in new[] { nameof(FromDate), nameof(ToDate), nameof(SelectedServiceId), nameof(IsBusy), nameof(CanSearch), nameof(Report), nameof(Summary), nameof(Status) }) Notify(property);
+            foreach (var property in new[] { nameof(FromDate), nameof(ToDate), nameof(SelectedServiceId), nameof(SelectedTab), nameof(IsBusy), nameof(CanSearch), nameof(CanExport), nameof(Report), nameof(Summary), nameof(Status) }) Notify(property);
         }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
