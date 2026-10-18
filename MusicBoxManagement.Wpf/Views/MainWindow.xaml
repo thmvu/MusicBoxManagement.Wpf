@@ -75,6 +75,7 @@
                             <Button x:Name="AccountsButton" Style="{StaticResource SidebarButton}" Content="Nhân viên" Click="ShowAccounts_Click" Visibility="Collapsed"/>
                             <Button x:Name="PermissionsButton" Style="{StaticResource SidebarButton}" Content="Ma trận quyền" Click="ShowPermissions_Click" Visibility="Collapsed"/>
                             <Button x:Name="AuditButton" Style="{StaticResource SidebarButton}" Content="Nhật ký" Click="ShowAudit_Click" Visibility="Collapsed"/>
+                            <Button x:Name="ReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo doanh thu" Click="ShowReports_Click" Visibility="Collapsed"/>
                             <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
                             <Separator Background="#51616D" Margin="12,10,12,14"/>
                             <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Bảng điều hành" Click="RefreshAccess_Click"/>

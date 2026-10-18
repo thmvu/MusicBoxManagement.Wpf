@@ -36,6 +36,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningAccounts;
         private bool isOpeningPermissions;
         private bool isOpeningAudit;
+        private bool isOpeningReports;
         private readonly DashboardViewModel dashboard;
         private readonly SemaphoreSlim accessGate = new SemaphoreSlim(1, 1);
         private LoginSession session;
@@ -140,6 +141,7 @@ namespace MusicBoxManagement.Wpf.Views
                 AccountsButton.Visibility = access.Permissions.ContainsKey("User.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 PermissionsButton.Visibility = access.Permissions.ContainsKey("Permission.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 AuditButton.Visibility = access.Permissions.ContainsKey("Audit.View") ? Visibility.Visible : Visibility.Collapsed;
+                ReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
                 OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
@@ -200,6 +202,7 @@ namespace MusicBoxManagement.Wpf.Views
             AccountsButton.Visibility = Visibility.Collapsed;
             PermissionsButton.Visibility = Visibility.Collapsed;
             AuditButton.Visibility = Visibility.Collapsed;
+            ReportsButton.Visibility = Visibility.Collapsed;
             OrdersButton.Visibility = Visibility.Collapsed;
             CalendarButton.Visibility = Visibility.Collapsed;
             dashboard.Reset(null);
@@ -412,6 +415,20 @@ namespace MusicBoxManagement.Wpf.Views
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền xem hóa đơn. Hãy kiểm tra lại quyền.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được danh sách hóa đơn. Hãy thử lại.", "Music Box"); }
             finally { isOpeningInvoices = false; InvoicesButton.IsEnabled = true; await RefreshAccessAsync(); }
+        }
+
+        private async void ShowReports_Click(object sender, RoutedEventArgs args)
+        {
+            if (isOpeningReports) return; isOpeningReports = true; ReportsButton.IsEnabled = false;
+            try
+            {
+                var actor = session; var route = await Task.Run(() => reservations.ForReports(actor));
+                if (session != actor) return;
+                new RevenueReportWindow(new RevenueReportViewModel(route, actor)) { Owner = this }.ShowDialog();
+            }
+            catch (UnauthorizedAccessException) { MessageBox.Show(this, "Không còn quyền xem báo cáo hoặc phiên đã hết hiệu lực.", "Music Box"); }
+            catch (Exception) { MessageBox.Show(this, "Chưa mở được báo cáo. Hãy thử lại.", "Music Box"); }
+            finally { isOpeningReports = false; ReportsButton.IsEnabled = true; await RefreshAccessAsync(); }
         }
 
         private async void ShowAudit_Click(object sender, RoutedEventArgs args)

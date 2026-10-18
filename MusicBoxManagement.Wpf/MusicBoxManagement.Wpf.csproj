@@ -66,6 +66,13 @@
     <Compile Include="Services\MySqlRoomService.cs" />
     <Compile Include="Services\MySqlServiceCatalogService.cs" />
     <Compile Include="Services\MySqlCustomerService.cs" />
+    <Compile Include="Services\MySqlAvailabilityService.cs" />
+    <Compile Include="Services\MySqlScheduleRules.cs" />
+    <Compile Include="Models\RevenueReport.cs" />
+    <Compile Include="Services\ReportService.cs" />
+    <Compile Include="ViewModels\RevenueReportViewModel.cs" />
+    <Page Include="Views\RevenueReportWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\RevenueReportWindow.xaml.cs"><DependentUpon>RevenueReportWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\AuditLogEntry.cs" />
     <Compile Include="Services\AuditLogService.cs" />
     <Compile Include="ViewModels\AuditLogViewModel.cs" />
