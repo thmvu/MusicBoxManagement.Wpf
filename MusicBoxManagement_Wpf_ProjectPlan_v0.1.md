@@ -8,10 +8,10 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
-| WPF đang chạy SQLite | **8e.2 sử dụng phòng**: service/UI lượt hoàn tất và tỷ lệ theo ca tiêu chuẩn, CreatedAt/now/Room, gồm phòng khóa và Report.View hiện hành | Booking/status, món/top món và Excel; lịch sử khách/tài liệu |
-| MySQL Aiven | **4b booking/NoShow**: tạo Guest/Staff, chuẩn hóa/tìm-tạo khách, quyền/lịch/clock/transaction/audit, hủy Staff và NoShow | Đọc/preview/lookup public-staff booking, calendar và các nhóm nghiệp vụ |
+| WPF đang chạy SQLite | **8e.3 booking/status**: service/UI 5 trạng thái, lọc StartTime Việt Nam, NoShow hiệu lực đúng +15 phút, chỉ đọc và Report.View hiện hành | Doanh thu/top món và Excel; lịch sử khách/tài liệu |
+| MySQL Aiven | **4c.1 booking reads**: catalog/preview/create/day/image theo IBookingService, public/staff tách quyền, lịch public 28 ô chỉ trống/bận | Danh sách/tra cứu/hủy Guest booking, calendar nội bộ và các nhóm nghiệp vụ |
 
-Xem [8e.2](docs/Step8e2_RoomUsageReports.md) và [migration 4b](docs/MySql_Migration_04b_Reservations.md). App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng.
+Xem [8e.3](docs/Step8e3_BookingStatusReport.md) và [migration 4c.1](docs/MySql_Migration_04c1_BookingReads.md). App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng.
 
 ## Cập nhật migration ngày 18/10/2026
 
@@ -23,7 +23,7 @@ Bước **3a loại phòng MySQL** đã có MySqlRoomTypeService List/GetForEdit
 
 Bước **3b phòng MySQL** đã có MySqlRoomService đọc/thêm/sửa/thay ảnh/đổi loại/khóa-mở; quyền/stale/Active/Confirmed/grace/clock và audit cùng transaction, thư mục ảnh local cấu hình riêng. Giữ ảnh mới nếu COMMIT chưa rõ kết quả để tránh xóa ảnh có thể đã được tham chiếu; chưa upload ảnh online. Kết quả và giới hạn tại [báo cáo 3b](docs/MySql_Migration_03b_Rooms.md).
 
-**Ứng dụng đang chạy vẫn dùng SQLite.** Schema giữ SQLite v8/MySQL v1; chưa nhập dữ liệu hoặc nối UI sang MySQL. Đã thêm 3c dịch vụ và 3d khách/SĐT (xem nhánh song song phía trên); đã có 4a availability và 4b tạo booking/NoShow; tiếp theo các đường đọc/preview/tra cứu booking, rồi session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; các đường service MySQL đã có được cập nhật ở 2a/2b/3a/3b. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
+**Ứng dụng đang chạy vẫn dùng SQLite.** Schema giữ SQLite v8/MySQL v1; chưa nhập dữ liệu hoặc nối UI sang MySQL. Đã thêm 3c dịch vụ và 3d khách/SĐT (xem nhánh song song phía trên); đã có 4a availability và 4b tạo booking/NoShow; đã có 4c.1 catalog/preview/lịch public; tiếp theo danh sách/tra cứu/hủy Guest booking, rồi session/món/thanh toán và dữ liệu/UI theo thứ tự plan. Bảng ngày 14/10 bên dưới là mốc lịch sử; các đường service MySQL đã có được cập nhật ở 2a/2b/3a/3b. Không nâng tỷ lệ hoàn thành chỉ từ kết quả build.
 
 ## Tổng hợp hiện trạng ngày 14/10/2026
 
