@@ -65,6 +65,12 @@
     <Compile Include="Services\MySqlRoomTypeService.cs" />
     <Compile Include="Services\MySqlRoomService.cs" />
     <Compile Include="Services\MySqlServiceCatalogService.cs" />
+    <Compile Include="Services\MySqlCustomerService.cs" />
+    <Compile Include="Models\AuditLogEntry.cs" />
+    <Compile Include="Services\AuditLogService.cs" />
+    <Compile Include="ViewModels\AuditLogViewModel.cs" />
+    <Page Include="Views\AuditLogWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\AuditLogWindow.xaml.cs"><DependentUpon>AuditLogWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\RolePermissionMatrix.cs" />
     <Compile Include="Services\PermissionManagementService.cs" />
     <Compile Include="ViewModels\PermissionsViewModel.cs" />
