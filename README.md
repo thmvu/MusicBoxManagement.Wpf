@@ -2,10 +2,10 @@
 
 Cập nhật 18/10/2026 — làm song song theo yêu cầu người dùng:
 
-- **WPF có Báo cáo doanh thu**: Admin/Manager có Report.View → chọn kỳ, nhóm ngày/tháng/loại phòng và lọc loại phòng đã chốt; xem số hóa đơn/tiền phòng/dịch vụ/tổng. Xem [cách dùng và kiểm tra 8e.1](docs/Step8e1_RevenueReports.md).
-- **Aiven có kiểm tra trống/bận 4a**: giờ Việt Nam, ca/slot/grace, lịch phòng và khách, khóa tài nguyên trong writer. Xem [migration 4a](docs/MySql_Migration_04a_Availability.md).
+- **WPF có Báo cáo sử dụng phòng**: Admin/Manager có Report.View → chọn kỳ/phòng, xem lượt hoàn tất và tỷ lệ dùng theo lịch mở cửa tiêu chuẩn; gồm phòng đang khóa. Xem [cách dùng và kiểm tra 8e.2](docs/Step8e2_RoomUsageReports.md).
+- **Aiven có tạo booking/NoShow 4b**: Guest/Staff, tìm-tạo khách theo SĐT, lịch trùng/quyền/clock/audit trong transaction; hủy Staff và xử lý NoShow. Xem [migration 4b](docs/MySql_Migration_04b_Reservations.md).
 
-**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF bổ sung báo cáo phòng/booking/dịch vụ và Excel; Aiven port tạo booking/NoShow; trước đổi App phải đủ service (gồm ma trận quyền và đọc nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng.
+**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF bổ sung báo cáo booking/dịch vụ và Excel; Aiven port các đường đọc/preview/tra cứu booking; trước đổi App phải đủ service (gồm ma trận quyền và đọc nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 
