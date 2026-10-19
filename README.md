@@ -1,6 +1,8 @@
 # Music Box Management — WPF
 
-Cập nhật 18/10/2026 — làm song song theo yêu cầu người dùng:
+Cập nhật 19/10/2026 — làm song song theo yêu cầu người dùng:
+
+- **Lịch sử khách 8f.1 (service)**: đọc booking/phiên/hóa đơn theo CustomerId, số phiên hoàn tất và lần bắt đầu sử dụng thực tế gần nhất; Customer.View và Invoice.View riêng. Chưa nối giao diện, tiếp theo 8f.2. Xem [quy tắc và kiểm tra](docs/Step8f1_CustomerHistory.md).
 
 - **WPF có Doanh thu và top món 8e.4**: Admin/Manager Report.View, lọc PaidAt và dịch vụ (gồm ngừng bán), giá/tên snapshot, nhóm ServiceId và Top10 theo số lượng. Xem [cách dùng và kiểm tra](docs/Step8e4_ServiceSalesReports.md). Các báo cáo doanh thu/phòng/booking trước đó vẫn giữ.
 - **Excel báo cáo 8e.5a–8e.5b**: doanh thu, sử dụng phòng, booking và món/top món đều có Xuất Excel theo kỳ/bộ lọc/tab đang xem. Cần Report.View + Report.Export, file có bộ lọc/thời điểm/tổng phù hợp và giữ chính xác tiền lớn. Xem [doanh thu](docs/Step8e5a_RevenueExcel.md) và [phòng/booking/món](docs/Step8e5b_ReportTablesExcel.md).

@@ -116,8 +116,10 @@
     <Compile Include="Data\RoomUsageSchema.cs" />
     <Compile Include="Data\ServiceSchema.cs" />
     <Compile Include="Models\Customer.cs" />
+    <Compile Include="Models\CustomerHistory.cs" />
     <Compile Include="Services\PhoneNumberNormalizer.cs" />
     <Compile Include="Services\CustomerService.cs" />
+    <Compile Include="Services\CustomerHistoryService.cs" />
     <Compile Include="ViewModels\CustomersViewModel.cs" />
     <Page Include="Views\CustomersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\CustomersWindow.xaml.cs"><DependentUpon>CustomersWindow.xaml</DependentUpon></Compile>
