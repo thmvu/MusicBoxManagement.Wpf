@@ -58,6 +58,8 @@ Bước **3b phòng MySQL** đã có MySqlRoomService đọc/thêm/sửa/thay �
 4. Hoàn thiện ma trận quyền Staff/Manager, UI nhật ký, báo cáo/Excel, lịch sử khách hàng; không thêm quyền riêng từng user hoặc chi điện/mặt bằng.
 5. Hoàn thiện ERD và từ điển dữ liệu, demo/kiểm thử cuối. Có thể dựng ERD bản đầu song song với migration rồi cập nhật theo schema thực tế.
 
+MySQL 4d ngày 20/10/2026: đã thêm [Calendar service nội bộ](docs/MySql_Migration_04d_Calendar.md), build Debug/Release đạt; kiểm tra online chưa nghiệm thu do hostname Aiven không phân giải DNS. Không chuyển provider/schema, cần chạy lại online khi kết nối phục hồi. Có [ERD nhóm lịch sử khách](docs/ERD_CustomerHistory.md), chưa phải bộ ERD đầy đủ.
+
 ### ERD là đầu việc bắt buộc cho báo cáo
 
 Người dùng xác nhận ngày 14/10/2026: sơ đồ ERD rất quan trọng để làm báo cáo. Giữ các đầu ra sau trong scope:

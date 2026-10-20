@@ -1,5 +1,13 @@
 # Music Box WPF
 
+## MySQL 4d — Calendar (20/10/2026, chưa nghiệm thu online)
+
+Đã port MySqlCalendarService.Read theo Calendar.View trong RR read-only/single IClock, dùng MySqlScheduleRules và CalendarRange/DTO nội bộ, giữ Holds/Events/CurrentStatus/actual/expected/walk-in/locked history; không maintenance/DDL/provider/schema changes. Xem docs/MySql_Migration_04d_Calendar.md. Debug/Release VerifyCalendarMySqlDebug/Release build đạt, SQLite Calendar/Availability đạt. Fixture Verify-MySqlCalendar đã compile ở cả hai build nhưng online lỗi DNS Aiven (host không tồn tại), chưa xác nhận assertions MySQL. Khi DNS phục hồi chạy MySqlCalendar Debug/Release và MySqlAvailability/Reservations/Foundation trước nghiệm thu. Session fixture chỉ projection, chưa check-in/checkout MySQL thật. App vẫn SQLite; Guest lookup đầy đủ/session/order/billing/checkout/quản trị/báo cáo/cutover tiếp tục giữ scope.
+
+## Tài liệu ERD nhóm lịch sử khách — 20/10/2026
+
+Đã thêm docs/ERD_CustomerHistory.md: Mermaid theo MySqlSchema.sql v1, đối chiếu SQLite RoomUsageSchema/InvoiceSchema v8, từ điển các cột liên quan lịch sử, null/FK/unique/Active generated-vs-partial/snapshot và ranh giới DB/service. Chỉ đọc DDL trong repo, không introspect cloud hoặc đổi runtime/dữ liệu. Chưa hoàn thành ERD tổng thể/các nhóm còn lại/từ điển đầy đủ/bản xuất hình; UI lịch sử vẫn là bước 8f.2. Thay đổi tài liệu, kiểm tra git diff --check và đối chiếu nguồn; không tuyên bố đã build/test runtime trong lượt này.
+
 ## Yêu cầu đã chốt với người dùng
 
 - Đây là project riêng: WPF trên .NET Framework 4.7.2 và SQLite.

@@ -1,5 +1,9 @@
 # Music Box Management — WPF
 
+MySQL 4d (20/10/2026): đã thêm [service lịch nội bộ](docs/MySql_Migration_04d_Calendar.md), build Debug/Release đạt; kiểm tra online đang bị chặn bởi DNS Aiven, chưa nghiệm thu. App vẫn SQLite.
+
+Tài liệu báo cáo mới 20/10/2026: [ERD nhóm khách hàng → booking → phiên → hóa đơn](docs/ERD_CustomerHistory.md), có nguồn Mermaid chỉnh sửa được, từ điển liên kết và phân biệt ràng buộc database/quy tắc service. Chưa phải bộ ERD tổng thể hoàn chỉnh.
+
 Cập nhật 19/10/2026 — làm song song theo yêu cầu người dùng:
 
 - **Lịch sử khách 8f.1 (service)**: đọc booking/phiên/hóa đơn theo CustomerId, số phiên hoàn tất và lần bắt đầu sử dụng thực tế gần nhất; Customer.View và Invoice.View riêng. Chưa nối giao diện, tiếp theo 8f.2. Xem [quy tắc và kiểm tra](docs/Step8f1_CustomerHistory.md).
