@@ -1,5 +1,17 @@
 # Music Box WPF
 
+## Bàn giao migration MySQL — bắt buộc cập nhật từ 21/10/2026
+
+Người dùng yêu cầu mỗi phần chuyển phải lưu tiến độ trong Git để người pull không làm lại. **Trước nhận việc MySQL đọc docs/MySql_Migration_Status.md**, chọn phần chưa hoàn tất; cập nhật bảng này cùng code/test/báo cáo/README/plan rồi commit/push. Phân biệt Có code / Đạt online / Nhập dữ liệu thật / App đổi provider. Không đánh dấu xong chỉ vì build/schema/seed/test GUID. Bảng có nhật ký nhập riêng; hiện chưa nhập dữ liệu thật hoặc Content, App/worker vẫn SQLite v8, đích MySQL v1.
+
+Ngày 21/10: 4d Calendar đã sửa dùng ReadAccess + Calendar.View trong RR read-only (Demand cũ chỉ chấp nhận writer Serializable), online Debug/Release đạt. MySqlAvailability/Reservations/Foundation online Debug đạt. Lỗi DNS của báo cáo 20/10 là lịch sử, không còn là kết quả mới nhất. Không sửa quyền writer chung để nới transaction đọc.
+
+04e.1 MySqlRoomSessionService.CheckIn đã có: quyền Session.CheckIn độc lập View/Create/CRUD, khám phá ID ngoài writer lock, Serializable Room → Customer → LockCandidates NoShow → Reservation, đọc lại nguồn/session rồi một clock; Confirmed/grace/ca/Room-Customer overlap/Active, actual ticks/full duration/nhận sớm không ép slot, snapshot và CheckedIn/audit cùng commit. Replay Active/Completed kiểm tra quyền, không đổi dữ liệu/clock/audit; rollback và lock/unique/deadlock báo kiểm tra lại. Không chạy ProcessExpired khi check-in thất bại. Khóa candidate theo ID tránh đảo khóa source/NoShow; có thể chờ phòng khác như Reservation writer, không advisory lock toàn app. Xem docs/MySql_Migration_04e1_CheckIn.md.
+
+Build VerifyMigrationDebug/Release đạt. Verify-MySqlCheckIn bản test cuối online cả hai build đạt: CheckIn-only/revoke/stamp, early/ticks/duration/grace/ca/overlap/Active/locked/cancelled, snapshot/replay Completed fixture/audit rollback, concurrent replay/Room/Customer, hai thứ tự NoShow writer thật và clock sau chờ Room qua grace. SQLite Debug CheckIn/Availability/Reservations/Calendar/Foundation đạt. Tests chỉ GUID DB/thư mục tạm; không thay dữ liệu/ảnh thật. AuthenticationUi Debug đạt, render 131 ảnh. Thay đổi định dạng csproj có sẵn giữ ngoài commit.
+
+**Tiếp đúng 04e.2 walk-in**, sau đó đọc phiên/gia hạn/Guest lookup đầy đủ, Order/Billing/checkout/invoice và dashboard/quản trị/ma trận quyền/audit/báo cáo/Excel/lịch sử. Không làm lại 01–04e.1 đã nghiệm thu; cần hồi quy khi chạm luồng. Giữ ERD tổng thể/từ điển/bản xuất/demo, công cụ backup/import/đối chiếu ID/FK/timestamp/decimal/snapshot + Content/UI trước cutover. Writer mới dùng cùng thứ tự khóa và audit/current permission/clock; bổ sung cạnh tranh với check-in/NoShow thật.
+
 ## WPF 8f.2 — UI lịch sử khách (21/10/2026)
 
 Đã nối CustomersWindow.HistoryButton (CanHistory) → modal CustomerHistoryWindow/CustomerHistoryViewModel → CustomerHistoryService.Read 8f.1. Có Customer hiện hành/CompletedSessionCount/LastUsedAt và tab Booking (trạng thái lưu)/Session (snapshot, actual/expected, walk-in)/Invoice summaries theo Invoice.View hiện hành; thiếu quyền báo rõ, khác khách chưa có hóa đơn. UTC+7 có giây, tiền vi-VN, bảng cuộn ngang/dọc, nút đầu form dùng được ở 900×540; child tối thiểu 900×580. View-only dùng được, không cần Customer.Create/Edit/Reservation.View/Session.View. Không mở/in hóa đơn ngầm hoặc Guest route. Xem docs/Step8f2_CustomerHistoryUi.md.

@@ -26,7 +26,8 @@ namespace MusicBoxManagement.Wpf.Services
             using (var connection = database.OpenConnection())
             using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
             {
-                permissions.Demand(session, "Calendar.View", connection, transaction);
+                var access = permissions.ReadAccess(session, connection, transaction);
+                if (!access.Permissions.ContainsKey("Calendar.View")) throw new UnauthorizedAccessException("Cần quyền xem lịch phòng.");
                 if (range == null) throw new ArgumentException("Cần chọn ngày hoặc tuần.");
                 var now = clock.UtcNow.ToUniversalTime();
                 var rooms = new List<RoomSchedule>();

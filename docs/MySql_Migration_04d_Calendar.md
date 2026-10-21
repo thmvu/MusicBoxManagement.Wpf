@@ -1,5 +1,9 @@
 # MySQL 4d — Service lịch nội bộ
 
+## Nghiệm thu bổ sung 21/10/2026
+
+Kết nối online đã hoạt động. Lượt chạy thực phát hiện Read gọi MySqlPermissionService.Demand dành cho writer Serializable trong transaction đọc RR; đã đổi sang ReadAccess + kiểm tra Calendar.View trong cùng read snapshot, giữ nguyên ranh giới quyền/PII và chế độ read-only. Verify-MySqlCalendar **online Debug/Release đạt** trên bin/VerifyMigrationDebug/Release. Hồi quy MySqlAvailability/MySqlReservations/MySqlFoundation online Debug đạt. Các DB GUID đã dọn, không đổi dữ liệu thật/provider. Nhật ký 20/10 dưới đây là lịch sử; trạng thái hiện tại đã nghiệm thu. Bảng chung: [MySql_Migration_Status.md](MySql_Migration_Status.md).
+
 Ngày 20/10/2026. Port đường đọc CalendarService sang MySqlCalendarService, đối chiếu mục 38 và lịch ngày/tuần của plan. Chưa nối UI/provider, giữ schema MySQL v1 và SQLite v8.
 
 ## Cách hoạt động
