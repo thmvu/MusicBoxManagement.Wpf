@@ -1,5 +1,13 @@
 # Music Box WPF
 
+## MySQL 04e.2 — Walk-in (21/10/2026)
+
+Đã thêm ListWalkInRooms/PreviewWalkIn/CreateWalkIn/ReadWalkIn/ReadWalkInReceipt vào MySqlRoomSessionService. WalkIn-only không đòi Room/Customer CRUD hoặc Reservation/Session.View; read chung cần Session.View, receipt WalkIn-only phải đúng actor trong audit. RR read-only dùng ReadAccess + permission, không maintenance; writer Serializable Room → canonical Customer/tạo mới → LockCandidates → một clock → ca/NoShow/availability/snapshot/session/audit cùng commit. Giữ SĐT chuẩn hóa/tên cũ, actual ticks, null Reservation/Expected/ActualEnd, ReturnBy động theo ca gốc/Room/Customer, không future hold/auto checkout/gia hạn walk-in. Check-in reader dùng chung mapping, không đổi hợp đồng replay. Xem docs/MySql_Migration_04e2_WalkIn.md và bảng bàn giao.
+
+Build VerifyWalkInMySqlDebug/Release đạt. Verify-MySqlWalkIn bản test cuối online Debug/Release đạt, gồm preview grace không ghi NoShow và đúng một session/log sau retry. Hồi quy MySqlCheckIn/Calendar/Availability/Reservations/Foundation online Debug đạt; SQLite Debug WalkIn/CheckIn/Availability/Calendar/Reservations/Rooms/Customers/Authentication/Foundation/GuestCalendar và AuthenticationUi (131 ảnh) đạt. Trong race worker NoShow/walk-in, InnoDB có thể từ chối một writer bằng 1213/1205; API báo thử lại, test chỉ retry phần chưa xong tối đa một lần sau khi cả hai kết thúc rồi kiểm tra không trùng session/log, không đòi cả hai commit ngay.
+
+Tiếp **04e.3 đọc phiên/gia hạn Staff**, sau đó Guest session/lookup/hủy đầy đủ, Order/Billing/checkout/invoice/admin/report/Excel/history và import/UI trước cutover. Không làm lại 04e.2 khi bảng bàn giao đã nghiệm thu. Theo yêu cầu mới nhất, chỉnh giao diện để sau, hiện tiếp tục migration; lượt này chưa sửa App resources hoặc layout. Runtime vẫn SQLite v8/MySQL v1; không nhập dữ liệu/ảnh thật. Thay đổi định dạng csproj có sẵn giữ ngoài commit.
+
 ## Bàn giao migration MySQL — bắt buộc cập nhật từ 21/10/2026
 
 Người dùng yêu cầu mỗi phần chuyển phải lưu tiến độ trong Git để người pull không làm lại. **Trước nhận việc MySQL đọc docs/MySql_Migration_Status.md**, chọn phần chưa hoàn tất; cập nhật bảng này cùng code/test/báo cáo/README/plan rồi commit/push. Phân biệt Có code / Đạt online / Nhập dữ liệu thật / App đổi provider. Không đánh dấu xong chỉ vì build/schema/seed/test GUID. Bảng có nhật ký nhập riêng; hiện chưa nhập dữ liệu thật hoặc Content, App/worker vẫn SQLite v8, đích MySQL v1.
@@ -10,7 +18,7 @@ Ngày 21/10: 4d Calendar đã sửa dùng ReadAccess + Calendar.View trong RR re
 
 Build VerifyMigrationDebug/Release đạt. Verify-MySqlCheckIn bản test cuối online cả hai build đạt: CheckIn-only/revoke/stamp, early/ticks/duration/grace/ca/overlap/Active/locked/cancelled, snapshot/replay Completed fixture/audit rollback, concurrent replay/Room/Customer, hai thứ tự NoShow writer thật và clock sau chờ Room qua grace. SQLite Debug CheckIn/Availability/Reservations/Calendar/Foundation đạt. Tests chỉ GUID DB/thư mục tạm; không thay dữ liệu/ảnh thật. AuthenticationUi Debug đạt, render 131 ảnh. Thay đổi định dạng csproj có sẵn giữ ngoài commit.
 
-**Tiếp đúng 04e.2 walk-in**, sau đó đọc phiên/gia hạn/Guest lookup đầy đủ, Order/Billing/checkout/invoice và dashboard/quản trị/ma trận quyền/audit/báo cáo/Excel/lịch sử. Không làm lại 01–04e.1 đã nghiệm thu; cần hồi quy khi chạm luồng. Giữ ERD tổng thể/từ điển/bản xuất/demo, công cụ backup/import/đối chiếu ID/FK/timestamp/decimal/snapshot + Content/UI trước cutover. Writer mới dùng cùng thứ tự khóa và audit/current permission/clock; bổ sung cạnh tranh với check-in/NoShow thật.
+**Tiếp 04e.3 đọc phiên/gia hạn Staff** (04e.2 đã nghiệm thu ở mục mới nhất phía trên), sau đó Guest lookup đầy đủ, Order/Billing/checkout/invoice và dashboard/quản trị/ma trận quyền/audit/báo cáo/Excel/lịch sử. Không làm lại 01–04e.2 đã nghiệm thu; cần hồi quy khi chạm luồng. Giữ ERD tổng thể/từ điển/bản xuất/demo, công cụ backup/import/đối chiếu ID/FK/timestamp/decimal/snapshot + Content/UI trước cutover. Writer mới dùng cùng thứ tự khóa và audit/current permission/clock; bổ sung cạnh tranh với check-in/NoShow thật.
 
 ## WPF 8f.2 — UI lịch sử khách (21/10/2026)
 

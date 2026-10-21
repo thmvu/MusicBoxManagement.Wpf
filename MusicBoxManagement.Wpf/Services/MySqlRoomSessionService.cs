@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using MusicBoxManagement.Wpf.Data;
 using MusicBoxManagement.Wpf.Models;
@@ -86,14 +87,135 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;
                 transaction.Commit(); return created;
             }
         }
+        public List<PublicRoom> ListWalkInRooms(LoginSession actor)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
+            {
+                DemandRead(actor, "Session.WalkIn", connection, transaction);
+                return MySqlGuestBookingService.ReadRooms(connection, transaction);
+            }
+        }
+        public WalkInPreview PreviewWalkIn(LoginSession actor, WalkInRequest request)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
+            using (var command = connection.CreateCommand())
+            {
+                DemandRead(actor, "Session.WalkIn", connection, transaction);
+                if (request == null) throw new ArgumentException("Cần chọn phòng và nhập thông tin khách.");
+                ValidateName(request.FullName);
+                var phone = PhoneNumberNormalizer.Normalize(request.PhoneNumber);
+                var now = clock.UtcNow.ToUniversalTime();
+                command.Transaction = transaction; command.CommandText = "SELECT CustomerId FROM Customers WHERE PhoneNumber=@phone;";
+                command.Parameters.AddWithValue("@phone", phone);
+                var found = command.ExecuteScalar(); var customer = found == null ? 0 : Convert.ToInt32(found);
+                var check = availability.CheckWalkInAt(connection, transaction, request.RoomId, customer, now);
+                var result = new WalkInPreview { CanReceive = check.CanBook, Reason = check.Reason, CheckedAt = now };
+                if (check.CanBook)
+                {
+                    result.ReturnBy = MySqlScheduleRules.WalkInReturnBy(connection, transaction, request.RoomId, customer, now, now);
+                    command.CommandText = "SELECT t.PricePerHour FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;";
+                    command.Parameters.AddWithValue("@room", request.RoomId); result.HourlyRate = Convert.ToInt64(command.ExecuteScalar());
+                }
+                return result;
+            }
+        }
+        public WalkInResult CreateWalkIn(LoginSession actor, WalkInRequest request)
+        {
+            try { return CreateWalkInCore(actor, request); }
+            catch (MySqlException error) when (error.Number == 1062 || error.Number == 1213 || error.Number == 1205)
+            { throw new InvalidOperationException("Phòng hoặc SĐT vừa được cập nhật. Hãy kiểm tra lại trước khi nhận khách.", error); }
+        }
+        private WalkInResult CreateWalkInCore(LoginSession actor, WalkInRequest request)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = MySqlDatabase.BeginWriteTransaction(connection))
+            using (var command = connection.CreateCommand())
+            {
+                permissions.Demand(actor, "Session.WalkIn", connection, transaction);
+                if (request == null) throw new ArgumentException("Cần nhập thông tin khách trực tiếp.");
+                var name = ValidateName(request.FullName); var phone = PhoneNumberNormalizer.Normalize(request.PhoneNumber);
+                var room = request.RoomId;
+                MySqlAvailabilityService.LockResources(connection, transaction, room, null);
+                command.Transaction = transaction;
+                command.CommandText = "SELECT CustomerId FROM Customers WHERE PhoneNumber=@phone FOR UPDATE;";
+                command.Parameters.AddWithValue("@phone", phone);
+                var found = command.ExecuteScalar(); int customer; var newCustomer = false;
+                if (found != null) customer = Convert.ToInt32(found);
+                else
+                {
+                    command.CommandText = "INSERT INTO Customers(FullName,PhoneNumber) VALUES(@name,@phone); SELECT LAST_INSERT_ID();";
+                    command.Parameters.AddWithValue("@name", name); customer = Convert.ToInt32(command.ExecuteScalar()); newCustomer = true;
+                }
+                MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
+                MySqlNoShowService.LockCandidates(connection, transaction);
+                var now = clock.UtcNow.ToUniversalTime(); BookingHours.GetOpenShiftEnd(now);
+                MySqlNoShowService.ProcessExpiredAt(connection, transaction, now);
+                if (newCustomer) MySqlAuditService.WriteStaff(connection, transaction, actor.UserId, "Customer.Create", "Customer",
+                    customer.ToString(CultureInfo.InvariantCulture), "Tạo khách hàng từ nhận khách trực tiếp.", now);
+                var check = availability.CheckWalkInAt(connection, transaction, room, customer, now);
+                if (!check.CanBook) throw new InvalidOperationException(check.Reason);
+                command.Parameters.Clear();
+                command.CommandText = @"INSERT INTO RoomSessions(CustomerId,RoomId,ActualStartTime,HourlyRate,
+RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status)
+SELECT @customer,r.RoomId,@now,t.PricePerHour,r.RoomCode,t.Code,t.Name,'Active'
+FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room; SELECT LAST_INSERT_ID();";
+                command.Parameters.AddWithValue("@customer", customer); command.Parameters.AddWithValue("@room", room); command.Parameters.AddWithValue("@now", Utc(now));
+                var id = Convert.ToInt32(command.ExecuteScalar());
+                var created = ReadSession(connection, transaction, id, false);
+                var returnBy = MySqlScheduleRules.WalkInReturnBy(connection, transaction, room, customer, now, now);
+                MySqlAuditService.WriteStaff(connection, transaction, actor.UserId, "Session.WalkIn", "RoomSession", id.ToString(CultureInfo.InvariantCulture),
+                    "Nhận khách trực tiếp phòng " + created.RoomCodeSnapshot + "; cần trả trước " + Utc(returnBy) + ".", now);
+                transaction.Commit(); return new WalkInResult { Session = created, ReturnBy = returnBy, CheckedAt = now };
+            }
+        }
+        public WalkInResult ReadWalkIn(LoginSession actor, int sessionId) => ReadWalkInCore(actor, sessionId, false);
+        public WalkInResult ReadWalkInReceipt(LoginSession actor, int sessionId) => ReadWalkInCore(actor, sessionId, true);
+        private WalkInResult ReadWalkInCore(LoginSession actor, int sessionId, bool ownReceipt)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
+            {
+                DemandRead(actor, ownReceipt ? "Session.WalkIn" : "Session.View", connection, transaction);
+                if (ownReceipt)
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.Transaction = transaction;
+                        command.CommandText = "SELECT COUNT(*) FROM AuditLog WHERE Action='Session.WalkIn' AND EntityName='RoomSession' AND EntityId=@id AND ActorType='Staff' AND UserId=@user;";
+                        command.Parameters.AddWithValue("@id", sessionId.ToString(CultureInfo.InvariantCulture)); command.Parameters.AddWithValue("@user", actor.UserId);
+                        if (Convert.ToInt64(command.ExecuteScalar()) == 0) throw new UnauthorizedAccessException("Không có quyền đọc kết quả nhận khách của nhân viên khác.");
+                    }
+                }
+                var now = clock.UtcNow.ToUniversalTime(); var current = ReadSession(connection, transaction, sessionId, false);
+                if (current == null || current.Status != "Active" || current.ReservationId.HasValue)
+                    throw new InvalidOperationException("Không tìm thấy phiên khách trực tiếp đang sử dụng.");
+                return new WalkInResult { Session = current, CheckedAt = now,
+                    ReturnBy = MySqlScheduleRules.WalkInReturnBy(connection, transaction, current.RoomId, current.CustomerId, current.ActualStartTime, now) };
+            }
+        }
+        private void DemandRead(LoginSession actor, string permission, MySqlConnection connection, MySqlTransaction transaction)
+        {
+            if (!permissions.ReadAccess(actor, connection, transaction).Permissions.ContainsKey(permission))
+                throw new UnauthorizedAccessException("Bạn không có quyền thực hiện thao tác này.");
+        }
+        private static string ValidateName(string value)
+        {
+            var name = (value ?? "").Trim();
+            if (name.Length < 1 || name.Length > 100) throw new ArgumentException("Họ tên từ 1–100 ký tự.");
+            return name;
+        }
         private static RoomSession ReadByReservation(MySqlConnection connection, MySqlTransaction transaction, int reservationId)
+            => ReadSession(connection, transaction, reservationId, true);
+        private static RoomSession ReadSession(MySqlConnection connection, MySqlTransaction transaction, int id, bool byReservation)
         {
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
                 command.CommandText = @"SELECT RoomSessionId,CustomerId,RoomId,ReservationId,ActualStartTime,ExpectedEndTime,ActualEndTime,
-HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FROM RoomSessions WHERE ReservationId=@source;";
-                command.Parameters.AddWithValue("@source", reservationId);
+HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FROM RoomSessions WHERE " + (byReservation ? "ReservationId" : "RoomSessionId") + "=@id;";
+                command.Parameters.AddWithValue("@id", id);
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read()) return null;
