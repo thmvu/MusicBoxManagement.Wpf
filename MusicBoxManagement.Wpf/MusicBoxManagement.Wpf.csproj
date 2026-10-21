@@ -122,6 +122,9 @@
     <Compile Include="Services\CustomerService.cs" />
     <Compile Include="Services\CustomerHistoryService.cs" />
     <Compile Include="ViewModels\CustomersViewModel.cs" />
+    <Compile Include="ViewModels\CustomerHistoryViewModel.cs" />
+    <Page Include="Views\CustomerHistoryWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
+    <Compile Include="Views\CustomerHistoryWindow.xaml.cs"><DependentUpon>CustomerHistoryWindow.xaml</DependentUpon></Compile>
     <Page Include="Views\CustomersWindow.xaml"><Generator>MSBuild:Compile</Generator><SubType>Designer</SubType></Page>
     <Compile Include="Views\CustomersWindow.xaml.cs"><DependentUpon>CustomersWindow.xaml</DependentUpon></Compile>
     <Compile Include="Models\ServiceItem.cs" />

@@ -4,15 +4,15 @@ MySQL 4d (20/10/2026): đã thêm [service lịch nội bộ](docs/MySql_Migrati
 
 Tài liệu báo cáo mới 20/10/2026: [ERD nhóm khách hàng → booking → phiên → hóa đơn](docs/ERD_CustomerHistory.md), có nguồn Mermaid chỉnh sửa được, từ điển liên kết và phân biệt ràng buộc database/quy tắc service. Chưa phải bộ ERD tổng thể hoàn chỉnh.
 
-Cập nhật 19/10/2026 — làm song song theo yêu cầu người dùng:
+Cập nhật 21/10/2026 — làm song song theo yêu cầu người dùng:
 
-- **Lịch sử khách 8f.1 (service)**: đọc booking/phiên/hóa đơn theo CustomerId, số phiên hoàn tất và lần bắt đầu sử dụng thực tế gần nhất; Customer.View và Invoice.View riêng. Chưa nối giao diện, tiếp theo 8f.2. Xem [quy tắc và kiểm tra](docs/Step8f1_CustomerHistory.md).
+- **Lịch sử khách 8f.2 (service + UI)**: Khách hàng → chọn khách → Xem lịch sử, ba tab Booking/Phiên/Hóa đơn và thống kê hoàn tất/lần dùng gần nhất. Liên kết CustomerId, Customer.View và Invoice.View riêng. Xem [cách dùng và kiểm tra](docs/Step8f2_CustomerHistoryUi.md).
 
 - **WPF có Doanh thu và top món 8e.4**: Admin/Manager Report.View, lọc PaidAt và dịch vụ (gồm ngừng bán), giá/tên snapshot, nhóm ServiceId và Top10 theo số lượng. Xem [cách dùng và kiểm tra](docs/Step8e4_ServiceSalesReports.md). Các báo cáo doanh thu/phòng/booking trước đó vẫn giữ.
 - **Excel báo cáo 8e.5a–8e.5b**: doanh thu, sử dụng phòng, booking và món/top món đều có Xuất Excel theo kỳ/bộ lọc/tab đang xem. Cần Report.View + Report.Export, file có bộ lọc/thời điểm/tổng phù hợp và giữ chính xác tiền lớn. Xem [doanh thu](docs/Step8e5a_RevenueExcel.md) và [phòng/booking/món](docs/Step8e5b_ReportTablesExcel.md).
 - **Aiven có booking nội bộ 4c.2a**: danh sách/chi tiết theo View, lọc ngày/SĐT/trạng thái, metadata quyền và hủy qua CancelStaff có audit; kế thừa catalog/preview/lịch trống public 4c.1. Xem [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md).
 
-**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. Tiếp theo WPF bổ sung lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/Excel/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
+**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. WPF đã có giao diện lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/Excel/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
 
 Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
 

@@ -1,6 +1,6 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 19/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 21/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
 
 ## Hai nhánh làm song song từ 18/10/2026
 
@@ -8,10 +8,10 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
-| WPF đang chạy SQLite | **8f.1 service lịch sử khách**: booking/phiên/hóa đơn theo CustomerId, số phiên Completed và ActualStart gần nhất; Customer.View/Invoice.View riêng. Giữ Excel 8e.5a–b | 8f.2 UI lịch sử khách; tài liệu/ERD/demo và kiểm tra cuối |
+| WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
 | MySQL Aiven | **4c.2a booking nội bộ**: danh sách/chi tiết theo View, lọc ngày/SĐT/status, metadata quyền và hủy Staff qua writer thật | Guest hủy/lookup đầy đủ khi có service phiên; calendar nội bộ và các nhóm nghiệp vụ |
 
-Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 19/10 bổ sung [8f.1 service lịch sử khách](docs/Step8f1_CustomerHistory.md), chưa có UI; MySQL giữ 4c.2a. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
+Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; MySQL giữ 4c.2a. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 
 ## Cập nhật migration ngày 18/10/2026
 

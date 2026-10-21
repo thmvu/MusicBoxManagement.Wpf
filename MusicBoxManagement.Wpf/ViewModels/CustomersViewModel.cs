@@ -26,6 +26,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanSelect => !isBusy && canView;
         public bool CanCreate => !isBusy && canView && canCreate;
         public bool CanSave => !isBusy && canView && (original == null ? canCreate : canEdit);
+        public bool CanHistory => !isBusy && canView && original != null;
         public int? EditingId => original?.CustomerId;
         public string EditorTitle => original == null ? "Thêm khách hàng" : "Khách hàng #" + original.CustomerId;
         public string Status => status;
@@ -40,7 +41,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         {
             original = item == null ? null : new Customer { CustomerId = item.CustomerId, FullName = item.FullName, PhoneNumber = item.PhoneNumber };
             FullName = item?.FullName; PhoneNumber = item?.PhoneNumber;
-            foreach (var property in new[] { nameof(FullName), nameof(PhoneNumber), nameof(EditorTitle), nameof(EditingId), nameof(CanSave) }) Notify(property);
+            foreach (var property in new[] { nameof(FullName), nameof(PhoneNumber), nameof(EditorTitle), nameof(EditingId), nameof(CanSave), nameof(CanHistory) }) Notify(property);
         }
         private async Task ReloadAsync(string name, string phone)
         {
@@ -84,7 +85,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             return false;
         }
         private void Revoke() { canView = canCreate = canEdit = false; Items.Clear(); SetForm(null); SetStatus("Bạn không còn quyền thực hiện thao tác hoặc phiên đã hết hiệu lực. Hãy đóng cửa sổ hoặc tìm lại để kiểm tra quyền."); }
-        private void Busy(bool value) { isBusy = value; foreach (var property in new[] { nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(CanCreate), nameof(CanSave) }) Notify(property); }
+        private void Busy(bool value) { isBusy = value; foreach (var property in new[] { nameof(IsBusy), nameof(CanSearch), nameof(CanSelect), nameof(CanCreate), nameof(CanSave), nameof(CanHistory) }) Notify(property); }
         private void SetStatus(string value) { status = value; Notify(nameof(Status)); }
         private void Notify([CallerMemberName] string property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }

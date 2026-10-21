@@ -1,5 +1,15 @@
 # Music Box WPF
 
+## WPF 8f.2 — UI lịch sử khách (21/10/2026)
+
+Đã nối CustomersWindow.HistoryButton (CanHistory) → modal CustomerHistoryWindow/CustomerHistoryViewModel → CustomerHistoryService.Read 8f.1. Có Customer hiện hành/CompletedSessionCount/LastUsedAt và tab Booking (trạng thái lưu)/Session (snapshot, actual/expected, walk-in)/Invoice summaries theo Invoice.View hiện hành; thiếu quyền báo rõ, khác khách chưa có hóa đơn. UTC+7 có giây, tiền vi-VN, bảng cuộn ngang/dọc, nút đầu form dùng được ở 900×540; child tối thiểu 900×580. View-only dùng được, không cần Customer.Create/Edit/Reservation.View/Session.View. Không mở/in hóa đơn ngầm hoặc Guest route. Xem docs/Step8f2_CustomerHistoryUi.md.
+
+Mỗi reload xóa DTO/tên/thống kê/bảng cũ, lỗi/revoke/missing ID không giữ PII; busy chặn duplicate/close. Parent modal/historyOpen chống mở lặp; đóng xong SearchAsync tải lại quyền/danh sách và xóa lựa chọn/form. Lịch sử chỉ đọc dữ liệu đã lưu; nếu đang sửa khách cần Lưu trước, mở/đóng lịch sử không tự lưu draft.
+
+Debug/Release VerifyHistoryUiDebug/Release build đạt. Verify-CustomerHistoryUi cả hai build đạt 11 ảnh/build, đã xem full/compact/permission/empty; modal chọn đúng khách/View-only/filter/UTC+7/snapshot/invoice grant-revoke/customer revoke cả child-parent/đổi SĐT/empty/unknown/busy/duplicate/close. Debug CustomerHistory/Customers/Authentication/Foundation và AuthenticationUi (131 ảnh) đạt. Tests chỉ SQLite GUID/thư mục tạm, fixture đọc lịch sử không thay test checkout; không đụng dữ liệu/ảnh thật hoặc máy in/cloud. Giữ thay đổi định dạng csproj có sẵn ngoài commit.
+
+Lịch sử khách nay có UI và service SQLite v8, không đổi provider/schema. MySQL 4d Calendar đã có code nhưng kiểm tra online lần trước còn DNS, chưa nghiệm thu; không tuyên bố đã khắc phục ở lượt UI này. Tiếp nghiệm thu online và port session/check-in/walk-in/extension/Guest lookup đầy đủ/order/billing/checkout/invoice cùng các feature quản trị/báo cáo/Excel/lịch sử; giữ ERD tổng thể/từ điển/bản xuất/demo, sao lưu/nhập/đối chiếu database+Content/UI trước cutover. Khi sửa lịch sử chạy CustomerHistoryUi/CustomerHistory/Customers/Authentication/Foundation/AuthenticationUi; Invoices/Checkout khi chạm đọc chi tiết/thanh toán.
+
 ## MySQL 4d — Calendar (20/10/2026, chưa nghiệm thu online)
 
 Đã port MySqlCalendarService.Read theo Calendar.View trong RR read-only/single IClock, dùng MySqlScheduleRules và CalendarRange/DTO nội bộ, giữ Holds/Events/CurrentStatus/actual/expected/walk-in/locked history; không maintenance/DDL/provider/schema changes. Xem docs/MySql_Migration_04d_Calendar.md. Debug/Release VerifyCalendarMySqlDebug/Release build đạt, SQLite Calendar/Availability đạt. Fixture Verify-MySqlCalendar đã compile ở cả hai build nhưng online lỗi DNS Aiven (host không tồn tại), chưa xác nhận assertions MySQL. Khi DNS phục hồi chạy MySqlCalendar Debug/Release và MySqlAvailability/Reservations/Foundation trước nghiệm thu. Session fixture chỉ projection, chưa check-in/checkout MySQL thật. App vẫn SQLite; Guest lookup đầy đủ/session/order/billing/checkout/quản trị/báo cáo/cutover tiếp tục giữ scope.

@@ -13,6 +13,7 @@ namespace MusicBoxManagement.Wpf.Services
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;
         public CustomerService(SqliteDatabase database) { this.database = database; permissions = new PermissionService(database); }
+        internal CustomerHistoryService ForHistory() => new CustomerHistoryService(database);
 
         public CustomerList Search(LoginSession session, string nameQuery = null, string phoneQuery = null)
         {

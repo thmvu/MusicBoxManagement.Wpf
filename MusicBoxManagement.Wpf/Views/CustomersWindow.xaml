@@ -36,6 +36,7 @@
             <ScrollViewer Grid.Column="1" Margin="22,0,0,0" VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="0,0,10,0">
                     <TextBlock Text="{Binding EditorTitle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <Button x:Name="HistoryButton" Content="Xem lịch sử" Click="History_Click" IsEnabled="{Binding CanHistory}" HorizontalAlignment="Left" Margin="0,0,0,16" />
                     <StackPanel IsEnabled="{Binding CanSave}">
                         <TextBlock Text="Họ tên" Margin="0,0,0,6" />
                         <TextBox x:Name="NameInput" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8" />
