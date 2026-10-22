@@ -87,6 +87,77 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;
                 transaction.Commit(); return created;
             }
         }
+        public SessionExtensionCheck PreviewExtensionStaff(LoginSession actor, int sessionId, int minutes)
+            => PreviewExtensionCore(actor, sessionId, minutes, false);
+        internal SessionExtensionCheck PreviewViewedExtension(LoginSession actor, int sessionId, int minutes)
+            => PreviewExtensionCore(actor, sessionId, minutes, true);
+        private SessionExtensionCheck PreviewExtensionCore(LoginSession actor, int sessionId, int minutes, bool requireView)
+        {
+            using (var connection = database.OpenConnection())
+            using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
+            {
+                DemandRead(actor, "Session.Extend", connection, transaction);
+                if (requireView) DemandRead(actor, "Session.View", connection, transaction);
+                return availability.CheckExtensionAt(connection, transaction, ReadSession(connection, transaction, sessionId, false), minutes, clock.UtcNow);
+            }
+        }
+        public RoomSession ExtendStaff(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
+            => ExtendStaffCore(actor, sessionId, observedEnd, minutes, false);
+        internal RoomSession ExtendViewedStaff(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
+            => ExtendStaffCore(actor, sessionId, observedEnd, minutes, true);
+        private RoomSession ExtendStaffCore(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes, bool requireView)
+        {
+            try
+            {
+                using (var connection = database.OpenConnection())
+                using (var transaction = MySqlDatabase.BeginWriteTransaction(connection))
+                using (var command = connection.CreateCommand())
+                {
+                    permissions.Demand(actor, "Session.Extend", connection, transaction);
+                    if (requireView) permissions.Demand(actor, "Session.View", connection, transaction);
+                    int room, customer; int? source;
+                    using (var discovery = database.OpenConnection())
+                    using (var query = discovery.CreateCommand())
+                    {
+                        query.CommandText = "SELECT RoomId,CustomerId,ReservationId FROM RoomSessions WHERE RoomSessionId=@id;";
+                        query.Parameters.AddWithValue("@id", sessionId);
+                        using (var reader = query.ExecuteReader())
+                        {
+                            if (!reader.Read()) throw new InvalidOperationException("Không tìm thấy phiên sử dụng.");
+                            room = reader.GetInt32(0); customer = reader.GetInt32(1); source = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2);
+                        }
+                    }
+                    MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
+                    MySqlNoShowService.LockCandidates(connection, transaction);
+                    command.Transaction = transaction;
+                    if (source.HasValue)
+                    {
+                        command.CommandText = "SELECT ReservationId FROM Reservations WHERE ReservationId=@source FOR UPDATE;";
+                        command.Parameters.AddWithValue("@source", source.Value); command.ExecuteScalar();
+                    }
+                    command.CommandText = "SELECT RoomSessionId FROM RoomSessions WHERE RoomSessionId=@id FOR UPDATE;";
+                    command.Parameters.AddWithValue("@id", sessionId); command.ExecuteScalar();
+                    var current = ReadSession(connection, transaction, sessionId, false);
+                    if (current == null || current.RoomId != room || current.CustomerId != customer || current.ReservationId != source)
+                        throw new InvalidOperationException("Phiên đã thay đổi. Hãy tải lại danh sách.");
+                    if (current.Status != "Active" || !current.ReservationId.HasValue || !current.ExpectedEndTime.HasValue)
+                        throw new InvalidOperationException("Chỉ gia hạn phiên Active từ booking; khách trực tiếp không có gia hạn.");
+                    if (current.ExpectedEndTime.Value != observedEnd)
+                        throw new InvalidOperationException("Giờ trả dự kiến đã thay đổi. Hãy tải lại phiên trước khi gia hạn.");
+                    var now = clock.UtcNow.ToUniversalTime();
+                    var check = availability.CheckExtensionAt(connection, transaction, current, minutes, now);
+                    if (!check.CanExtend) throw new SessionExtensionException(check.Reason, check.MaximumEndTime);
+                    command.CommandText = "UPDATE RoomSessions SET ExpectedEndTime=@end WHERE RoomSessionId=@id AND Status='Active' AND ExpectedEndTime=@old;";
+                    command.Parameters.AddWithValue("@end", Utc(check.NewEndTime)); command.Parameters.AddWithValue("@old", Utc(current.ExpectedEndTime.Value));
+                    if (command.ExecuteNonQuery() != 1) throw new InvalidOperationException("Phiên đã thay đổi. Hãy tải lại danh sách.");
+                    MySqlAuditService.WriteStaff(connection, transaction, actor.UserId, "Session.Extend", "RoomSession", sessionId.ToString(CultureInfo.InvariantCulture),
+                        "Gia hạn " + minutes + " phút từ " + Utc(current.ExpectedEndTime.Value) + " đến " + Utc(check.NewEndTime) + ".", now);
+                    var result = ReadSession(connection, transaction, sessionId, false); transaction.Commit(); return result;
+                }
+            }
+            catch (MySqlException error) when (error.Number == 1213 || error.Number == 1205)
+            { throw new InvalidOperationException("Phiên hoặc lịch đang được cập nhật. Hãy kiểm tra lại trước khi gia hạn.", error); }
+        }
         public List<PublicRoom> ListWalkInRooms(LoginSession actor)
         {
             using (var connection = database.OpenConnection())
@@ -219,13 +290,17 @@ HourlyRate,RoomCodeSnapshot,RoomTypeCodeSnapshot,RoomTypeNameSnapshot,Status FRO
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read()) return null;
-                    return new RoomSession { RoomSessionId = reader.GetInt32(0), CustomerId = reader.GetInt32(1), RoomId = reader.GetInt32(2),
+                    return ReadSessionRecord(reader);
+                }
+            }
+        }
+        internal static RoomSession ReadSessionRecord(MySqlDataReader reader)
+        {
+            return new RoomSession { RoomSessionId = reader.GetInt32(0), CustomerId = reader.GetInt32(1), RoomId = reader.GetInt32(2),
                         ReservationId = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3), ActualStartTime = Time(reader.GetString(4)),
                         ExpectedEndTime = reader.IsDBNull(5) ? (DateTimeOffset?)null : Time(reader.GetString(5)),
                         ActualEndTime = reader.IsDBNull(6) ? (DateTimeOffset?)null : Time(reader.GetString(6)), HourlyRate = reader.GetInt64(7),
                         RoomCodeSnapshot = reader.GetString(8), RoomTypeCodeSnapshot = reader.GetString(9), RoomTypeNameSnapshot = reader.GetString(10), Status = reader.GetString(11) };
-                }
-            }
         }
         private static DateTimeOffset Time(string value) => DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture);
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);

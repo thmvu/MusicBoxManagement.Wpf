@@ -2,11 +2,11 @@
 
 **Bàn giao MySQL:** đọc [bảng trạng thái migration](docs/MySql_Migration_Status.md) trước khi nhận việc. File ghi từng service, bằng chứng kiểm tra, phần chưa port và nhật ký nhập dữ liệu thật; cập nhật/push cùng mỗi bước để người khác không làm lại.
 
-MySQL 4d/04e.1 (21/10/2026): [lịch nội bộ](docs/MySql_Migration_04d_Calendar.md) đã sửa kiểm tra quyền read transaction; [service check-in](docs/MySql_Migration_04e1_CheckIn.md) mới đã có transaction/snapshot/replay/NoShow concurrency. Cả hai đạt online Debug/Release. Bước **04e.2 walk-in** đã có list/preview/create/read/receipt riêng người tạo và đạt online Debug/Release; xem [báo cáo 04e.2](docs/MySql_Migration_04e2_WalkIn.md). Tiếp **04e.3 đọc phiên/gia hạn Staff**, không làm lại phần đã nghiệm thu trong bảng bàn giao. App vẫn SQLite; **chưa nhập dữ liệu thật hoặc đổi provider**.
+MySQL 4d/04e.1 (21/10/2026): [lịch nội bộ](docs/MySql_Migration_04d_Calendar.md) đã sửa kiểm tra quyền read transaction; [service check-in](docs/MySql_Migration_04e1_CheckIn.md) mới đã có transaction/snapshot/replay/NoShow concurrency. Cả hai đạt online Debug/Release. Bước **04e.2 walk-in** đã có list/preview/create/read/receipt riêng người tạo và đạt online Debug/Release; xem [báo cáo 04e.2](docs/MySql_Migration_04e2_WalkIn.md). Bước **04e.3 đọc phiên/gia hạn Staff** cũng đã đạt online Debug/Release 22/10: quyền View/Extend riêng, stale/transaction/overlap/snapshot và audit. Xem [04e.3](docs/MySql_Migration_04e3_SessionsExtension.md). Tiếp **04e.4 Guest session/gia hạn/lookup/hủy đầy đủ**, không làm lại phần đã nghiệm thu trong bảng bàn giao. App vẫn SQLite; **chưa nhập dữ liệu thật hoặc đổi provider**.
 
 Tài liệu báo cáo mới 20/10/2026: [ERD nhóm khách hàng → booking → phiên → hóa đơn](docs/ERD_CustomerHistory.md), có nguồn Mermaid chỉnh sửa được, từ điển liên kết và phân biệt ràng buộc database/quy tắc service. Chưa phải bộ ERD tổng thể hoàn chỉnh.
 
-Cập nhật 21/10/2026 — làm song song theo yêu cầu người dùng:
+Cập nhật 22/10/2026 — làm song song theo yêu cầu người dùng:
 
 - **Lịch sử khách 8f.2 (service + UI)**: Khách hàng → chọn khách → Xem lịch sử, ba tab Booking/Phiên/Hóa đơn và thống kê hoàn tất/lần dùng gần nhất. Liên kết CustomerId, Customer.View và Invoice.View riêng. Xem [cách dùng và kiểm tra](docs/Step8f2_CustomerHistoryUi.md).
 

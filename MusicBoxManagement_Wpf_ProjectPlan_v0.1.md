@@ -1,6 +1,6 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 21/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 22/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
 
 ## Hai nhánh làm song song từ 18/10/2026
 
@@ -9,7 +9,7 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
 | WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
-| MySQL Aiven | **4d/04e.1/04e.2 walk-in đã đạt online Debug/Release**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | 04e.3 đọc phiên/gia hạn Staff, Guest session/lookup đầy đủ và các nhóm còn lại |
+| MySQL Aiven | **Đến 04e.3 đọc phiên/gia hạn Staff đã đạt online Debug/Release 22/10**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | 04e.4 Guest session/gia hạn/lookup/hủy đầy đủ và các nhóm còn lại |
 
 Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; tiến độ MySQL hiện hành xem [bảng bàn giao](docs/MySql_Migration_Status.md), không làm lại service đã nghiệm thu. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 

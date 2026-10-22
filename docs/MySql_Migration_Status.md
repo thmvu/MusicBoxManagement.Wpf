@@ -1,6 +1,6 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
-Cập nhật 21/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+Cập nhật 22/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
 
 Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status.md`. Bảng này được push cùng code/test của bước đó; không cần suy đoán tiến độ từ chat hoặc số bảng trên cloud.
 
@@ -41,13 +41,14 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04d | Lịch ngày/tuần nội bộ | **Đã sửa và đạt online Debug/Release 21/10**; lần 20/10 chỉ build vì DNS | [04d](MySql_Migration_04d_Calendar.md), Verify-MySqlCalendar |
 | 04e.1 | MySqlRoomSessionService.CheckIn | **Đã đạt online Debug/Release 21/10**, gồm writer thật/replay/Room/Customer/NoShow/clock sau lock | [04e.1](MySql_Migration_04e1_CheckIn.md), Verify-MySqlCheckIn |
 | 04e.2 | MySqlRoomSessionService walk-in: list/preview/create/read/own receipt | **Đã đạt online Debug/Release 21/10**, gồm snapshot/receipt/rollback/writer thật/retry NoShow có giới hạn | [04e.2](MySql_Migration_04e2_WalkIn.md), Verify-MySqlWalkIn |
+| 04e.3 | MySqlStaffSessionService.Search/Preview/Extend và core gia hạn Staff | **Đã đạt online Debug/Release 22/10**, View/Extend độc lập, stale/overlap/rollback/writer thật/snapshot | [04e.3](MySql_Migration_04e3_SessionsExtension.md), Verify-MySqlSessions |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
 ## Chưa chuyển — danh sách tiếp tục
 
-1. **04e.3 đọc phiên/gia hạn Staff**: giữ Session.View/Session.Extend độc lập, observedEnd/Active từ booking/+30 hoặc +60/ca/Room-Customer overlap/snapshot/clock/audit, walk-in không gia hạn.
-2. Guest session/gia hạn/lookup/hủy booking đầy đủ, không giả ActiveSession=null khi chưa port phiên. Giữ membership theo SĐT hiện hành và audit Guest.
+1. **04e.4 Guest session/gia hạn/lookup/hủy booking đầy đủ**: membership theo SĐT hiện hành, DTO public và audit Guest, không gọi Staff service hoặc giả ActiveSession=null. Phần tiền/menu/món tiếp theo nhóm tương ứng, không cắt scope.
+2. Giữ kiểm tra cạnh tranh cùng các writer đã có; bổ sung checkout–gia hạn/order bằng service thật khi port checkout, không coi Completed fixture là checkout đã nghiệm thu.
 3. Order/menu/cart/preview/tạo/xác nhận/hủy, billing/tạm tính, checkout/Invoice snapshot/idempotence/in/đọc lịch sử; bổ sung cạnh tranh checkout–gia hạn–order bằng service thật.
 4. Dashboard, ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
 5. Worker/provider wiring, kiểm tra UI trên MySQL, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
@@ -75,3 +76,7 @@ Trước import: tạo snapshot sao lưu SQLite + Content, ghi mã lượt/phiê
 Build tích hợp dùng `bin/VerifyMigrationDebug` và `bin/VerifyMigrationRelease`. Verify-MySqlCalendar và Verify-MySqlCheckIn online hai build đạt; MySqlAvailability/Reservations/Foundation online Debug đạt. Hồi quy SQLite Debug CheckIn/Availability/Reservations/Calendar/Foundation đạt; AuthenticationUi Debug đạt, render 131 ảnh. Chỉ tác động database test GUID/thư mục tạm; ứng dụng/worker và dữ liệu thật vẫn SQLite.
 
 Bổ sung 04e.2: build VerifyWalkInMySqlDebug/Release đạt; Verify-MySqlWalkIn bản cuối online cả hai build đạt. MySqlCheckIn/Calendar/Availability/Reservations/Foundation online Debug đạt. 11 bộ SQLite/WPF Debug WalkIn/CheckIn/Availability/Calendar/Reservations/Rooms/Customers/Authentication/Foundation/GuestCalendar/AuthenticationUi đạt (131 ảnh). Đã kiểm tra conflict 1213 với NoShow: test retry tối đa một lần sau hai writer, không trùng session/log; API không retry vô hạn. Chưa nhập dữ liệu thật hoặc đổi giao diện/provider.
+
+## Lượt kiểm tra 22/10/2026 — 04e.3
+
+Build VerifySessionsMySqlDebug/Release và Verify-MySqlSessions online cả hai build đạt (exit 0). Hồi quy MySqlCheckIn/WalkIn/Availability/Reservations/Calendar/Foundation online Debug đạt. 16 bộ SQLite/WPF Debug Sessions/Extension/WalkIn/CheckIn/Availability/Calendar/Reservations/GuestCalendar/Authentication/Foundation/StaffReservations/Rooms/Customers/GuestSessions/GuestLookup/AuthenticationUi đạt, UI 131 ảnh. Không thay UI/provider hoặc nhập dữ liệu thật.
