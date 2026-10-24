@@ -4,6 +4,8 @@ Ngày lập: 02/10/2026. Cập nhật tiến độ: 24/10/2026. Nền tảng gi�
 
 ## Rà soát UI và nhập liệu — 24/10/2026
 
+**Thiết kế giao diện vận hành theo yêu cầu tiếp theo:** [Ui_Operations_Design](docs/Ui_Operations_Design.md), theme WPF chung, dashboard số liệu/bảng phòng, nút nhanh theo quyền và Guest CTA. Giữ nghiệp vụ, provider và phạm vi MySQL; không đổi rule để vừa giao diện. Nút lưu/đặt ở ngoài vùng cuộn trên hai form, giữ thao tác ở kích thước tối thiểu. Build hai cấu hình, hồi quy 44 bộ và UI hai bản theo báo cáo.
+
 **Bổ sung rà soát nghiệp vụ theo yêu cầu mới:** [ma trận hiện hành](docs/Business_Workflow_Audit_20261024.md) đối chiếu các nhóm runtime với reference, code và test; ba chuỗi đầu-cuối mới dùng service thật/không giả Completed hoặc Invoice. Không đồng nhất sửa nhập liệu, số lượng test hoặc có schema với đã hoàn tất nghiệp vụ. Kiểm tra Workflow bổ sung cho các test biên/race/UI, không thay thế chúng; MySQL vẫn tiếp 04e.4 và chưa cutover.
 
 Theo yêu cầu mới, tạm hoàn thiện phản hồi nhập liệu và menu trước khi tiếp migration. Các form báo thiếu trường bắt buộc trước khi gọi service, vẫn giữ try/catch/finally và toàn bộ kiểm tra quyền/transaction của service. Người dùng xác nhận Visual Studio dừng tại Exception có Continue/F5, chưa phải bằng chứng WPF tự thoát. Menu gom bốn nhóm mở/thu gọn, Tổng quan nằm đầu và mở sau đăng nhập theo Dashboard.View; giữ doanh thu Admin/Manager và giới hạn Staff theo bản tham chiếu. Không cắt chức năng hoặc tự gộp service có quyền/transaction khác nhau. Xem [báo cáo và cách chạy kiểm tra toàn bộ](docs/Ui_Validation_Navigation_Review.md). MySQL tiếp 04e.4, chưa đổi provider/import thật.

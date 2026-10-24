@@ -15,7 +15,7 @@
     <TextBlock Text="{Binding Details}" TextWrapping="Wrap" LineHeight="24" Margin="0,0,0,18"/>
     <TextBlock Grid.Row="1" Text="Món đã phục vụ được cộng tiền" FontWeight="SemiBold" Margin="0,0,0,10"/>
     <DataGrid x:Name="ItemsTable" Grid.Row="2" ItemsSource="{Binding Lines}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" RowHeight="40" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
-     <DataGrid.Resources><Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/></Style><Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/></Style></DataGrid.Resources>
+     <DataGrid.Resources><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/></Style><Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/></Style></DataGrid.Resources>
      <DataGrid.Columns><DataGridTextColumn Header="Đơn" Binding="{Binding OrderId}" Width="55"/>
       <DataGridTextColumn Header="Món" Binding="{Binding Name}" Width="*" MinWidth="120"/>
       <DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="45"/>
@@ -34,7 +34,7 @@
      </ComboBox>
      <CheckBox x:Name="AcknowledgementInput" IsChecked="{Binding Acknowledged}" IsEnabled="{Binding CanClose}"><TextBlock Text="Tôi đã kiểm tra và nhận tiền từ khách." TextWrapping="Wrap"/></CheckBox>
     </StackPanel></ScrollViewer>
-    <WrapPanel Grid.Row="1" Margin="0,18,0,0"><Button x:Name="ConfirmButton" Content="Xác nhận đã thu tiền" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}" Margin="0,0,8,8"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="0,0,0,8"/></WrapPanel>
+    <WrapPanel Grid.Row="1" Margin="0,18,0,0"><Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận đã thu tiền" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}" Margin="0,0,8,8"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="0,0,0,8"/></WrapPanel>
    </Grid>
    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding HasReceipt, Converter={StaticResource Visible}}"><Border BorderBrush="#CAD3D8" BorderThickness="1" Background="White" Padding="18"><TextBlock x:Name="ReceiptText" Text="{Binding ReceiptText}" TextWrapping="Wrap" LineHeight="27"/></Border></ScrollViewer>
   </Grid>

@@ -25,7 +25,7 @@
                       AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
                 <DataGrid.Resources>
                     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
-                    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Mã phòng" Binding="{Binding RoomCode}" Width="100" />

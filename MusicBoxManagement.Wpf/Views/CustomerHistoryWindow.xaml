@@ -13,7 +13,7 @@
             <Setter Property="AlternatingRowBackground" Value="#F7F9FA" /><Setter Property="GridLinesVisibility" Value="Horizontal" />
             <Setter Property="HorizontalGridLinesBrush" Value="#DEE4E7" />
         </Style>
-        <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
         <Style x:Key="CellText" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,6" /><Setter Property="TextWrapping" Value="Wrap" />
         </Style>

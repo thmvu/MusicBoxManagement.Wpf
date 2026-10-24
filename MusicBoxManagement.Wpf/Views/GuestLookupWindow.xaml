@@ -17,7 +17,7 @@
    AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column"
    RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
    <DataGrid.Resources>
-    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="8"/><Setter Property="Background" Value="#E9EEF0"/></Style>
+    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="8"/><Setter Property="Background" Value="#E9EEF0"/></Style>
     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="8,0"/></Style>
    </DataGrid.Resources>
    <DataGrid.Columns>
@@ -32,7 +32,7 @@
    <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
    <Button x:Name="CancelButton" Content="Hủy booking đã chọn" Click="Cancel_Click" IsEnabled="{Binding CanCancel}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
    <StackPanel Orientation="Horizontal" Visibility="{Binding IsConfirming, Converter={StaticResource BoolVisibility}}" Margin="0,12,0,0">
-    <Button x:Name="ConfirmButton" Content="Đồng ý hủy" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}"/>
+    <Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Đồng ý hủy" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}"/>
     <Button x:Name="KeepButton" Content="Giữ booking" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/>
    </StackPanel>
   </StackPanel>

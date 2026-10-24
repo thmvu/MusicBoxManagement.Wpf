@@ -14,6 +14,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
     {
         public string Title { get; internal set; }
         public string Detail { get; internal set; }
+        public string Code { get; internal set; }
+        public string StatusCode { get; internal set; }
+        public string StatusLabel { get; internal set; }
     }
     public sealed class DashboardViewModel : INotifyPropertyChanged
     {
@@ -37,6 +40,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Revenue => HasRevenue ? "Doanh thu hôm nay: " + snapshot.TodayRevenue.Value.ToString("N0", Vietnamese) + " đ" : "";
         public string Summary => snapshot == null ? "" : "Phòng: " + snapshot.Rooms.Count + "    Booking hôm nay: " + snapshot.BookingsToday.Count
             + "    Đang sử dụng: " + snapshot.ActiveSessions.Count + "    Đơn chờ: " + snapshot.PendingOrders.Count;
+        public int AvailableRoomCount => snapshot?.Rooms.Count(r => r.Status == "Available") ?? 0;
+        public int OccupiedRoomCount => snapshot?.Rooms.Count(r => r.Status == "Occupied") ?? 0;
+        public int BookingCount => snapshot?.BookingsToday.Count ?? 0;
+        public int PendingOrderCount => snapshot?.PendingOrders.Count ?? 0;
         public string Updated => snapshot == null ? "" : "Cập nhật lúc " + Local(snapshot.CheckedAt) + " · Giờ Việt Nam";
         public string AlertHeading => snapshot == null ? "Cảnh báo" : "Cảnh báo cần lưu ý: " + snapshot.Alerts.Count;
         public string Status => status;
@@ -57,7 +64,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
                 var result = await Task.Run(() => create(current).Read(current));
                 if (request != version || actor != current || current.IsSignedOut) return;
                 snapshot = result;
-                foreach (var room in result.Rooms) Rooms.Add(Line(room.RoomCode + " — " + State(room.Status), room.RoomName));
+                foreach (var room in result.Rooms) Rooms.Add(new DashboardLine { Title = room.RoomCode + " — " + State(room.Status), Detail = room.RoomName,
+                    Code = room.RoomCode, StatusCode = room.Status, StatusLabel = State(room.Status) });
                 foreach (var booking in result.BookingsToday) Bookings.Add(Line("Booking #" + booking.ReservationId + " · " + booking.RoomCode + " · " + State(booking.Status),
                     Local(booking.Start) + " → " + Local(booking.End)));
                 foreach (var session in result.ActiveSessions) Sessions.Add(Line("Phiên #" + session.SessionId + " · " + session.RoomCode + (session.IsWalkIn ? " · Khách trực tiếp" : " · Từ booking"),
@@ -86,7 +94,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private static string AlertName(string kind)
         { switch (kind) { case "NearNoShow": return "Sắp hết hạn nhận phòng"; case "Overdue": return "Khách quá giờ"; case "NextBooking": return "Cần trả trước lượt kế tiếp"; case "OutsideHours": return "Còn khách ngoài giờ mở cửa"; default: return kind; } }
         private void Changed()
-        { foreach (var name in new[] { nameof(Snapshot), nameof(IsBusy), nameof(CanRefresh), nameof(HasRevenue), nameof(Revenue), nameof(Summary), nameof(Updated), nameof(AlertHeading), nameof(Status) }) Notify(name); }
+        { foreach (var name in new[] { nameof(Snapshot), nameof(IsBusy), nameof(CanRefresh), nameof(HasRevenue), nameof(Revenue), nameof(Summary), nameof(AvailableRoomCount), nameof(OccupiedRoomCount), nameof(BookingCount), nameof(PendingOrderCount), nameof(Updated), nameof(AlertHeading), nameof(Status) }) Notify(name); }
         private void Notify([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

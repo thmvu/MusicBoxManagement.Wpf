@@ -25,7 +25,7 @@
                       AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" IsEnabled="{Binding CanSelect}">
                 <DataGrid.Resources>
                     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
-                    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Mã" Binding="{Binding CustomerId}" Width="70" />
@@ -43,7 +43,7 @@
                         <TextBlock Text="Số điện thoại" Margin="0,14,0,6" />
                         <TextBox x:Name="PhoneInput" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Padding="8" />
                         <TextBlock Text="Ví dụ: 0912345678 hoặc +84 912 345 678. Mỗi SĐT chỉ thuộc một khách hàng." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,12,0,0" />
-                        <Button x:Name="SaveButton" Content="Lưu" Click="Save_Click" HorizontalAlignment="Left" Margin="0,18,0,0" />
+                        <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="Lưu" Click="Save_Click" HorizontalAlignment="Left" Margin="0,18,0,0" />
                     </StackPanel>
                     <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" IsEnabled="{Binding CanSelect}" HorizontalAlignment="Left" Margin="0,8,0,0" />
                 </StackPanel>

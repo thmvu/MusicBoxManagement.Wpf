@@ -8,6 +8,8 @@ Hồi quy 24/10: toàn bộ 15 bộ MySQL đã port online Debug đạt trên da
 
 Bổ sung 24/10: [ma trận kiểm toán luồng](Business_Workflow_Audit_20261024.md) và Verify-Workflows kiểm tra chuỗi service thật trên SQLite, không dùng nó làm bằng chứng MySQL checkout/Guest đầy đủ. Runner nay có 44 bộ SQLite/WPF (thêm Workflow), 15 bộ MySQL hiện có. Không port thêm service ở lượt đối chiếu này; tiếp 04e.4 như bảng bên dưới.
 
+UI 24/10 theo yêu cầu trước khi tiếp port: [theme/bảng vận hành/nút nhanh/form](Ui_Operations_Design.md), giữ business/provider. Build Debug/Release và hồi quy runtime 44 bộ, UI cuối 141 ảnh/bản đạt. Không chạy lại online hoặc thay trạng thái nghiệm thu MySQL; chưa import/cutover. Bước tiếp vẫn 04e.4 Guest.
+
 Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status.md`. Bảng này được push cùng code/test của bước đó; không cần suy đoán tiến độ từ chat hoặc số bảng trên cloud.
 
 ## Quy ước khi bàn giao

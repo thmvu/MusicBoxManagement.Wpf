@@ -23,7 +23,7 @@
                       AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" IsEnabled="{Binding CanEdit}">
                 <DataGrid.Resources>
                     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
-                    <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Tên dịch vụ" Binding="{Binding Name}" Width="*" MinWidth="140" />
@@ -32,7 +32,8 @@
                     <DataGridTextColumn Header="Trạng thái" Binding="{Binding ActiveLabel}" Width="100" />
                 </DataGrid.Columns>
             </DataGrid>
-            <ScrollViewer Grid.Column="1" Margin="22,0,0,0" VerticalScrollBarVisibility="Auto">
+            <Grid Grid.Column="1" Margin="22,0,0,0"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel IsEnabled="{Binding CanEdit}" Margin="0,0,10,0">
                     <TextBlock Text="{Binding EditorTitle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
                     <TextBlock Text="Tên dịch vụ" Margin="0,0,0,6" />
@@ -45,12 +46,14 @@
                     <TextBlock Text="Mô tả" Margin="0,14,0,6" />
                     <TextBox x:Name="DescriptionInput" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="2000"
                              Padding="8" AcceptsReturn="True" TextWrapping="Wrap" Height="70" VerticalScrollBarVisibility="Auto" />
-                    <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                        <Button x:Name="SaveButton" Content="Lưu" Click="Save_Click" />
-                        <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" Margin="8,0,0,0" />
-                    </StackPanel>
+
                 </StackPanel>
             </ScrollViewer>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,0" IsEnabled="{Binding CanEdit}">
+                        <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="Lưu" Click="Save_Click" />
+                        <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" Margin="8,0,0,0" />
+                    </StackPanel>
+            </Grid>
         </Grid>
         <TextBlock x:Name="StatusText" Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,18,0,0" />
     </Grid>

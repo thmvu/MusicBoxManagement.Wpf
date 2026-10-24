@@ -24,7 +24,7 @@
     <TextBlock Text="Ghi đơn hộ sau khi phục vụ" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12"/>
     <TextBlock Grid.Row="1" Text="Đơn hộ được ghi Đã phục vụ ngay. Với yêu cầu Guest đang chờ, hãy xác nhận trên danh sách đơn để tránh ghi hai lần." TextWrapping="Wrap" Margin="0,0,0,20"/>
     <Border Grid.Row="2" Background="#E9EEF0" BorderBrush="#CAD3D8" BorderThickness="1" Padding="14" Margin="0,0,0,16" Visibility="{Binding IsConfirming, Converter={StaticResource BoolVisibility}}"><StackPanel>
-     <TextBlock Text="{Binding ConfirmationText}" TextWrapping="Wrap"/><StackPanel Orientation="Horizontal" Margin="0,12,0,0"><Button x:Name="ConfirmButton" Content="Xác nhận đã phục vụ" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/></StackPanel>
+     <TextBlock Text="{Binding ConfirmationText}" TextWrapping="Wrap"/><StackPanel Orientation="Horizontal" Margin="0,12,0,0"><Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận đã phục vụ" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanClose}" Margin="8,0,0,0"/></StackPanel>
     </StackPanel></Border>
     <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"><TextBlock Text="{Binding Receipt}" TextWrapping="Wrap"/></ScrollViewer>
    </Grid>

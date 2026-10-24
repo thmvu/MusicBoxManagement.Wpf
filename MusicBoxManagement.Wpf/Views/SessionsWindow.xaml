@@ -13,7 +13,7 @@
   <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="390"/></Grid.ColumnDefinitions>
    <DataGrid x:Name="SessionsTable" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsEnabled="{Binding CanSelect}" Margin="0,0,24,0"
     AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" RowHeight="42" ColumnHeaderHeight="40" SelectionMode="Single" SelectionUnit="FullRow" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
-    <DataGrid.Resources><Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="10,8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+    <DataGrid.Resources><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="10,8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
      <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/></Style></DataGrid.Resources>
     <DataGrid.Columns><DataGridTextColumn Header="Phiên" Binding="{Binding Session.RoomSessionId}" Width="65"/>
      <DataGridTextColumn Header="Phòng" Binding="{Binding Session.RoomCodeSnapshot}" Width="80"/><DataGridTextColumn Header="Khách" Binding="{Binding CustomerName}" Width="*" MinWidth="150"/>
@@ -27,7 +27,7 @@
      <Button x:Name="ExtendButton" Content="Gia hạn (phút)" IsEnabled="{Binding CanExtend}" Click="Extend_Click"/></WrapPanel></StackPanel>
     <TextBlock Text="{Binding Notice}" TextWrapping="Wrap" Margin="0,16,0,0" LineHeight="23"/>
     <WrapPanel Margin="0,12,0,0" Visibility="{Binding IsConfirming, Converter={StaticResource Visible}}">
-     <Button x:Name="ConfirmButton" Content="Xác nhận gia hạn" IsEnabled="{Binding CanConfirm}" Click="Confirm_Click" Margin="0,0,8,8"/>
+     <Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận gia hạn" IsEnabled="{Binding CanConfirm}" Click="Confirm_Click" Margin="0,0,8,8"/>
      <Button x:Name="KeepButton" Content="Để sau" IsEnabled="{Binding CanClose}" Click="Keep_Click" Margin="0,0,0,8"/>
     </WrapPanel>
    </StackPanel></ScrollViewer>

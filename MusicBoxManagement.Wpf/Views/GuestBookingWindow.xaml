@@ -22,7 +22,7 @@
                           HeadersVisibility="Column" RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" IsEnabled="{Binding CanInput}"
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
                     <DataGrid.Resources>
-                        <Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="8"/><Setter Property="Background" Value="#E9EEF0"/></Style>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="8"/><Setter Property="Background" Value="#E9EEF0"/></Style>
                         <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="8,0"/></Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
@@ -38,9 +38,9 @@
                     <TextBlock x:Name="RoomDetails" TextWrapping="Wrap" Foreground="#5C6873"/>
                 </ScrollViewer>
             </Grid>
-            <ScrollViewer Grid.Column="1" Margin="24,0,0,0" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <StackPanel IsEnabled="{Binding CanInput}">
+            <Grid Grid.Column="1" Margin="24,0,0,0">
+                <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel IsEnabled="{Binding CanInput}">
                         <TextBlock Text="Thông tin đặt phòng" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
                         <TextBlock Text="Ngày sử dụng" Margin="0,0,0,6"/>
                         <DatePicker x:Name="DateInput" SelectedDate="{Binding SelectedDate}" DisplayDateStart="{Binding FirstDate, Mode=OneWay}" DisplayDateEnd="{Binding LastDate, Mode=OneWay}"/>
@@ -53,14 +53,13 @@
                         <TextBox x:Name="NameInput" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8"/>
                         <TextBlock Text="Số điện thoại" Margin="0,12,0,6"/>
                         <TextBox x:Name="PhoneInput" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Padding="8"/>
-                    </StackPanel>
-                    <WrapPanel Margin="0,18,0,0">
+                    </StackPanel></ScrollViewer>
+                <WrapPanel Grid.Row="1" Margin="0,12,0,0">
                         <Button x:Name="PreviewButton" Content="Kiểm tra giờ" Click="Preview_Click" IsEnabled="{Binding CanBook}" Margin="0,0,8,8"/>
-                        <Button x:Name="SubmitButton" Content="Xác nhận đặt" Click="Submit_Click" IsEnabled="{Binding CanBook}" Margin="0,0,0,8"/>
+                        <Button x:Name="SubmitButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận đặt" Click="Submit_Click" IsEnabled="{Binding CanBook}" Margin="0,0,0,8"/>
                     </WrapPanel>
-                    <TextBlock Text="{Binding PreviewText}" TextWrapping="Wrap" Foreground="#3D4D58" Margin="0,6,0,0"/>
-                </StackPanel>
-            </ScrollViewer>
+                <ScrollViewer Grid.Row="2" MaxHeight="76" VerticalScrollBarVisibility="Auto"><TextBlock Text="{Binding PreviewText}" TextWrapping="Wrap" Foreground="#3D4D58" Margin="0,6,0,0"/></ScrollViewer>
+            </Grid>
         </Grid>
         <TextBlock x:Name="StatusText" Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#3D4D58" Margin="0,18,0,0"/>
     </Grid>

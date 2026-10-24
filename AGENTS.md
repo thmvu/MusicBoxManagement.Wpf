@@ -1,5 +1,9 @@
 # Music Box WPF
 
+## UI vận hành tại quầy — 24/10/2026
+
+Theo yêu cầu người dùng làm UI trước khi tiếp MySQL: đọc docs/Ui_Operations_Design.md. App.xaml có theme chung nút/input/password/combo/popup/tab/header bảng; local styles kế thừa resource chung. Main có nút nhanh nhận khách/đặt hộ/món/checkout binding Visibility/IsEnabled từ menu, dùng cùng handler và guard. Sidebar chevron phẳng/giờ mở cửa; Guest có CTA đặt/tra cứu. Dashboard VM chỉ thêm dữ liệu trình bày lấy cùng snapshot (Available/Occupied/Booking/Pending và Code/StatusCode/Label), bảng phòng có màu+chữ, tabs/cảnh báo/revenue giữ quyền. Đặt phòng và Dịch vụ có footer nút chính ngoài vùng cuộn. Không đổi business service/schema/provider/import/ảnh thật hoặc tự checkout/timer. Debug/Release VerifyCounterFinal đạt; Verify-All 44 Debug đạt, sau chỉnh footer AuthenticationUi hai bản đạt 141 ảnh/bản; test popup/compact nút/quick routes/quyền/stale/revoke và xem ảnh. Chờ DataGrid tính lại cột sau resize trước chụp, giữ assertion. MySQL không đổi nên không rerun online, tiếp 04e.4. Csproj định dạng có sẵn giữ ngoài commit.
+
 ## Đối chiếu nghiệp vụ đầu-cuối — 24/10/2026
 
 Nghiệm thu lượt này: Verify-Workflows Debug/Release đạt; chạy lại Verify-All toàn bộ runtime 44/44 bộ Debug đạt, AuthenticationUi 140 ảnh. Không đổi production service/provider/schema và không rerun MySQL online vì không chạm code MySQL; 15 bộ online đạt ở lượt trước cùng ngày, không suy rộng sang feature chưa port. Báo cáo ghi nguồn log và ranh giới kiểm tra, không tuyên bố mọi tổ hợp đều được chứng minh.

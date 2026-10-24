@@ -26,7 +26,7 @@
         <TextBlock x:Name="StatusText" AutomationProperties.AutomationId="AuthStatus" Margin="0,18,0,0" TextWrapping="Wrap" Foreground="#8B2929" />
         <Grid Margin="0,22,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-            <Button x:Name="SubmitButton" AutomationProperties.AutomationId="SubmitAuth" IsDefault="True" Click="Submit_Click" />
+            <Button x:Name="SubmitButton" Style="{StaticResource PrimaryButton}" AutomationProperties.AutomationId="SubmitAuth" IsDefault="True" Click="Submit_Click" />
             <Button x:Name="CancelButton" Content="Về chế độ Khách" IsCancel="True" Grid.Column="1" Margin="12,0,0,0" />
         </Grid>
     </StackPanel>

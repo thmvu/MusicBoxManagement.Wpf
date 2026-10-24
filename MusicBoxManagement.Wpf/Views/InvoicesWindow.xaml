@@ -9,7 +9,7 @@
    </Grid><ControlTemplate.Triggers><Trigger Property="Text" Value=""><Setter TargetName="DateHint" Property="Visibility" Value="Visible"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="DateHint" Property="Visibility" Value="Collapsed"/></Trigger></ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter></Style>
   <Style TargetType="DataGrid"><Setter Property="AutoGenerateColumns" Value="False"/><Setter Property="IsReadOnly" Value="True"/><Setter Property="CanUserAddRows" Value="False"/><Setter Property="CanUserDeleteRows" Value="False"/><Setter Property="HeadersVisibility" Value="Column"/><Setter Property="RowHeight" Value="36"/><Setter Property="ColumnHeaderHeight" Value="38"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#CAD3D8"/><Setter Property="GridLinesVisibility" Value="Horizontal"/><Setter Property="HorizontalGridLinesBrush" Value="#DEE4E7"/></Style>
-  <Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+  <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
   <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/></Style>
  </Window.Resources>
  <Grid Margin="28"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*" MinHeight="140"/><RowDefinition Height="*" MinHeight="235"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>

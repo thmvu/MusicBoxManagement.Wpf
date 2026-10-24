@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+Giao diện vận hành mới 24/10/2026: [Tổng quan, bảng phòng và theme chung](docs/Ui_Operations_Design.md). Có nút nhanh nhận khách/đặt hộ/món/trả phòng theo quyền, bảng phòng có nhãn trạng thái, các form cùng kiểu nút/ô nhập/tab; nút chính của form đặt phòng và dịch vụ không bị cuộn khuất. Rebuild/rerun để nhận giao diện mới. App vẫn SQLite, tiếp MySQL 04e.4 sau bước này.
+
 Rà soát nghiệp vụ 24/10/2026: [ma trận luồng hiện hành](docs/Business_Workflow_Audit_20261024.md), đối chiếu reference và chỉ rõ bằng chứng/giới hạn từng nhóm. Có thêm `Tests/Verify-Workflows.ps1` chạy chuỗi service thật từ đặt phòng đến hóa đơn/báo cáo/lịch sử, walk-in đến lượt kế tiếp và hủy/NoShow/RBAC; không giả trạng thái Completed hoặc hóa đơn. `Verify-All` nay gồm 44 bộ SQLite/WPF, thêm 15 bộ MySQL đã port khi chọn IncludeMySql. App vẫn SQLite; chuỗi MySQL đầy đủ chưa hoàn tất.
 
 Cập nhật 24/10/2026: [rà soát nhập liệu và menu](docs/Ui_Validation_Navigation_Review.md). Thông tin bắt buộc được báo ngay trên form; menu gom Vận hành/Danh mục/Báo cáo/Quản trị và Tổng quan ở đầu, mở sau đăng nhập theo quyền. Người dùng xác nhận hiện tượng dừng là debugger Visual Studio tại Exception có Continue/F5; tài liệu có cách phân biệt và cấu hình. Chạy toàn bộ bài kiểm tra bằng `Tests/Verify-All.ps1` (thêm `-IncludeMySql` để kiểm tra các service Aiven đã port). Không đổi provider hoặc nhập dữ liệu thật.

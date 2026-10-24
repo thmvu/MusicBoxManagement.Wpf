@@ -11,7 +11,7 @@
    <DataGrid x:Name="RoomsTable" ItemsSource="{Binding Rooms}" SelectedItem="{Binding SelectedRoom}" IsEnabled="{Binding CanInput}" Margin="0,0,24,0"
     AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" SelectionMode="Single" SelectionUnit="FullRow" RowHeight="42" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
     <DataGrid.Resources>
-     <Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="10,8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Background" Value="#E9EEF0"/><Setter Property="Padding" Value="10,8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
      <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
      <Style TargetType="TextBlock"><Setter Property="Margin" Value="10,0"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
     </DataGrid.Resources>
@@ -28,8 +28,8 @@
   <TextBlock Grid.Row="2" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,18,0,16"/>
   <WrapPanel Grid.Row="3">
    <Button x:Name="RefreshButton" Content="Cập nhật" IsEnabled="{Binding CanRefresh}" Click="Refresh_Click" Margin="0,0,8,8"/>
-   <Button x:Name="ReceiveButton" Content="Nhận khách" IsEnabled="{Binding CanReceive}" Click="Receive_Click" Margin="0,0,8,8"/>
-   <Button x:Name="ConfirmButton" Content="Xác nhận nhận ngay" IsEnabled="{Binding CanConfirm}" Visibility="{Binding IsConfirming, Converter={StaticResource Visible}}" Click="Confirm_Click" Margin="0,0,8,8"/>
+   <Button x:Name="ReceiveButton" Style="{StaticResource PrimaryButton}" Content="Nhận khách" IsEnabled="{Binding CanReceive}" Click="Receive_Click" Margin="0,0,8,8"/>
+   <Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận nhận ngay" IsEnabled="{Binding CanConfirm}" Visibility="{Binding IsConfirming, Converter={StaticResource Visible}}" Click="Confirm_Click" Margin="0,0,8,8"/>
    <Button x:Name="KeepButton" Content="Chỉnh lại" IsEnabled="{Binding CanConfirm}" Visibility="{Binding IsConfirming, Converter={StaticResource Visible}}" Click="Keep_Click" Margin="0,0,8,8"/>
    <Button x:Name="NewButton" Content="Nhận lượt mới" IsEnabled="{Binding CanNew}" Click="New_Click" Margin="0,0,8,8"/>
    <Button Content="Đóng" IsEnabled="{Binding CanClose}" Click="Close_Click" Margin="0,0,0,8"/>

@@ -144,6 +144,8 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window, "WalkInButton").Visibility == Visibility.Collapsed, "Guest saw walk-in operation.");
             Assert(Field<Button>(window, "SessionsButton").Visibility == Visibility.Collapsed, "Guest saw private sessions.");
             Assert(Field<Button>(window, "CheckoutButton").Visibility == Visibility.Collapsed, "Guest saw checkout.");
+            Assert(!Field<Button>(window, "QuickCheckoutButton").IsVisible && !Field<Button>(window, "QuickWalkInButton").IsVisible,
+                "Guest saw staff quick actions.");
             Assert(Field<Button>(window, "InvoicesButton").Visibility == Visibility.Collapsed, "Guest saw invoice history.");
             Image(window, outputDirectory, "guest");
             VerifyNavigationLayout(window, false, outputDirectory);
@@ -257,7 +259,7 @@ public static class MusicBoxAuthenticationUiChecks
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Field<Expander>(window, "OperationsNavigation").IsExpanded = true; window.UpdateLayout();
-            Assert(Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"CheckOut-only entry required View/Order rights.");
+            Assert(Field<Button>(window,"QuickCheckoutButton").IsVisible && !Field<Button>(window,"QuickOrdersButton").IsVisible && !Field<Button>(window,"QuickWalkInButton").IsVisible,"CheckOut-only quick action required other rights or exposed unrelated actions.");
             bool checkoutOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
                 var child=application.Windows.OfType<CheckoutWindow>().FirstOrDefault();if(child==null)return;
@@ -266,11 +268,12 @@ public static class MusicBoxAuthenticationUiChecks
                 catch(Exception error){driverError=error;}
                 finally{driver.Stop();child.Close();}
             };
-            driver.Start();Click(Field<Button>(window,"CheckoutButton"));PumpUntil(()=>driverError!=null || (checkoutOpened && Field<Button>(window,"CheckoutButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
+            driver.Start();Click(Field<Button>(window,"QuickCheckoutButton"));PumpUntil(()=>driverError!=null || (checkoutOpened && Field<Button>(window,"CheckoutButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
             staffEntrySql("DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
             Field<Expander>(window, "OperationsNavigation").IsExpanded = true; window.UpdateLayout();
-            Assert(Field<Button>(window,"InvoicesButton").IsVisible && !Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"Invoice.View-only entry required operational rights.");
+            Field<Expander>(window, "OperationsNavigation").IsExpanded = true; window.UpdateLayout();
+            Assert(Field<Button>(window,"InvoicesButton").IsVisible && !Field<Button>(window,"QuickCheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"Invoice.View-only entry required operational rights.");
             bool invoicesOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
                 var child=application.Windows.OfType<InvoicesWindow>().FirstOrDefault();if(child==null)return;var vm=(InvoicesViewModel)child.DataContext;if(vm.IsBusy)return;
@@ -426,7 +429,7 @@ public static class MusicBoxAuthenticationUiChecks
                 var walk = (WalkInViewModel)entry.DataContext; if(walk.IsBusy || string.IsNullOrEmpty(walk.Status))return;
                 Assert(walk.Rooms.Count==0 && !walk.CanReceive,"Main walk-in entry did not open the protected empty form.");walkInOpened=true;driver.Stop();entry.Close();
             };
-            driver.Start();Click(Field<Button>(window,"WalkInButton"));PumpUntil(()=>walkInOpened && Field<Button>(window,"WalkInButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled);driver.Stop();
+            driver.Start();Click(Field<Button>(window,"QuickWalkInButton"));PumpUntil(()=>walkInOpened && Field<Button>(window,"WalkInButton").IsEnabled && Field<Button>(window,"RefreshAccessButton").IsEnabled);driver.Stop();
             var sessionsOpened=false;
             driver=new DispatcherTimer {Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
@@ -808,6 +811,9 @@ INSERT INTO AspNetUserRoles VALUES('dash','Staff');DELETE FROM RolePermission WH
         {
             var read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);read.GetAwaiter().GetResult();form.UpdateLayout();
             Assert(vm.Rooms.Count==3 && vm.Bookings.Count==2 && vm.Sessions.Count==2 && vm.Orders.Count==1 && vm.Alerts.Count==5 && vm.HasRevenue && vm.Revenue.Contains("0 đ") && vm.Updated.Contains("14:40:00"),"Dashboard UI missing counts/alerts/zero revenue/time.");
+            Assert(vm.AvailableRoomCount == 0 && vm.OccupiedRoomCount == 2 && vm.BookingCount == 2 && vm.PendingOrderCount == 1
+                && vm.Rooms.Count(r => r.StatusCode == "Occupied") == 2 && vm.Rooms.Single(r => r.Code == "D3").StatusLabel == "Đã khóa",
+                "Room board/summary disagreed with operational state.");
             Assert(vm.Alerts.Any(a=>a.Title.Contains("Sắp hết hạn")) && vm.Alerts.Any(a=>a.Title.Contains("Quá giờ")||a.Title.Contains("quá giờ")) && vm.Rooms.Any(r=>r.Title.Contains("Đã khóa")),"Dashboard Vietnamese labels wrong.");
             Image(form,outputDirectory,"dashboard-admin");form.Width=730;form.Height=460;form.UpdateLayout();Image(form,outputDirectory,"dashboard-compact");
             vm.Reset(staff);read=vm.RefreshAsync();PumpUntil(()=>read.IsCompleted);form.UpdateLayout();
@@ -1727,6 +1733,12 @@ INSERT INTO AspNetUserRoles VALUES('orders','Staff');");
         try
         {
             services.Show(); var vm = (ServicesViewModel)services.DataContext; PumpUntil(() => vm.CanEdit);
+            services.Width = services.MinWidth; services.Height = services.MinHeight; services.UpdateLayout();
+            PumpUntil(() => Field<DataGrid>(services, "ServicesTable").Columns.Sum(column => column.ActualWidth)
+                <= Field<DataGrid>(services, "ServicesTable").ActualWidth);
+            var saveButton = Field<Button>(services, "SaveButton");
+            Assert(saveButton.TranslatePoint(new Point(), services).Y + saveButton.ActualHeight < services.ActualHeight - 35,
+                "Compact service form hid its Save action.");
             Click(Field<Button>(services, "SaveButton"));
             Assert(vm.Status.Contains("tên dịch vụ") && services.IsVisible && !vm.IsBusy, "Blank service closed form or missed name feedback.");
             Field<TextBox>(services, "NameInput").Text = "Dịch vụ kiểm tra";
@@ -1834,6 +1846,11 @@ INSERT INTO AspNetUserRoles VALUES('orders','Staff');");
         try
         {
             form.Show();wait(()=>!vm.IsBusy && vm.CanBook,"load");
+            var timeInput = Field<ComboBox>(form, "TimeInput"); timeInput.ApplyTemplate(); timeInput.IsDropDownOpen = true;
+            var popup = (System.Windows.Controls.Primitives.Popup)timeInput.Template.FindName("PART_Popup", timeInput);
+            PumpUntil(() => popup != null && popup.IsOpen && popup.Child != null && popup.Child.RenderSize.Width > 0);
+            Assert(popup.Child.RenderSize.Width >= timeInput.ActualWidth - 2, "Styled time dropdown lost its popup width.");
+            timeInput.IsDropDownOpen = false;
             Assert(vm.Rooms.Count==1 && Field<Image>(form,"RoomImage").Source!=null,"Public room filter/image failed.");
             Field<DatePicker>(form,"DateInput").SelectedDate=new DateTime(2026,10,5);
             Field<ComboBox>(form,"TimeInput").SelectedItem="13:00";Field<TextBox>(form,"NameInput").Text="Tên vừa nhập";
@@ -1845,6 +1862,15 @@ INSERT INTO AspNetUserRoles VALUES('orders','Staff');");
             Click(Field<Button>(form,"PreviewButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("Có thể đặt"),"preview");
             Assert(Convert.ToInt64(value("SELECT COUNT(*) FROM Reservations;"))==0 && Convert.ToInt64(value("SELECT COUNT(*) FROM Customers;"))==1,"Preview wrote a booking/customer.");
             Image(form,outputDirectory,"booking-form");
+            var previousWidth = form.Width; var previousHeight = form.Height;
+            form.Width = form.MinWidth; form.Height = form.MinHeight; form.UpdateLayout();
+            PumpUntil(() => Field<DataGrid>(form, "RoomsTable").Columns.Sum(column => column.ActualWidth)
+                <= Field<DataGrid>(form, "RoomsTable").ActualWidth);
+            var submit = Field<Button>(form, "SubmitButton");
+            Assert(submit.TranslatePoint(new Point(), form).Y + submit.ActualHeight < form.ActualHeight - 35,
+                "Compact booking form hid confirmation behind scrolling fields.");
+            Image(form, outputDirectory, "booking-form-compact-actions");
+            form.Width = previousWidth; form.Height = previousHeight; form.UpdateLayout();
             service.Create(new MusicBoxManagement.Wpf.Models.ReservationRequest{RoomId=1,StartTime=new DateTimeOffset(2026,10,5,13,0,0,TimeSpan.FromHours(7)),DurationMinutes=60,FullName="Người khác",PhoneNumber="0987654321"});
             Click(Field<Button>(form,"SubmitButton"));wait(()=>!vm.IsBusy && vm.Status.Contains("trùng"),"conflict");
             Image(form,outputDirectory,"booking-conflict");

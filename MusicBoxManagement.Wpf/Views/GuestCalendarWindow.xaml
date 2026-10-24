@@ -10,7 +10,7 @@
   <DataGrid x:Name="SlotsTable" Grid.Row="2" ItemsSource="{Binding Slots}" SelectedItem="{Binding Selected}" IsEnabled="{Binding CanClose}"
    AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column"
    RowHeight="34" ColumnHeaderHeight="38" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
-   <DataGrid.Resources><Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="10"/><Setter Property="Background" Value="#E9EEF0"/></Style>
+   <DataGrid.Resources><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10"/><Setter Property="Background" Value="#E9EEF0"/></Style>
     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="10,0"/></Style>
     <Style TargetType="DataGridRow"><Setter Property="Background" Value="#F0F2F3"/><Style.Triggers><DataTrigger Binding="{Binding CanChoose}" Value="True"><Setter Property="Background" Value="#DCE8E2"/></DataTrigger></Style.Triggers></Style>
    </DataGrid.Resources>

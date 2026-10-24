@@ -18,7 +18,7 @@
    </DataGrid.Columns>
   </DataGrid>
   <StackPanel Grid.Row="3" Margin="0,14,0,0">
-   <Border Padding="12" Background="#E3EBEF" Visibility="{Binding HasConfirmation,Converter={StaticResource Visible}}" Margin="0,0,0,10"><StackPanel><TextBlock Text="{Binding ConfirmationText}" TextWrapping="Wrap" Margin="0,0,0,10"/><WrapPanel><Button x:Name="ConfirmButton" Content="Xác nhận lưu" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}" Margin="0,0,10,0"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanReload}"/></WrapPanel></StackPanel></Border>
+   <Border Padding="12" Background="#E3EBEF" Visibility="{Binding HasConfirmation,Converter={StaticResource Visible}}" Margin="0,0,0,10"><StackPanel><TextBlock Text="{Binding ConfirmationText}" TextWrapping="Wrap" Margin="0,0,0,10"/><WrapPanel><Button x:Name="ConfirmButton" Style="{StaticResource PrimaryButton}" Content="Xác nhận lưu" Click="Confirm_Click" IsEnabled="{Binding CanConfirm}" Margin="0,0,10,0"/><Button x:Name="KeepButton" Content="Quay lại" Click="Keep_Click" IsEnabled="{Binding CanReload}"/></WrapPanel></StackPanel></Border>
    <WrapPanel><Button x:Name="PrepareButton" Content="Kiểm tra / Lưu" Click="Prepare_Click" IsEnabled="{Binding CanSave}"/><TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxWidth="720" Margin="14,6,0,0" Foreground="#263D4A"/></WrapPanel>
   </StackPanel>
  </Grid>
