@@ -1,5 +1,7 @@
 # Music Box WPF — Use case và đánh giá luồng nghiệp vụ
 
+**Đối chiếu hiện hành 24/10/2026:** đọc [ma trận nghiệp vụ và kiểm tra đầu-cuối](Business_Workflow_Audit_20261024.md). Tài liệu bên dưới giữ snapshot 6e.2 ngày 11/10 và các ghi chú bổ sung, không dùng trạng thái “chưa làm” trong các bảng cũ để mô tả code hiện tại. Báo cáo mới tách app SQLite khỏi phần MySQL chưa port đủ và ghi rõ bằng chứng kiểm tra cho từng nhóm.
+
 Ngày rà soát: **11/10/2026**. Mốc mã nguồn: **6071be0**, hoàn thành 6e.2.
 
 **Cập nhật đến 13/10/2026 sau bản rà soát:** [Bước 7a.1](Step7a1_CheckoutFoundation.md) có service checkout/hóa đơn thật; [bước 7a.2](Step7a2_CheckoutUi.md) đã nối UI trả phòng/xác nhận thu tiền và receipt trên schema v8. P01 đã có luồng qua WPF; [7b.1](Step7b1_InvoiceReading.md) có service tìm/đọc và kiểm tra quyền chuẩn bị in, [7b.2](Step7b2_InvoiceUi.md) đã có UI tìm/xem hóa đơn lịch sử; [7b.3](Step7b3_InvoicePrinting.md) đã có xem trước/in WPF (13/10/2026), P02 đã có luồng UI; giấy/driver máy in thật chưa được kiểm tra. [8a.1](Step8a1_DashboardFoundation.md) đã có service dashboard vận hành/cảnh báo/doanh thu theo quyền; [8a.2](Step8a2_DashboardUi.md) đã nối UI trên màn chính, P03 đã có luồng WPF. [Hướng dẫn gọi hàm](Code_Flow_Full_Guide.md) giải thích dashboard và các luồng chính. Các đánh giá/bảng bên dưới giữ mốc 6e.2 để đối chiếu, không dùng câu “chưa có checkout” của snapshot cũ để mô tả phiên bản hiện tại.

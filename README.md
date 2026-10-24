@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+Rà soát nghiệp vụ 24/10/2026: [ma trận luồng hiện hành](docs/Business_Workflow_Audit_20261024.md), đối chiếu reference và chỉ rõ bằng chứng/giới hạn từng nhóm. Có thêm `Tests/Verify-Workflows.ps1` chạy chuỗi service thật từ đặt phòng đến hóa đơn/báo cáo/lịch sử, walk-in đến lượt kế tiếp và hủy/NoShow/RBAC; không giả trạng thái Completed hoặc hóa đơn. `Verify-All` nay gồm 44 bộ SQLite/WPF, thêm 15 bộ MySQL đã port khi chọn IncludeMySql. App vẫn SQLite; chuỗi MySQL đầy đủ chưa hoàn tất.
+
 Cập nhật 24/10/2026: [rà soát nhập liệu và menu](docs/Ui_Validation_Navigation_Review.md). Thông tin bắt buộc được báo ngay trên form; menu gom Vận hành/Danh mục/Báo cáo/Quản trị và Tổng quan ở đầu, mở sau đăng nhập theo quyền. Người dùng xác nhận hiện tượng dừng là debugger Visual Studio tại Exception có Continue/F5; tài liệu có cách phân biệt và cấu hình. Chạy toàn bộ bài kiểm tra bằng `Tests/Verify-All.ps1` (thêm `-IncludeMySql` để kiểm tra các service Aiven đã port). Không đổi provider hoặc nhập dữ liệu thật.
 
 **Bàn giao MySQL:** đọc [bảng trạng thái migration](docs/MySql_Migration_Status.md) trước khi nhận việc. File ghi từng service, bằng chứng kiểm tra, phần chưa port và nhật ký nhập dữ liệu thật; cập nhật/push cùng mỗi bước để người khác không làm lại.

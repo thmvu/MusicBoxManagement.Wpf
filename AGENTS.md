@@ -1,5 +1,11 @@
 # Music Box WPF
 
+## Đối chiếu nghiệp vụ đầu-cuối — 24/10/2026
+
+Nghiệm thu lượt này: Verify-Workflows Debug/Release đạt; chạy lại Verify-All toàn bộ runtime 44/44 bộ Debug đạt, AuthenticationUi 140 ảnh. Không đổi production service/provider/schema và không rerun MySQL online vì không chạm code MySQL; 15 bộ online đạt ở lượt trước cùng ngày, không suy rộng sang feature chưa port. Báo cáo ghi nguồn log và ranh giới kiểm tra, không tuyên bố mọi tổ hợp đều được chứng minh.
+
+Người dùng yêu cầu kiểm soát theo đúng nghiệp vụ, không coi sửa một form/chạy nhiều test là đã rà toàn bộ. Đọc docs/Business_Workflow_Audit_20261024.md cùng reference/plan trước bước mới: có ma trận các nhóm, service và bằng chứng, tách runtime SQLite với MySQL chưa đủ chuỗi. Tests/Verify-Workflows.ps1 mới chạy service thật trên cùng DB GUID: Guest booking→Day/Week→check-in→Guest extend→orders→đổi SĐT/danh mục→bill→checkout rollback/retry→invoice/print/report/Excel/history; walk-in→future Room/Customer booking→dynamic ReturnBy→checkout→next check-in; exact Guest cancel/NoShow/current RBAC. Không giả Completed/Invoice bằng SQL; SQL ngoài service chỉ đọc và trigger lỗi test. Bản UseCases_And_Workflow_Review là snapshot cũ, nay có link hiện hành. Mỗi bước phải nêu rule, trạng thái, quyền, clock/tiền/snapshot/transaction và ca từ chối/lặp/rollback/race; không tự đổi luật hoặc cắt scope. Không sửa production service nếu chưa tìm được lệch quy tắc; chưa nghiệm thu dữ liệu thật/máy in/cutover. Verify-All tự nhận Workflows thành 44 SQLite/WPF + 15 MySQL đã port.
+
 ## Rà soát UI/nhập liệu — 24/10/2026
 
 Kết quả cuối: build VerifyUiReviewDebug/Release đạt; 43 bộ SQLite/WPF Debug và 15 bộ MySQL online Debug đạt. Sau chỉnh bố cục cuối, AuthenticationUi cả hai build đạt 140 ảnh/bản, đã xem menu thu gọn/nhóm báo cáo/compact/form thiếu trường. Hai bài menu cũ phải cập nhật mở Expander trước IsVisible, lượt sau đạt; không nới quyền để qua test. Báo cáo có đường dẫn log TEMP và giới hạn bằng chứng.
