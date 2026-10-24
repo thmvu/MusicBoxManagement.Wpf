@@ -1,5 +1,11 @@
 # Music Box WPF
 
+## Rà soát UI/nhập liệu — 24/10/2026
+
+Kết quả cuối: build VerifyUiReviewDebug/Release đạt; 43 bộ SQLite/WPF Debug và 15 bộ MySQL online Debug đạt. Sau chỉnh bố cục cuối, AuthenticationUi cả hai build đạt 140 ảnh/bản, đã xem menu thu gọn/nhóm báo cáo/compact/form thiếu trường. Hai bài menu cũ phải cập nhật mở Expander trước IsVisible, lượt sau đạt; không nới quyền để qua test. Báo cáo có đường dẫn log TEMP và giới hạn bằng chứng.
+
+Người dùng yêu cầu xử lý thông tin trống, gom menu và đặt dashboard đầu tiên; sau đó xác nhận Visual Studio dừng tại Exception có Continue/F5. Không suy diễn đây là crash; không thêm handler nuốt mọi exception. Đã bổ sung guard trường bắt buộc trong VM/form, giữ validation/permission/transaction/audit tại service. Menu Tổng quan đầu tiên, bốn Expander Vận hành/Danh mục/Báo cáo/Quản trị thu gọn lúc tạo cửa sổ; nhóm trống quyền ẩn. Giữ Staff không doanh thu tổng hợp theo reference, Admin/Manager theo quyền. Các test menu mở nhóm trước kiểm tra nút con; AuthenticationUi có ca bấm nút trống trên bảy form, không ghi dữ liệu/audit và sửa lại rồi lưu. Xem docs/Ui_Validation_Navigation_Review.md. Runner Tests/Verify-All.ps1 chạy mỗi suite bằng process STA riêng, log/exit code vào TEMP; thêm -IncludeMySql cho online đã port. UI lượt này được user yêu cầu, không mở rộng thành thiết kế lại toàn bộ. Không đổi provider/import hoặc làm lại migration 01–04e.3; tiếp 04e.4 sau phần này. Thay đổi định dạng csproj có sẵn vẫn giữ riêng ngoài commit.
+
 ## MySQL 04e.3 — Đọc phiên/gia hạn Staff (22/10/2026)
 
 Đã có MySqlStaffSessionService.Search/Preview/Extend và MySqlRoomSessionService.PreviewExtensionStaff/ExtendStaff cùng viewed route. Search theo Session.View độc lập Reservation/Customer/Room CRUD, SĐT chuẩn hóa/status/Completed/locked history, tên/SĐT hiện hành, snapshot/actual/expected/ReturnBy walk-in, một clock cùng RR read-only snapshot quyền/dữ liệu/CanExtend; không maintenance/audit. Core Extend-only độc lập View; wrapper Staff cần cả View+Extend hiện hành, không Guest fallback. Xem docs/MySql_Migration_04e3_SessionsExtension.md.

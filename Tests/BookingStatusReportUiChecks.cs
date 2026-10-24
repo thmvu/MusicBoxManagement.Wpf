@@ -93,6 +93,7 @@ public static class MusicBoxBookingStatusReportUiChecks
                 driver.Start(); Click(main, "LoginButton");
                 PumpUntil(() => error != null || ((FrameworkElement)main.FindName("StaffNavigation")).IsVisible && Button(main, "RefreshAccessButton").IsEnabled);
                 driver.Stop(); if (error != null) throw error;
+                ((Expander)main.FindName("ReportsNavigation")).IsExpanded = true; main.UpdateLayout();
                 Assert(Button(main, "BookingReportsButton").IsVisible == (user != "staff.report"), "Report navigation incorrect for " + user);
                 if (user != "staff.report")
                 {

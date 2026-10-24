@@ -72,7 +72,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task PreviewAsync()
         {
-            if(!CanBook)return; SetBusy(true);
+            if(!CanBook)return;
+            if(string.IsNullOrWhiteSpace(PhoneNumber)){SetStatus("Vui lòng nhập số điện thoại để kiểm tra lịch.");return;}
+            SetBusy(true);
             try{var input=Request();var result=await Task.Run(()=>service.Preview(input));preview=result.Reason+" (Kiểm tra lúc "+result.CheckedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss")+").";Notify(nameof(PreviewText));SetStatus(result.CanBook?"Có thể đặt khoảng này tại thời điểm kiểm tra.":"Khoảng đã chọn chưa đặt được.");}
             catch(Exception error){ShowError(error);}
             finally{SetBusy(false);}
@@ -92,12 +94,18 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task<bool> SubmitAsync()
         {
-            if(!CanBook)return false; SetBusy(true);
+            if(!CanBook || !HasRequiredCustomer())return false; SetBusy(true);
             try{var input=Request();var roomCode=SelectedRoom.RoomCode;var result=await Task.Run(()=>service.Create(input));saved=true;LastCreatedReservationId=result.ReservationId;Notify(nameof(LastCreatedReservationId));
                 preview="Đã xác nhận, không thu cọc. "+(staffMode?"Khách":"Bạn")+" cần đến nhận phòng trước "+result.StartTime.AddMinutes(15).ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+".";Notify(nameof(PreviewText));
                 SetStatus((staffMode?"Đặt hộ":"Đặt phòng")+" thành công — mã #"+result.ReservationId+", "+roomCode+", "+result.StartTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+" đến "+result.EndTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm")+". Trạng thái: Confirmed (đã xác nhận).");return true;}
             catch(Exception error){ShowError(error);return false;}
             finally{SetBusy(false);}
+        }
+        private bool HasRequiredCustomer()
+        {
+            if (string.IsNullOrWhiteSpace(FullName)) { SetStatus("Vui lòng nhập họ tên khách hàng."); return false; }
+            if (string.IsNullOrWhiteSpace(PhoneNumber)) { SetStatus("Vui lòng nhập số điện thoại khách hàng."); return false; }
+            return true;
         }
         public void StartNew(){if(!CanReset)return;saved=false;FullName=PhoneNumber=null;SetStatus("Nhập thông tin cho lượt đặt mới.");SetBusy(false);}
         internal void RejectAccess() { ShowError(new UnauthorizedAccessException()); SetBusy(false); }

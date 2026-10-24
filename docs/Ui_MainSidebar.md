@@ -1,5 +1,7 @@
 # Chỉnh giao diện chính — 07/10/2026
 
+**Bản cập nhật hiện hành 24/10/2026:** menu đã gom thành bốn nhóm thu gọn, Tổng quan ở đầu và dashboard mở sau đăng nhập theo quyền. Xem [rà soát UI/nhập liệu và kiểm tra toàn bộ](Ui_Validation_Navigation_Review.md). Nội dung bên dưới ghi lại thay đổi ngày 07/10, không thay thế báo cáo mới.
+
 ## Yêu cầu và thay đổi
 
 Người dùng yêu cầu tận dụng thanh trái đang trống, chuyển các nút chen nhau bên phải thành menu dọc và nới phần nội dung.

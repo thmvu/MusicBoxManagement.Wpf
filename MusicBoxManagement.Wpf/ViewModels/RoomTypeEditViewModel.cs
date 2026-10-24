@@ -43,6 +43,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> SaveAsync()
         {
             if (isBusy) return false;
+            if (string.IsNullOrWhiteSpace(Name)) { SetStatus("Vui lòng nhập tên loại phòng."); return false; }
             if (!int.TryParse((CapacityText ?? "").Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var capacity) || capacity <= 0)
             { SetStatus("Sức chứa phải là số nguyên lớn hơn 0."); return false; }
             if (!long.TryParse((PriceText ?? "").Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var price) || price <= 0)

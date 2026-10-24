@@ -34,6 +34,9 @@ namespace MusicBoxManagement.Wpf.Views
             var userName = UserNameBox.Text;
             var fullName = FullNameBox.Text;
             var password = PasswordInput.Password;
+            if (string.IsNullOrWhiteSpace(userName)) { StatusText.Text = "Vui lòng nhập tên đăng nhập."; return; }
+            if (setup && string.IsNullOrWhiteSpace(fullName)) { StatusText.Text = "Vui lòng nhập họ tên Admin."; return; }
+            if (string.IsNullOrEmpty(password)) { StatusText.Text = "Vui lòng nhập mật khẩu."; return; }
             if (setup && password != ConfirmInput.Password)
             { StatusText.Text = "Hai lần nhập mật khẩu chưa khớp."; return; }
             isBusy = true;

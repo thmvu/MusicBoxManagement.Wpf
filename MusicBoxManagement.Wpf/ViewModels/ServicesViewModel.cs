@@ -61,6 +61,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> SaveAsync()
         {
             if (!CanEdit) return false;
+            if (string.IsNullOrWhiteSpace(Name))
+            { SetStatus("Vui lòng nhập tên dịch vụ."); return false; }
+            if (string.IsNullOrWhiteSpace(Category))
+            { SetStatus("Vui lòng chọn nhóm dịch vụ."); return false; }
             if (!long.TryParse((PriceText ?? "").Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var price) || price <= 0)
             { SetStatus("Giá phải là số nguyên đồng lớn hơn 0, ví dụ 15000."); return false; }
             var input = new ServiceEdit { Name = Name, Category = Category, Price = price, Description = Description, IsActive = IsActive };

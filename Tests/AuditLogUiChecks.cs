@@ -79,6 +79,7 @@ public static class MusicBoxAuditLogUiChecks
                 driver.Start(); Click(main, "LoginButton");
                 PumpUntil(() => error != null || ((FrameworkElement)main.FindName("StaffNavigation")).IsVisible && Button(main, "RefreshAccessButton").IsEnabled);
                 driver.Stop(); if (error != null) throw error;
+                ((Expander)main.FindName("AdministrationNavigation")).IsExpanded = true; main.UpdateLayout();
                 Assert(Button(main, "AuditButton").IsVisible == (user == "admin"), "Audit navigation incorrect for " + user);
                 if (user == "admin")
                 {

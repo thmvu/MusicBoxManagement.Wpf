@@ -61,7 +61,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task SearchAsync()
         {
-            if(!CanSearch)return;var number=PhoneNumber;SetBusy(true);ClearResults();
+            if(!CanSearch)return;
+            if(string.IsNullOrWhiteSpace(PhoneNumber)){ClearResults();SetStatus("Vui lòng nhập số điện thoại để tra cứu.");return;}
+            var number=PhoneNumber;SetBusy(true);ClearResults();
             try{await ReloadAsync(number);SetStatus(Items.Count==0 && activeSession==null?"Không có booking còn hiệu lực hoặc phiên đang sử dụng cho SĐT này.":"Tìm thấy "+Items.Count+" booking còn hiệu lực"+(activeSession==null?" và không có phiên đang sử dụng.":" và 1 phiên đang sử dụng. Mở tab Đang sử dụng để xem/gia hạn."));}
             catch(Exception error){ClearResults();ShowError(error);}
             finally{SetBusy(false);}

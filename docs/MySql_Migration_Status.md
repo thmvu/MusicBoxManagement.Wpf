@@ -1,6 +1,10 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
-Cập nhật 22/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+Cập nhật 24/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+
+Ngày 24/10: theo yêu cầu người dùng, rà soát UI/nhập liệu và chạy hồi quy toàn bộ; xem [báo cáo](Ui_Validation_Navigation_Review.md). Không port service mới ở lượt này; MySQL vẫn hoàn tất đến 04e.3, tiếp 04e.4 Guest. App/worker vẫn SQLite v8, đích MySQL v1; không nhập database hoặc Content thật và không cutover.
+
+Hồi quy 24/10: toàn bộ 15 bộ MySQL đã port online Debug đạt trên database GUID. SQLite/WPF 43 bộ Debug đạt; UI cuối Debug/Release đạt 140 ảnh/bản. Không nâng mức nghiệm thu các phần chưa port hoặc đánh dấu nhập thật/provider xong chỉ vì lượt test này.
 
 Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status.md`. Bảng này được push cùng code/test của bước đó; không cần suy đoán tiến độ từ chat hoặc số bảng trên cloud.
 

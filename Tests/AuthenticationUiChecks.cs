@@ -70,8 +70,12 @@ public static class MusicBoxAuthenticationUiChecks
             "Staff navigation visibility did not follow the session.");
         Assert(Field<StackPanel>(window, "GuestNavigation").IsVisible != staff,
             "Guest navigation visibility did not follow the session.");
-        var names = staff ? new[] { "RoomTypesButton", "RoomsButton", "ServicesButton", "CustomersButton",
-            "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "InvoicesButton", "AccountsButton", "CalendarButton", "RefreshAccessButton" }
+        var groups = staff ? new[] { "OperationsNavigation", "CatalogGroup", "ReportsNavigation", "AdministrationNavigation" } : new string[0];
+        var expanded = groups.Select(name => Field<Expander>(window, name).IsExpanded).ToArray();
+        foreach (var name in groups) Field<Expander>(window, name).IsExpanded = true;
+        window.UpdateLayout();
+        var names = staff ? new[] { "RefreshAccessButton", "ReservationsButton", "StaffBookingButton", "WalkInButton", "SessionsButton", "OrdersButton", "CheckoutButton", "InvoicesButton", "CalendarButton",
+            "RoomsButton", "RoomTypesButton", "ServicesButton", "CustomersButton", "AccountsButton" }
             : new[] { "BookingButton", "LookupButton" };
         double previousBottom = -1;
         foreach (var name in names)
@@ -83,6 +87,8 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(point.Y >= previousBottom, "Navigation actions overlapped: " + name);
             previousBottom = point.Y + button.ActualHeight;
         }
+        for (var i = 0; i < groups.Length; i++) Field<Expander>(window, groups[i]).IsExpanded = expanded[i];
+        window.UpdateLayout();
         var width = window.Width; var height = window.Height;
         try
         {
@@ -115,6 +121,7 @@ public static class MusicBoxAuthenticationUiChecks
             "<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
             "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" + resources.InnerXml + "</ResourceDictionary>");
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
+        VerifyRequiredFields(Path.Combine(testDirectory, "required-fields.db"), outputDirectory);
         VerifyNoShowWorker(Path.Combine(testDirectory, "worker.db"));
         var database = new SqliteDatabase(file);
         var auth = new AuthenticationService(database);
@@ -216,6 +223,13 @@ public static class MusicBoxAuthenticationUiChecks
             if (driverError != null) throw driverError;
             Assert(Field<Button>(window,"ReservationsButton").Visibility==Visibility.Visible,"Admin did not see internal booking entry.");
             Assert(Field<Button>(window,"CalendarButton").Visibility==Visibility.Visible,"Admin did not see calendar entry.");
+            PumpUntil(() => Field<Button>(window, "RefreshAccessButton").IsEnabled);
+            Assert(!Field<Expander>(window, "OperationsNavigation").IsExpanded && !Field<Expander>(window, "CatalogGroup").IsExpanded
+                && !Field<Expander>(window, "ReportsNavigation").IsExpanded && !Field<Expander>(window, "AdministrationNavigation").IsExpanded,
+                "Menu groups should start collapsed before navigating.");
+            Field<Expander>(window, "ReportsNavigation").IsExpanded = true;
+            Image(window, outputDirectory, "main-reports-navigation");
+            Field<Expander>(window, "ReportsNavigation").IsExpanded = false;
             var calendarOpened=false;
             driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
@@ -242,6 +256,7 @@ public static class MusicBoxAuthenticationUiChecks
             Action<string> staffEntrySql=statement=>{using(var c=database.OpenConnection())using(var cmd=c.CreateCommand()){cmd.CommandText=statement;cmd.ExecuteNonQuery();}};
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Staff';DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Session.CheckOut';");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Field<Expander>(window, "OperationsNavigation").IsExpanded = true; window.UpdateLayout();
             Assert(Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"CheckOut-only entry required View/Order rights.");
             bool checkoutOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
@@ -254,6 +269,7 @@ public static class MusicBoxAuthenticationUiChecks
             driver.Start();Click(Field<Button>(window,"CheckoutButton"));PumpUntil(()=>driverError!=null || (checkoutOpened && Field<Button>(window,"CheckoutButton").IsEnabled));driver.Stop();if(driverError!=null)throw driverError;
             staffEntrySql("DELETE FROM RolePermission WHERE RoleId='Staff';INSERT INTO RolePermission SELECT 'Staff',PermissionId FROM Permission WHERE Code='Invoice.View';");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            Field<Expander>(window, "OperationsNavigation").IsExpanded = true; window.UpdateLayout();
             Assert(Field<Button>(window,"InvoicesButton").IsVisible && !Field<Button>(window,"CheckoutButton").IsVisible && !Field<Button>(window,"SessionsButton").IsVisible && !Field<Button>(window,"OrdersButton").IsVisible,"Invoice.View-only entry required operational rights.");
             bool invoicesOpened=false;driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
             driver.Tick+=(sender,args)=>{
@@ -292,6 +308,13 @@ public static class MusicBoxAuthenticationUiChecks
             Assert(Field<Button>(window,"CalendarButton").Visibility==Visibility.Collapsed,"Missing Calendar.View still exposed main calendar button.");
             staffEntrySql("UPDATE AspNetUserRoles SET RoleId='Admin'; INSERT OR IGNORE INTO RolePermission(RoleId,PermissionId) SELECT 'Staff',PermissionId FROM Permission WHERE Code IN('Reservation.View','Calendar.View');");
             Click(Field<Button>(window,"RefreshAccessButton"));PumpUntil(()=>Field<Button>(window,"RefreshAccessButton").IsEnabled);
+            // Modal focus restoration may expand its parent group. Collapse explicitly for this screenshot.
+            foreach (var name in new[] { "OperationsNavigation", "CatalogGroup", "ReportsNavigation", "AdministrationNavigation" })
+                Field<Expander>(window, name).IsExpanded = false;
+            Assert(Field<Button>(window, "RefreshAccessButton").TranslatePoint(new Point(), window).Y
+                < Field<Expander>(window, "OperationsNavigation").TranslatePoint(new Point(), window).Y, "Overview should be first.");
+            Image(window, outputDirectory, "main-grouped-navigation");
+            Field<Expander>(window, "CatalogGroup").IsExpanded = true;
             // This window contains both the list and the real add/edit form.
             var serviceStage = 0;
             driver = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
@@ -1682,6 +1705,117 @@ INSERT INTO AspNetUserRoles VALUES('orders','Staff');");
             grant("'Order.View','Order.Cancel','Order.Confirm'");sql("UPDATE Services SET IsActive=1 WHERE ServiceId=1;");var afterHours=service.CreateGuest("0901111111",active.Session.RoomSessionId,lines);clock.UtcNow=clock.UtcNow.AddHours(10);reload();select(afterHours.OrderId);Assert(vm.CanServe && vm.CanCancel,"Outside hours disabled pending actions.");Click(Field<Button>(form,"CancelButton"));confirm();Assert(vm.SelectedOrder.Status=="Cancelled","Outside hours staff cancel failed.");
         }
         finally{form.Close();}
+    }
+
+    private static void VerifyRequiredFields(string file, string outputDirectory)
+    {
+        var db = new SqliteDatabase(file);
+        var auth = new AuthenticationService(db);
+        var admin = auth.SetupAdminAsync("admin", "Admin kiểm tra form", Password).GetAwaiter().GetResult();
+        var clock = new BookingClock();
+        using (var c = db.OpenConnection()) using (var cmd = c.CreateCommand())
+        {
+            cmd.CommandText = "INSERT INTO Rooms(RoomCode,Name,RoomTypeId,ImageUrl,IsActive,CreatedAt) VALUES('FORM','Phòng kiểm tra',1,'missing.png',1,'test');";
+            cmd.ExecuteNonQuery();
+        }
+        Func<long> writes = () => {
+            using (var c = db.OpenConnection()) using (var cmd = c.CreateCommand())
+            { cmd.CommandText = "SELECT (SELECT COUNT(*) FROM AuditLog)+(SELECT COUNT(*) FROM Customers)+(SELECT COUNT(*) FROM Services)+(SELECT COUNT(*) FROM Reservations)+(SELECT COUNT(*) FROM RoomSessions)+(SELECT COUNT(*) FROM Rooms);"; return Convert.ToInt64(cmd.ExecuteScalar()); }
+        };
+        var before = writes();
+        var services = new ServicesWindow(new ServiceCatalogService(db), admin);
+        try
+        {
+            services.Show(); var vm = (ServicesViewModel)services.DataContext; PumpUntil(() => vm.CanEdit);
+            Click(Field<Button>(services, "SaveButton"));
+            Assert(vm.Status.Contains("tên dịch vụ") && services.IsVisible && !vm.IsBusy, "Blank service closed form or missed name feedback.");
+            Field<TextBox>(services, "NameInput").Text = "Dịch vụ kiểm tra";
+            Click(Field<Button>(services, "SaveButton"));
+            Assert(vm.Status.Contains("Giá") && services.IsVisible, "Blank service price missed feedback.");
+            Field<ComboBox>(services, "CategoryInput").SelectedIndex = -1;
+            Field<TextBox>(services, "PriceInput").Text = "15000";
+            Click(Field<Button>(services, "SaveButton"));
+            Assert(vm.Status.Contains("nhóm") && !vm.IsBusy, "Blank category missed feedback.");
+            Image(services, outputDirectory, "required-service");
+        }
+        finally { services.Close(); }
+        var customers = new CustomersWindow(new CustomerService(db), admin);
+        try
+        {
+            customers.Show(); var vm = (CustomersViewModel)customers.DataContext; PumpUntil(() => vm.CanCreate);
+            Click(Field<Button>(customers, "SaveButton"));
+            Assert(vm.Status.Contains("họ tên") && customers.IsVisible && !vm.IsBusy, "Blank customer missed name feedback.");
+            Field<TextBox>(customers, "NameInput").Text = "Khách kiểm tra";
+            Click(Field<Button>(customers, "SaveButton"));
+            Assert(vm.Status.Contains("số điện thoại") && customers.IsVisible, "Blank customer phone missed feedback.");
+            Image(customers, outputDirectory, "required-customer");
+        }
+        finally { customers.Close(); }
+        var route = new GuestBookingService(db, clock);
+        var bookingVm = new GuestBookingViewModel(route, clock);
+        var booking = new GuestBookingWindow(route, bookingVm);
+        try
+        {
+            booking.Show(); PumpUntil(() => bookingVm.CanBook);
+            Click(Field<Button>(booking, "SubmitButton"));
+            Assert(bookingVm.Status.Contains("họ tên") && booking.IsVisible && !bookingVm.IsBusy, "Blank booking missed name feedback.");
+            Field<TextBox>(booking, "NameInput").Text = "Khách kiểm tra";
+            Click(Field<Button>(booking, "SubmitButton"));
+            Assert(bookingVm.Status.Contains("số điện thoại") && booking.IsVisible, "Blank booking phone missed feedback.");
+            Image(booking, outputDirectory, "required-booking");
+        }
+        finally { booking.Close(); }
+        var walkVm = new WalkInViewModel(new RoomSessionService(db, clock), admin);
+        var walk = new WalkInWindow(walkVm);
+        try
+        {
+            walk.Show(); PumpUntil(() => walkVm.CanReceive);
+            Click(Field<Button>(walk, "ReceiveButton"));
+            Assert(walkVm.Status.Contains("họ tên") && walk.IsVisible && !walkVm.IsBusy, "Blank walk-in missed name feedback.");
+            Field<TextBox>(walk, "NameInput").Text = "Khách kiểm tra";
+            Click(Field<Button>(walk, "ReceiveButton"));
+            Assert(walkVm.Status.Contains("số điện thoại") && !walkVm.IsConfirming, "Blank walk-in started confirmation.");
+            Image(walk, outputDirectory, "required-walk-in");
+        }
+        finally { walk.Close(); }
+        var lookup = new GuestLookupWindow(new GuestReservationService(db, clock));
+        try
+        {
+            lookup.Show(); var vm = (GuestLookupViewModel)lookup.DataContext;
+            Click(Field<Button>(lookup, "SearchButton"));
+            Assert(vm.Status.Contains("số điện thoại") && lookup.IsVisible && !vm.IsBusy && vm.Items.Count == 0, "Blank lookup missed feedback.");
+            Image(lookup, outputDirectory, "required-lookup");
+        }
+        finally { lookup.Close(); }
+        var types = new RoomTypeService(db);
+        var roomVm = new RoomsViewModel(new RoomService(db), admin, types.List());
+        var room = new RoomCreateWindow(roomVm);
+        try
+        {
+            room.Show(); Click(Field<Button>(room, "SaveButton"));
+            Assert(roomVm.Status.Contains("mã phòng") && room.IsVisible && !roomVm.IsBusy, "Blank room missed feedback.");
+            Image(room, outputDirectory, "required-room");
+        }
+        finally { room.Close(); }
+        var login = new AuthenticationWindow(auth, false);
+        try
+        {
+            login.Show(); Click(Field<Button>(login, "SubmitButton"));
+            Assert(Field<TextBlock>(login, "StatusText").Text.Contains("tên đăng nhập") && login.IsVisible, "Blank login missed feedback.");
+            Field<TextBox>(login, "UserNameBox").Text = "admin"; Click(Field<Button>(login, "SubmitButton"));
+            Assert(Field<TextBlock>(login, "StatusText").Text.Contains("mật khẩu") && login.IsVisible, "Blank password missed feedback.");
+            Image(login, outputDirectory, "required-login");
+        }
+        finally { login.Close(); }
+        Assert(writes() == before, "Invalid form submissions wrote business data or audit.");
+        // Valid input after validation failure still succeeds in the same view model.
+        var recovery = new ServicesViewModel(new ServiceCatalogService(db), admin);
+        var load = recovery.RefreshAsync(); PumpUntil(() => load.IsCompleted); load.GetAwaiter().GetResult();
+        var invalid = recovery.SaveAsync(); PumpUntil(() => invalid.IsCompleted); Assert(!invalid.GetAwaiter().GetResult(), "Blank service saved.");
+        recovery.Name = "Nước kiểm tra"; recovery.PriceText = "15000";
+        var save = recovery.SaveAsync(); PumpUntil(() => save.IsCompleted);
+        Assert(save.GetAwaiter().GetResult() && recovery.Items.Count == 1, "Could not correct input and save after validation failure.");
+        auth.Logout(admin);
     }
 
     private static void VerifyGuestBooking(string file,string outputDirectory)

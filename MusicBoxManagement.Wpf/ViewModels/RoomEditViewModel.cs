@@ -54,6 +54,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> SaveAsync()
         {
             if (isBusy) return false;
+            if (string.IsNullOrWhiteSpace(Name)) { SetStatus("Tên phòng không được để trống."); return false; }
+            if (SelectedRoomType == null) { SetStatus("Vui lòng chọn loại phòng."); return false; }
+            if (!IsActive && string.IsNullOrWhiteSpace(InactiveReason)) { SetStatus("Vui lòng nhập lý do khóa phòng."); return false; }
             var input = new RoomEdit { Name = Name, Description = Description, ReplacementImageFilePath = ReplacementImageFilePath,
                 RoomTypeId = SelectedRoomType?.RoomTypeId ?? 0, IsActive = IsActive, InactiveReason = InactiveReason };
             isBusy = true; Notify(nameof(IsBusy)); Notify(nameof(CanSave)); SetStatus("Đang lưu phòng…");

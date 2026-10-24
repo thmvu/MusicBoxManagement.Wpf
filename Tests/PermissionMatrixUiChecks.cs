@@ -86,6 +86,7 @@ public static class MusicBoxPermissionMatrixUiChecks
                 driver.Start(); Click(main, "LoginButton");
                 PumpUntil(() => error != null || ((FrameworkElement)main.FindName("StaffNavigation")).IsVisible && Button(main, "RefreshAccessButton").IsEnabled);
                 driver.Stop(); if (error != null) throw error;
+                ((Expander)main.FindName("AdministrationNavigation")).IsExpanded = true; main.UpdateLayout();
                 Assert(Button(main, "PermissionsButton").IsVisible == (user == "admin"), "Permissions menu did not follow role " + user);
                 if (user == "admin")
                 {

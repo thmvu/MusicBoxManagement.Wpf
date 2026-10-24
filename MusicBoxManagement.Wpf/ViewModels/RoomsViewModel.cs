@@ -61,6 +61,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> CreateAsync()
         {
             if (isBusy) return false;
+            if (string.IsNullOrWhiteSpace(RoomCode)) { SetStatus("Vui lòng nhập mã phòng."); return false; }
+            if (string.IsNullOrWhiteSpace(Name)) { SetStatus("Vui lòng nhập tên phòng."); return false; }
+            if (SelectedRoomType == null) { SetStatus("Vui lòng chọn loại phòng."); return false; }
+            if (string.IsNullOrWhiteSpace(ImageFilePath)) { SetStatus("Vui lòng chọn ảnh phòng."); return false; }
             var input = new RoomCreate { RoomCode = RoomCode, Name = Name, RoomTypeId = SelectedRoomType?.RoomTypeId ?? 0,
                 Description = Description, ImageFilePath = ImageFilePath };
             SetBusy(true);

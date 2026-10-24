@@ -57,7 +57,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task PrepareAsync()
         {
-            if (!CanReceive) return; SetBusy(true);
+            if (!CanReceive) return;
+            if (string.IsNullOrWhiteSpace(name)) { SetStatus("Vui lòng nhập họ tên khách hàng."); return; }
+            if (string.IsNullOrWhiteSpace(phone)) { SetStatus("Vui lòng nhập số điện thoại khách hàng."); return; }
+            SetBusy(true);
             try
             {
                 var input = new WalkInRequest { RoomId = room.RoomId, FullName = name, PhoneNumber = phone };

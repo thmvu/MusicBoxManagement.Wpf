@@ -1,6 +1,10 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 22/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 24/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+
+## Rà soát UI và nhập liệu — 24/10/2026
+
+Theo yêu cầu mới, tạm hoàn thiện phản hồi nhập liệu và menu trước khi tiếp migration. Các form báo thiếu trường bắt buộc trước khi gọi service, vẫn giữ try/catch/finally và toàn bộ kiểm tra quyền/transaction của service. Người dùng xác nhận Visual Studio dừng tại Exception có Continue/F5, chưa phải bằng chứng WPF tự thoát. Menu gom bốn nhóm mở/thu gọn, Tổng quan nằm đầu và mở sau đăng nhập theo Dashboard.View; giữ doanh thu Admin/Manager và giới hạn Staff theo bản tham chiếu. Không cắt chức năng hoặc tự gộp service có quyền/transaction khác nhau. Xem [báo cáo và cách chạy kiểm tra toàn bộ](docs/Ui_Validation_Navigation_Review.md). MySQL tiếp 04e.4, chưa đổi provider/import thật.
 
 ## Hai nhánh làm song song từ 18/10/2026
 

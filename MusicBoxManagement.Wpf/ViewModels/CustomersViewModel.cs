@@ -62,6 +62,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task<bool> SaveAsync()
         {
             if (!CanSave) return false;
+            if (string.IsNullOrWhiteSpace(FullName))
+            { SetStatus("Vui lòng nhập họ tên khách hàng."); return false; }
+            if (string.IsNullOrWhiteSpace(PhoneNumber))
+            { SetStatus("Vui lòng nhập số điện thoại khách hàng."); return false; }
             var input = new CustomerEdit { FullName = FullName, PhoneNumber = PhoneNumber }; var snapshot = original;
             Busy(true); SetStatus("Đang lưu khách hàng…");
             try

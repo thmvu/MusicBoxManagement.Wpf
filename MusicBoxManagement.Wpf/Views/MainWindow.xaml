@@ -6,6 +6,13 @@
         FontFamily="Segoe UI" FontSize="14" Language="vi-VN"
         Background="#F2F4F5" Loaded="Window_Loaded">
     <Window.Resources>
+        <Style TargetType="Expander">
+            <Setter Property="HeaderTemplate">
+                <Setter.Value><DataTemplate>
+                    <TextBlock Text="{Binding}" Foreground="#F3F6F8" FontWeight="SemiBold"/>
+                </DataTemplate></Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="SidebarButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#F3F6F8"/>
@@ -19,7 +26,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ContentTemplate">
                 <Setter.Value><DataTemplate>
-                    <TextBlock Text="{Binding}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                 </DataTemplate></Setter.Value>
             </Setter>
             <Setter Property="Template">
@@ -61,27 +68,42 @@
                             <Button x:Name="LookupButton" Style="{StaticResource SidebarButton}" Content="Tra cứu SĐT" Click="ShowLookup_Click"/>
                         </StackPanel>
                         <StackPanel x:Name="StaffNavigation" Visibility="Collapsed">
-                            <Button x:Name="RoomTypesButton" Style="{StaticResource SidebarButton}" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed"/>
-                            <Button x:Name="RoomsButton" Style="{StaticResource SidebarButton}" Content="Phòng" Click="ShowRooms_Click" Visibility="Collapsed"/>
-                            <Button x:Name="ServicesButton" Style="{StaticResource SidebarButton}" Content="Dịch vụ" Click="ShowServices_Click" Visibility="Collapsed"/>
-                            <Button x:Name="CustomersButton" Style="{StaticResource SidebarButton}" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed"/>
-                            <Button x:Name="ReservationsButton" Style="{StaticResource SidebarButton}" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed"/>
-                            <Button x:Name="StaffBookingButton" Style="{StaticResource SidebarButton}" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed"/>
-                            <Button x:Name="WalkInButton" Style="{StaticResource SidebarButton}" Content="Khách trực tiếp" Click="ShowWalkIn_Click" Visibility="Collapsed"/>
-                            <Button x:Name="SessionsButton" Style="{StaticResource SidebarButton}" Content="Phiên sử dụng" Click="ShowSessions_Click" Visibility="Collapsed"/>
-                            <Button x:Name="OrdersButton" Style="{StaticResource SidebarButton}" Content="Đơn món" Click="ShowOrders_Click" Visibility="Collapsed"/>
-                            <Button x:Name="CheckoutButton" Style="{StaticResource SidebarButton}" Content="Trả phòng" Click="ShowCheckout_Click" Visibility="Collapsed"/>
-                            <Button x:Name="InvoicesButton" Style="{StaticResource SidebarButton}" Content="Hóa đơn" Click="ShowInvoices_Click" Visibility="Collapsed"/>
-                            <Button x:Name="AccountsButton" Style="{StaticResource SidebarButton}" Content="Nhân viên" Click="ShowAccounts_Click" Visibility="Collapsed"/>
-                            <Button x:Name="PermissionsButton" Style="{StaticResource SidebarButton}" Content="Ma trận quyền" Click="ShowPermissions_Click" Visibility="Collapsed"/>
-                            <Button x:Name="AuditButton" Style="{StaticResource SidebarButton}" Content="Nhật ký" Click="ShowAudit_Click" Visibility="Collapsed"/>
-                            <Button x:Name="ReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo doanh thu" Click="ShowReports_Click" Visibility="Collapsed"/>
-                            <Button x:Name="RoomReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo sử dụng phòng" Click="ShowRoomReports_Click" Visibility="Collapsed"/>
-                            <Button x:Name="BookingReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo đặt phòng" Click="ShowBookingReports_Click" Visibility="Collapsed"/>
-                            <Button x:Name="ServiceReportsButton" Style="{StaticResource SidebarButton}" Content="Doanh thu và top món" Click="ShowServiceReports_Click" Visibility="Collapsed"/>
-                            <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
-                            <Separator Background="#51616D" Margin="12,10,12,14"/>
-                            <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Bảng điều hành" Click="RefreshAccess_Click"/>
+                            <Button x:Name="RefreshAccessButton" Style="{StaticResource SidebarButton}" Content="Tổng quan" Click="RefreshAccess_Click"/>
+                            <Expander x:Name="OperationsNavigation" Header="Vận hành" IsExpanded="False" Foreground="#F3F6F8" Margin="0,8,0,0">
+                                <StackPanel Margin="8,8,0,0">
+                                    <Button x:Name="ReservationsButton" Style="{StaticResource SidebarButton}" Content="Booking" Click="ShowReservations_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="StaffBookingButton" Style="{StaticResource SidebarButton}" Content="Đặt hộ" Click="ShowStaffBooking_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="WalkInButton" Style="{StaticResource SidebarButton}" Content="Khách trực tiếp" Click="ShowWalkIn_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="SessionsButton" Style="{StaticResource SidebarButton}" Content="Phiên sử dụng" Click="ShowSessions_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="OrdersButton" Style="{StaticResource SidebarButton}" Content="Đơn món" Click="ShowOrders_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="CheckoutButton" Style="{StaticResource SidebarButton}" Content="Trả phòng" Click="ShowCheckout_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="InvoicesButton" Style="{StaticResource SidebarButton}" Content="Hóa đơn" Click="ShowInvoices_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="CalendarButton" Style="{StaticResource SidebarButton}" Content="Lịch phòng" Click="ShowCalendar_Click" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Expander>
+                            <Expander x:Name="CatalogGroup" Header="Danh mục" IsExpanded="False" Foreground="#F3F6F8" Margin="0,8,0,0">
+                                <StackPanel Margin="8,8,0,0">
+                                    <Button x:Name="RoomsButton" Style="{StaticResource SidebarButton}" Content="Phòng" Click="ShowRooms_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="RoomTypesButton" Style="{StaticResource SidebarButton}" Content="Loại phòng" Click="ShowRoomTypes_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="ServicesButton" Style="{StaticResource SidebarButton}" Content="Dịch vụ" Click="ShowServices_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="CustomersButton" Style="{StaticResource SidebarButton}" Content="Khách hàng" Click="ShowCustomers_Click" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Expander>
+                            <Expander x:Name="ReportsNavigation" Header="Báo cáo" IsExpanded="False" Foreground="#F3F6F8" Margin="0,8,0,0">
+                                <StackPanel Margin="8,8,0,0">
+                                    <Button x:Name="ReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo doanh thu" Click="ShowReports_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="RoomReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo sử dụng phòng" Click="ShowRoomReports_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="BookingReportsButton" Style="{StaticResource SidebarButton}" Content="Báo cáo đặt phòng" Click="ShowBookingReports_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="ServiceReportsButton" Style="{StaticResource SidebarButton}" Content="Doanh thu và top món" Click="ShowServiceReports_Click" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Expander>
+                            <Expander x:Name="AdministrationNavigation" Header="Quản trị" IsExpanded="False" Foreground="#F3F6F8" Margin="0,8,0,0">
+                                <StackPanel Margin="8,8,0,0">
+                                    <Button x:Name="AccountsButton" Style="{StaticResource SidebarButton}" Content="Nhân viên" Click="ShowAccounts_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="PermissionsButton" Style="{StaticResource SidebarButton}" Content="Ma trận quyền" Click="ShowPermissions_Click" Visibility="Collapsed"/>
+                                    <Button x:Name="AuditButton" Style="{StaticResource SidebarButton}" Content="Nhật ký" Click="ShowAudit_Click" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Expander>
                         </StackPanel>
                         <StackPanel x:Name="CatalogNavigation">
                             <Button x:Name="EditRoomTypeButton" Style="{StaticResource SidebarButton}" Content="Sửa loại phòng" Visibility="Collapsed" IsEnabled="False" Click="EditRoomType_Click"/>

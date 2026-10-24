@@ -150,10 +150,11 @@ namespace MusicBoxManagement.Wpf.Views
                 ServiceReportsButton.Visibility = access.Permissions.ContainsKey("Report.View") ? Visibility.Visible : Visibility.Collapsed;
                 OrdersButton.Visibility = access.Permissions.ContainsKey("Order.View") || access.Permissions.ContainsKey("Order.Create") ? Visibility.Visible : Visibility.Collapsed;
                 CalendarButton.Visibility = access.Permissions.ContainsKey("Calendar.View") ? Visibility.Visible : Visibility.Collapsed;
+                UpdateNavigationGroups();
                 EditRoomTypeButton.Visibility = Visibility.Collapsed;
                 BackToStaffButton.Visibility = Visibility.Collapsed;
                 ModeText.Text = "Nhân viên: " + access.Role;
-                CurrentAreaText.Text = "Khu vực nhân viên";
+                CurrentAreaText.Text = "Tổng quan và quản lý quán";
                 StaffPanel.Visibility = Visibility.Visible;
                 StaffNavigation.Visibility = Visibility.Visible;
                 GuestNavigation.Visibility = CatalogNavigation.Visibility = Visibility.Collapsed;
@@ -164,7 +165,7 @@ namespace MusicBoxManagement.Wpf.Views
                 LogoutButton.Visibility = Visibility.Visible;
                 var canViewDashboard = access.Permissions.ContainsKey("Dashboard.View");
                 DashboardHost.Visibility = canViewDashboard ? Visibility.Visible : Visibility.Collapsed;
-                StaffHeading.Text = canViewDashboard ? "Bảng điều hành" : "Khu vực nhân viên";
+                StaffHeading.Text = canViewDashboard ? "Tổng quan quán" : "Khu vực nhân viên";
                 AccessStatus.Text = canViewDashboard ? "" : "Tài khoản chưa có quyền xem bảng điều hành. Chọn chức năng được phép trong menu bên trái.";
                 if (canViewDashboard) { dashboard.Reset(currentSession); await dashboard.RefreshAsync(); }
             }
@@ -181,6 +182,20 @@ namespace MusicBoxManagement.Wpf.Views
                 MessageBox.Show(this, "Không kiểm tra được quyền. Hãy đăng nhập lại khi dữ liệu sẵn sàng.", "Music Box");
             }
             finally { RefreshAccessButton.IsEnabled = true; StaffNavigation.IsEnabled = true; accessGate.Release(); }
+        }
+
+        private void UpdateNavigationGroups()
+        {
+            SetGroupVisibility(OperationsNavigation, ReservationsButton, StaffBookingButton, WalkInButton, SessionsButton, OrdersButton, CheckoutButton, InvoicesButton, CalendarButton);
+            SetGroupVisibility(CatalogGroup, RoomsButton, RoomTypesButton, ServicesButton, CustomersButton);
+            SetGroupVisibility(ReportsNavigation, ReportsButton, RoomReportsButton, BookingReportsButton, ServiceReportsButton);
+            SetGroupVisibility(AdministrationNavigation, AccountsButton, PermissionsButton, AuditButton);
+        }
+
+        private static void SetGroupVisibility(Expander group, params Button[] actions)
+        {
+            group.Visibility = Array.Exists(actions, button => button.Visibility == Visibility.Visible)
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async void Logout_Click(object sender, RoutedEventArgs e)
