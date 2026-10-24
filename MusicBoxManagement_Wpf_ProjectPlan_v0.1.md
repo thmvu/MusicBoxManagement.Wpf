@@ -4,6 +4,8 @@ Ngày lập: 02/10/2026. Cập nhật tiến độ: 24/10/2026. Nền tảng gi�
 
 ## Rà soát UI và nhập liệu — 24/10/2026
 
+Palette bổ sung theo phản hồi người dùng: chỉ lấy cảm giác chung từ bộ UI web tham khảo, phối riêng cho Music Box (graphite/olive, Paper sáng, sage/brass), tập trung brush trong App.xaml và đánh dấu Tổng quan đang chọn. Giữ WPF/font sans/bố cục tại quầy/quyền/rule/provider; không chuyển kiến trúc hoặc nhập nghiệp vụ thú y. Xem Ui_Operations_Design, MySQL tiếp 04e.4.
+
 **Thiết kế giao diện vận hành theo yêu cầu tiếp theo:** [Ui_Operations_Design](docs/Ui_Operations_Design.md), theme WPF chung, dashboard số liệu/bảng phòng, nút nhanh theo quyền và Guest CTA. Giữ nghiệp vụ, provider và phạm vi MySQL; không đổi rule để vừa giao diện. Nút lưu/đặt ở ngoài vùng cuộn trên hai form, giữ thao tác ở kích thước tối thiểu. Build hai cấu hình, hồi quy 44 bộ và UI hai bản theo báo cáo.
 
 **Bổ sung rà soát nghiệp vụ theo yêu cầu mới:** [ma trận hiện hành](docs/Business_Workflow_Audit_20261024.md) đối chiếu các nhóm runtime với reference, code và test; ba chuỗi đầu-cuối mới dùng service thật/không giả Completed hoặc Invoice. Không đồng nhất sửa nhập liệu, số lượng test hoặc có schema với đã hoàn tất nghiệp vụ. Kiểm tra Workflow bổ sung cho các test biên/race/UI, không thay thế chúng; MySQL vẫn tiếp 04e.4 và chưa cutover.

@@ -1,7 +1,7 @@
 <Window x:Class="MusicBoxManagement.Wpf.Views.RoomUsageReportWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="Music Box — Báo cáo sử dụng phòng" Width="1200" Height="800" MinWidth="960" MinHeight="640"
- WindowStartupLocation="CenterOwner" Background="#F2F4F5" FontFamily="Segoe UI" FontSize="14" Loaded="Window_Loaded">
+ WindowStartupLocation="CenterOwner" Background="{StaticResource MusicPaperBrush}" FontFamily="Segoe UI" FontSize="14" Loaded="Window_Loaded">
  <Grid Margin="24">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <DockPanel Margin="0,0,0,16"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="ExportButton" Content="Xuất Excel" IsEnabled="{Binding CanExport}" Click="Export_Click" Margin="0,0,12,0"/><Button x:Name="CloseButton" Content="Đóng" Click="Close_Click"/></StackPanel><TextBlock Text="Báo cáo sử dụng phòng" FontSize="28" FontWeight="SemiBold"/></DockPanel>
@@ -11,14 +11,14 @@
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Phòng (gồm phòng đã khóa)"/><ComboBox x:Name="RoomInput" ItemsSource="{Binding Rooms}" DisplayMemberPath="Label" SelectedValuePath="RoomId" SelectedValue="{Binding RoomId,Mode=TwoWay}" Width="300" Padding="5" Margin="0,6,0,0"/></StackPanel>
    <Button x:Name="SearchButton" Content="Xem báo cáo" Click="Search_Click" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
   </WrapPanel>
-  <Border Grid.Row="2" Background="White" BorderBrush="#CAD3D8" BorderThickness="1" Padding="12" Margin="0,0,0,12"><TextBlock x:Name="SummaryText" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#263D4A" MinHeight="20"/></Border>
-  <DataGrid Grid.Row="3" x:Name="ReportTable" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" RowHeight="36" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
+  <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" Padding="12" Margin="0,0,0,12"><TextBlock x:Name="SummaryText" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{StaticResource MusicInkBrush}" MinHeight="20"/></Border>
+  <DataGrid Grid.Row="3" x:Name="ReportTable" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" RowHeight="36" ColumnHeaderHeight="40" Background="White" BorderBrush="{StaticResource MusicLineBrush}" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource MusicLineBrush}">
    <DataGrid.Columns><DataGridTextColumn Header="Mã phòng" Binding="{Binding RoomCode}" Width="110"/><DataGridTextColumn Header="Tên phòng hiện tại" Binding="{Binding RoomName}" Width="*" MinWidth="170"/><DataGridTextColumn Header="Lượt hoàn tất" Binding="{Binding CompletedCount}" Width="120"/><DataGridTextColumn Header="Đã dùng (phút)" Binding="{Binding UsedMinutesLabel}" Width="170"/><DataGridTextColumn Header="Lịch tiêu chuẩn (phút)" Binding="{Binding AvailableMinutesLabel}" Width="195"/><DataGridTextColumn Header="Tỷ lệ sử dụng" Binding="{Binding UtilizationLabel}" Width="170"/></DataGrid.Columns>
   </DataGrid>
   <StackPanel Grid.Row="4" Margin="0,12,0,0">
-   <TextBlock Text="Lượt hoàn tất: phiên Completed có giờ trả phòng thực tế trong kỳ." TextWrapping="Wrap" Foreground="#41535F"/>
-   <TextBlock Text="Tỷ lệ theo lịch mở cửa tiêu chuẩn 09–12 và 13–23: tính từ lúc tạo phòng, đến thời điểm cập nhật; chỉ lấy phần giao với kỳ đã chọn. Gồm cả phòng đang khóa." TextWrapping="Wrap" Foreground="#41535F" Margin="0,4,0,0"/>
-   <TextBlock Text="{Binding Status}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="#263D4A"/>
+   <TextBlock Text="Lượt hoàn tất: phiên Completed có giờ trả phòng thực tế trong kỳ." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}"/>
+   <TextBlock Text="Tỷ lệ theo lịch mở cửa tiêu chuẩn 09–12 và 13–23: tính từ lúc tạo phòng, đến thời điểm cập nhật; chỉ lấy phần giao với kỳ đã chọn. Gồm cả phòng đang khóa." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="0,4,0,0"/>
+   <TextBlock Text="{Binding Status}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{StaticResource MusicInkBrush}"/>
   </StackPanel>
  </Grid>
 </Window>

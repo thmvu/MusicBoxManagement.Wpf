@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Music Box — Tài khoản nhân viên" Width="510" SizeToContent="Height"
         ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
-        FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5">
+        FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="{StaticResource MusicPaperBrush}">
     <StackPanel Margin="32">
         <TextBlock x:Name="Heading" FontSize="24" FontWeight="SemiBold" />
-        <TextBlock x:Name="Description" Margin="0,8,0,24" TextWrapping="Wrap" Foreground="#5C6873" />
+        <TextBlock x:Name="Description" Margin="0,8,0,24" TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" />
         <StackPanel x:Name="Fields">
             <TextBlock Text="Tên đăng nhập" Margin="0,0,0,6" />
             <TextBox x:Name="UserNameBox" AutomationProperties.AutomationId="UserNameBox" MaxLength="100" Padding="8" />
@@ -20,10 +20,10 @@
                 <TextBlock Text="Nhập lại mật khẩu" Margin="0,0,0,6" />
                 <PasswordBox x:Name="ConfirmInput" AutomationProperties.AutomationId="ConfirmInput" MaxLength="128" Padding="8" />
                 <TextBlock Text="Mật khẩu từ 8–128 ký tự. Không có mật khẩu mặc định." FontSize="12"
-                           Foreground="#5C6873" Margin="0,8,0,0" TextWrapping="Wrap" />
+                           Foreground="{StaticResource MusicMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
-        <TextBlock x:Name="StatusText" AutomationProperties.AutomationId="AuthStatus" Margin="0,18,0,0" TextWrapping="Wrap" Foreground="#8B2929" />
+        <TextBlock x:Name="StatusText" AutomationProperties.AutomationId="AuthStatus" Margin="0,18,0,0" TextWrapping="Wrap" Foreground="{StaticResource MusicErrorBrush}" />
         <Grid Margin="0,22,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <Button x:Name="SubmitButton" Style="{StaticResource PrimaryButton}" AutomationProperties.AutomationId="SubmitAuth" IsDefault="True" Click="Submit_Click" />

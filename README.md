@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+Palette Music Box 24/10/2026: theo lựa chọn lấy cảm giác chung từ giao diện web tham khảo, đã phối riêng graphite/olive, nền sáng hơi ấm và điểm sage/brass. Màu dùng chung từ brush trong App.xaml; giữ nguyên font thao tác, form và nghiệp vụ. Xem [palette và ảnh kiểm tra](docs/Ui_Operations_Design.md).
+
 Giao diện vận hành mới 24/10/2026: [Tổng quan, bảng phòng và theme chung](docs/Ui_Operations_Design.md). Có nút nhanh nhận khách/đặt hộ/món/trả phòng theo quyền, bảng phòng có nhãn trạng thái, các form cùng kiểu nút/ô nhập/tab; nút chính của form đặt phòng và dịch vụ không bị cuộn khuất. Rebuild/rerun để nhận giao diện mới. App vẫn SQLite, tiếp MySQL 04e.4 sau bước này.
 
 Rà soát nghiệp vụ 24/10/2026: [ma trận luồng hiện hành](docs/Business_Workflow_Audit_20261024.md), đối chiếu reference và chỉ rõ bằng chứng/giới hạn từng nhóm. Có thêm `Tests/Verify-Workflows.ps1` chạy chuỗi service thật từ đặt phòng đến hóa đơn/báo cáo/lịch sử, walk-in đến lượt kế tiếp và hủy/NoShow/RBAC; không giả trạng thái Completed hoặc hóa đơn. `Verify-All` nay gồm 44 bộ SQLite/WPF, thêm 15 bộ MySQL đã port khi chọn IncludeMySql. App vẫn SQLite; chuỗi MySQL đầy đủ chưa hoàn tất.

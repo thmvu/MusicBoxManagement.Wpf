@@ -10,6 +10,10 @@ Bổ sung 24/10: [ma trận kiểm toán luồng](Business_Workflow_Audit_202610
 
 UI 24/10 theo yêu cầu trước khi tiếp port: [theme/bảng vận hành/nút nhanh/form](Ui_Operations_Design.md), giữ business/provider. Build Debug/Release và hồi quy runtime 44 bộ, UI cuối 141 ảnh/bản đạt. Không chạy lại online hoặc thay trạng thái nghiệm thu MySQL; chưa import/cutover. Bước tiếp vẫn 04e.4 Guest.
 
+Phản hồi palette 24/10: phối riêng graphite/olive/sage/brass từ cảm giác chung của tham khảo web; chỉ thay resource màu và trạng thái chọn Tổng quan. Không port thêm hoặc đổi provider. Xem Ui_Operations_Design; tiếp 04e.4 không đổi.
+
+Kiểm tra palette: build Debug/Release đạt, 44/44 bộ SQLite/WPF Debug và UI cuối 142 ảnh/bản đạt. Đây là bằng chứng giao diện/runtime SQLite, không nâng trạng thái nghiệm thu dịch vụ MySQL hoặc import/cutover.
+
 Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status.md`. Bảng này được push cùng code/test của bước đó; không cần suy đoán tiến độ từ chat hoặc số bảng trên cloud.
 
 ## Quy ước khi bàn giao

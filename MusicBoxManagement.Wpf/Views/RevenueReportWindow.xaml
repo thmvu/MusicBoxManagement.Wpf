@@ -1,7 +1,7 @@
 <Window x:Class="MusicBoxManagement.Wpf.Views.RevenueReportWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="Music Box — Báo cáo doanh thu" Width="1200" Height="780" MinWidth="960" MinHeight="640"
- WindowStartupLocation="CenterOwner" Background="#F2F4F5" FontFamily="Segoe UI" FontSize="14" Loaded="Window_Loaded">
+ WindowStartupLocation="CenterOwner" Background="{StaticResource MusicPaperBrush}" FontFamily="Segoe UI" FontSize="14" Loaded="Window_Loaded">
  <Grid Margin="24">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <DockPanel Margin="0,0,0,16"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="ExportButton" Content="Xuất Excel" IsEnabled="{Binding CanExport}" Click="Export_Click" Margin="0,0,12,0"/><Button x:Name="CloseButton" Content="Đóng" Click="Close_Click"/></StackPanel><TextBlock Text="Báo cáo doanh thu" FontSize="28" FontWeight="SemiBold"/></DockPanel>
@@ -12,10 +12,10 @@
    <StackPanel Margin="0,0,12,8"><TextBlock Text="Nhóm doanh thu"/><ComboBox x:Name="ModeInput" ItemsSource="{Binding Modes}" DisplayMemberPath="Label" SelectedValuePath="Code" SelectedValue="{Binding Mode,Mode=TwoWay}" Width="180" Padding="5" Margin="0,6,0,0"/></StackPanel>
    <Button x:Name="SearchButton" Content="Xem báo cáo" Click="Search_Click" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
   </WrapPanel>
-  <Border Grid.Row="2" Background="White" BorderBrush="#CAD3D8" BorderThickness="1" Padding="12" Margin="0,0,0,12"><TextBlock x:Name="SummaryText" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#263D4A" MinHeight="20"/></Border>
-  <DataGrid Grid.Row="3" x:Name="ReportTable" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column" RowHeight="36" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7">
+  <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" Padding="12" Margin="0,0,0,12"><TextBlock x:Name="SummaryText" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{StaticResource MusicInkBrush}" MinHeight="20"/></Border>
+  <DataGrid Grid.Row="3" x:Name="ReportTable" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column" RowHeight="36" ColumnHeaderHeight="40" Background="White" BorderBrush="{StaticResource MusicLineBrush}" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource MusicLineBrush}">
    <DataGrid.Columns><DataGridTextColumn Header="Ngày / tháng / loại phòng" Binding="{Binding Label}" Width="*" MinWidth="185"/><DataGridTextColumn Header="Số hóa đơn" Binding="{Binding InvoiceCount}" Width="100"/><DataGridTextColumn Header="Tiền phòng (đ)" Binding="{Binding RoomChargeLabel}" Width="220"/><DataGridTextColumn Header="Tiền dịch vụ (đ)" Binding="{Binding ServiceChargeLabel}" Width="220"/><DataGridTextColumn Header="Doanh thu (đ)" Binding="{Binding TotalAmountLabel}" Width="240"/></DataGrid.Columns>
   </DataGrid>
-  <StackPanel Grid.Row="4" Margin="0,12,0,0"><TextBlock Text="Chỉ tính hóa đơn đã thanh toán trong kỳ. Loại phòng theo thông tin đã chốt khi nhận phòng." TextWrapping="Wrap" Foreground="#41535F"/><TextBlock Text="{Binding Status}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="#263D4A"/></StackPanel>
+  <StackPanel Grid.Row="4" Margin="0,12,0,0"><TextBlock Text="Chỉ tính hóa đơn đã thanh toán trong kỳ. Loại phòng theo thông tin đã chốt khi nhận phòng." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding Status}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{StaticResource MusicInkBrush}"/></StackPanel>
  </Grid>
 </Window>

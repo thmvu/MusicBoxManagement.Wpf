@@ -1,5 +1,11 @@
 # Music Box WPF
 
+## Palette riêng Music Box — 24/10/2026
+
+Build VerifyStudioFinalDebug/Release đạt; hồi quy 44/44 SQLite/WPF Debug đạt và AuthenticationUi hai build cuối đạt 142 ảnh/bản. Đã xem ảnh Tổng quan có dữ liệu, trạng thái phòng và form thường/thu nhỏ. Thêm duy nhất ảnh main-room-board trong test sau CRUD phòng thật của fixture; không giả dữ liệu app. Palette/ảnh/log mới trong Ui_Operations_Design; không rerun MySQL online vì không chạm code MySQL.
+
+Người dùng gửi yêu cầu UI web phòng khám làm tham khảo và đã chọn “Lấy cảm giác chung, phối riêng cho Music Box”. Palette hiện hành graphite/olive/Paper sáng hơi ấm, sage/brass nhẹ; các Music…Brush tập trung đầu App.xaml, các màn hình dùng resource chung. Giữ Segoe UI/form/luồng/quyền; không dùng Playfair/kiến trúc web/nghiệp vụ thú y chỉ vì có trong tài liệu đính kèm. Tổng quan đang chọn có nền/viền riêng theo StaffPanel.Visibility. Không đổi code nghiệp vụ/VM/schema/provider/import. Đọc bảng màu và bằng chứng trong docs/Ui_Operations_Design.md; MySQL vẫn tiếp 04e.4. Csproj định dạng có sẵn giữ ngoài commit.
+
 ## UI vận hành tại quầy — 24/10/2026
 
 Theo yêu cầu người dùng làm UI trước khi tiếp MySQL: đọc docs/Ui_Operations_Design.md. App.xaml có theme chung nút/input/password/combo/popup/tab/header bảng; local styles kế thừa resource chung. Main có nút nhanh nhận khách/đặt hộ/món/checkout binding Visibility/IsEnabled từ menu, dùng cùng handler và guard. Sidebar chevron phẳng/giờ mở cửa; Guest có CTA đặt/tra cứu. Dashboard VM chỉ thêm dữ liệu trình bày lấy cùng snapshot (Available/Occupied/Booking/Pending và Code/StatusCode/Label), bảng phòng có màu+chữ, tabs/cảnh báo/revenue giữ quyền. Đặt phòng và Dịch vụ có footer nút chính ngoài vùng cuộn. Không đổi business service/schema/provider/import/ảnh thật hoặc tự checkout/timer. Debug/Release VerifyCounterFinal đạt; Verify-All 44 Debug đạt, sau chỉnh footer AuthenticationUi hai bản đạt 141 ảnh/bản; test popup/compact nút/quick routes/quyền/stale/revoke và xem ảnh. Chờ DataGrid tính lại cột sau resize trước chụp, giữ assertion. MySQL không đổi nên không rerun online, tiếp 04e.4. Csproj định dạng có sẵn giữ ngoài commit.

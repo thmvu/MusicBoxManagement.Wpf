@@ -1,7 +1,7 @@
 <Window x:Class="MusicBoxManagement.Wpf.Views.CustomersWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Music Box — Khách hàng" Width="1040" Height="640" MinWidth="900" MinHeight="540"
-        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="#F2F4F5" Loaded="Window_Loaded">
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="{StaticResource MusicPaperBrush}" Loaded="Window_Loaded">
     <Grid Margin="28">
         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <DockPanel>
@@ -21,11 +21,11 @@
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
             <DataGrid x:Name="CustomersTable" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
                       CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" SelectionChanged="Selection_Changed"
-                      HeadersVisibility="Column" RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="#CAD3D8"
-                      AlternatingRowBackground="#F7F9FA" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DEE4E7" IsEnabled="{Binding CanSelect}">
+                      HeadersVisibility="Column" RowHeight="44" ColumnHeaderHeight="40" Background="White" BorderBrush="{StaticResource MusicLineBrush}"
+                      AlternatingRowBackground="{StaticResource MusicAlternateBrush}" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource MusicLineBrush}" IsEnabled="{Binding CanSelect}">
                 <DataGrid.Resources>
                     <Style TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="10,0" /></Style>
-                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="#E9EEF0" /></Style>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeader}"><Setter Property="Padding" Value="10,8" /><Setter Property="Background" Value="{StaticResource MusicHeaderBrush}" /></Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Mã" Binding="{Binding CustomerId}" Width="70" />
@@ -42,13 +42,13 @@
                         <TextBox x:Name="NameInput" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Padding="8" />
                         <TextBlock Text="Số điện thoại" Margin="0,14,0,6" />
                         <TextBox x:Name="PhoneInput" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Padding="8" />
-                        <TextBlock Text="Ví dụ: 0912345678 hoặc +84 912 345 678. Mỗi SĐT chỉ thuộc một khách hàng." TextWrapping="Wrap" Foreground="#5C6873" Margin="0,12,0,0" />
+                        <TextBlock Text="Ví dụ: 0912345678 hoặc +84 912 345 678. Mỗi SĐT chỉ thuộc một khách hàng." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="0,12,0,0" />
                         <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="Lưu" Click="Save_Click" HorizontalAlignment="Left" Margin="0,18,0,0" />
                     </StackPanel>
                     <Button x:Name="CancelEditButton" Content="Bỏ thay đổi" Click="CancelEdit_Click" IsEnabled="{Binding CanSelect}" HorizontalAlignment="Left" Margin="0,8,0,0" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>
-        <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="#5C6873" Margin="0,18,0,0" />
+        <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="0,18,0,0" />
     </Grid>
 </Window>

@@ -657,6 +657,7 @@ public static class MusicBoxAuthenticationUiChecks
             PumpUntil(() => (roomStage == 16 && Field<Button>(window, "RoomsButton").IsEnabled) || driverError != null);
             driver.Stop();
             if (driverError != null) throw driverError;
+            Image(window, outputDirectory, "main-room-board");
             Click(Field<Button>(window, "LogoutButton"));
             PumpUntil(() => Field<Grid>(window, "GuestPanel").Visibility == Visibility.Visible && Field<Button>(window, "LoginButton").IsEnabled);
             Assert(((DashboardViewModel)Field<DashboardView>(window,"DashboardHost").DataContext).Snapshot == null, "Logout left dashboard data in the UI.");
