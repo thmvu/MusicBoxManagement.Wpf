@@ -12,6 +12,7 @@ namespace MusicBoxManagement.Wpf.Services
         private readonly MySqlPermissionService permissions;
         private readonly MySqlRoomSessionService sessions;
         public MySqlStaffSessionService(MySqlDatabase database) : this(database, new SystemClock()) { }
+        internal MySqlBillingService ForBilling() => new MySqlBillingService(database, clock);
         public MySqlStaffSessionService(MySqlDatabase database, IClock clock)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database)); this.clock = clock ?? throw new ArgumentNullException(nameof(clock));

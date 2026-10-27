@@ -1,5 +1,15 @@
 # Music Box WPF
 
+## MySQL 04g — Tiền tạm tính (28/10/2026)
+
+Đã có MySqlBillingService.ReadGuest/ReadStaff và ForBilling từ MySqlGuestReservationService/MySqlStaffSessionService. Guest Active theo SĐT chuẩn hóa hiện hành, Staff Session.View hiện hành độc lập Order.View/CheckOut/CRUD; SessionBill không PII/chi tiết đơn. RR read-only cùng snapshot quyền/membership/header/items, một clock sau dữ liệu; không audit/NoShow/Invoice/hủy Pending/đóng phiên/cache. Actual UTC ticks/HourlyRate snapshot, decimal/phần nguyên–dư/AwayFromZero một lần, Completed-only snapshot món, không cap theo ExpectedEnd/ReturnBy/ca; công thức giống SQLite, test BigInteger oracle. Xem docs/MySql_Migration_04g_Billing.md.
+
+CalculateActive internal giữ cùng connection/database và RR hoặc Serializable: Checkout Preview cần ReadAccess+CheckOut trong cùng RR read-only; Confirm cần Demand CheckOut và khóa Room → Customer → Reservation nguồn → Session → Orders trong Serializable rồi gọi. Không bắt Session.View cho CheckOut-only, không dùng Demand writer trong RR, không tự cấp quyền/Commit/Rollback hoặc lấy thay khóa caller. Từ chối ReadCommitted vì MySQL không giữ cùng snapshot nhiều SELECT. Writer fixture chưa phải Checkout thật.
+
+Build VerifyBillingMySqlDebug/Release và VerifyBillingFinalDebug/Release đạt; Verify-MySqlBilling bản cuối online cả hai Final đạt, gồm RR preview CheckOut-only/shared writer/rollback/clock sau Room wait, precision/max-rate/max-date/ticks, current rights/phone/snapshot/readonly. InnoDB MVCC reader cho phép Order writer thật commit trước khi reader đóng, bill cũ/bill mới không trộn/cache. Hồi quy 34/34 bộ Debug liên quan đạt (9 MySQL + 25 SQLite/WPF), UI 142 ảnh; report ghi đúng build/phạm vi/log, không tuyên bố mọi suite hoặc checkout MySQL đã xong. App/worker/palette/schema/provider vẫn SQLite v8/MySQL v1; chưa import DB/Content/cutover. Chỉ Compile entry MySqlBillingService vào commit, định dạng csproj có sẵn giữ riêng.
+
+**Tiếp Checkout/Invoice**: Confirm tiền/giờ mới, Cash/BankTransfer, hủy Pending + Session/Reservation Completed + Invoice snapshot/PaidAt/audit cùng transaction, rollback/replay một invoice và race checkout–order/confirm/cancel/extension bằng service MySQL thật. Không làm lại 01–04g; cập nhật bảng bàn giao/code/test/docs/README/plan/commit/push. Giữ đọc/in invoice, dashboard/ma trận quyền/audit/report/Excel/history/import/Content/UI/ERD/từ điển/demo.
+
 ## MySQL 04f — Menu/giỏ/đơn món (28/10/2026)
 
 Đã có MySqlOrderService với workspace, menu/preview Guest–Staff, CreateGuest Pending/CreateStaff Completed (món đã phục vụ), ListGuest Active đúng SĐT hiện hành/ListStaff cả lịch sử theo View, Confirm/Cancel chỉ Pending trong Active. Quyền Order.Create/View/Confirm/Cancel độc lập, Staff null/revoke/stamp không fallback Guest; dùng DTO hiện có không Customer PII/ID nguồn. ForOrders đã nối nội bộ từ MySqlGuestReservationService, chưa wiring UI/provider. Xem docs/MySql_Migration_04f_Orders.md.

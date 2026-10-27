@@ -21,6 +21,7 @@ namespace MusicBoxManagement.Wpf.Services
         }
         internal MySqlGuestSessionService ForSessions() => new MySqlGuestSessionService(database, clock);
         internal MySqlOrderService ForOrders() => new MySqlOrderService(database, clock);
+        internal MySqlBillingService ForBilling() => new MySqlBillingService(database, clock);
 
         public GuestReservationLookup Lookup(string phoneNumber)
         {
