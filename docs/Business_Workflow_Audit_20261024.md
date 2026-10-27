@@ -1,5 +1,7 @@
 # Đối chiếu luồng nghiệp vụ hiện hành — 24/10/2026
 
+**Cập nhật migration 28/10:** [04e.4 Guest](MySql_Migration_04e4_GuestSessions.md) đã đạt online Debug/Release (lookup Confirmed/Active, hủy, gia hạn); [bảng bàn giao](MySql_Migration_Status.md) là nguồn tiến độ hiện hành. Nội dung kiểm toán ngày 24/10 bên dưới giữ làm bằng chứng theo thời điểm. MySQL chưa có chuỗi Order/Billing/Checkout/Invoice đầy đủ; kết quả Workflow SQLite không thay thế nghiệm thu chuỗi đó.
+
 ## Kết luận và phạm vi
 
 Lượt chỉnh nhập liệu/menu trước đó không phải một lần kiểm toán lại mọi đường chạy. 43 bộ SQLite/WPF và 15 bộ MySQL đạt ở lượt trước là bằng chứng theo các ca đã viết, không bảo đảm mọi tổ hợp nghiệp vụ đều đúng. Lượt này đọc lại quy tắc, đường service và bổ sung kiểm tra ghép các bước thành một lượt khách hoàn chỉnh.

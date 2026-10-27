@@ -1,6 +1,14 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 24/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 28/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+
+## MySQL 04e.4 — Guest, ngày 28/10/2026
+
+Đã thêm MySqlGuestSessionService và MySqlGuestReservationService: tra cứu Confirmed + Active thật theo SĐT hiện hành, hủy đúng/trước Start−2h, gia hạn +30/+60 phiên booking, public DTO không PII, snapshot/ReturnBy, khóa cùng thứ tự writer hiện có, clock sau chờ, stale và audit Guest cùng transaction. Không gọi đường Staff hoặc trả ActiveSession null giả. Kết quả kiểm tra và ranh giới tại [04e.4](docs/MySql_Migration_04e4_GuestSessions.md); trạng thái mới nhất tại [bảng bàn giao](docs/MySql_Migration_Status.md).
+
+Tiếp menu/Order/giỏ/preview/tạo/xác nhận/hủy, Billing/tiền tạm tính, Checkout/Invoice và cạnh tranh writer thật; sau đó dashboard/ma trận quyền/audit/báo cáo/Excel/lịch sử khách và import/Content/UI/cutover. Giữ đủ mục 22 Guest; không đồng nhất port lookup/extension với đã có tiền/menu/món MySQL. Các phần ngày 24/10 trở về trước bên dưới là mốc lịch sử.
+
+Nghiệm thu lượt 28/10: build Debug/Release và Verify-MySqlGuestSessions online cả hai build đạt; hồi quy Debug 26/26 bộ liên quan (8 MySQL + 18 SQLite/WPF), UI 142 ảnh đạt. App/worker/provider vẫn SQLite; chưa nhập dữ liệu thật/Content hoặc nghiệm thu checkout MySQL.
 
 ## Rà soát UI và nhập liệu — 24/10/2026
 
@@ -19,7 +27,7 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
 | WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
-| MySQL Aiven | **Đến 04e.3 đọc phiên/gia hạn Staff đã đạt online Debug/Release 22/10**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | 04e.4 Guest session/gia hạn/lookup/hủy đầy đủ và các nhóm còn lại |
+| MySQL Aiven | **Đến 04e.4 Guest lookup/hủy/gia hạn đã đạt online Debug/Release 28/10**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | Menu/Order/giỏ/preview/tạo/xác nhận/hủy, Billing/checkout/invoice và các nhóm còn lại |
 
 Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; tiến độ MySQL hiện hành xem [bảng bàn giao](docs/MySql_Migration_Status.md), không làm lại service đã nghiệm thu. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 

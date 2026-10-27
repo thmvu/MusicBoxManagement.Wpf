@@ -68,6 +68,8 @@
     <Compile Include="Services\MySqlCalendarService.cs" />
     <Compile Include="Services\MySqlRoomSessionService.cs" />
     <Compile Include="Services\MySqlStaffSessionService.cs" />
+    <Compile Include="Services\MySqlGuestSessionService.cs" />
+    <Compile Include="Services\MySqlGuestReservationService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
     <Compile Include="ViewModels\ReportExportWorkflow.cs" />

@@ -1,5 +1,15 @@
 # Music Box WPF
 
+## MySQL 04e.4 — Guest lookup/hủy/gia hạn (28/10/2026)
+
+Đã có MySqlGuestSessionService.Lookup/PreviewExtension/Extend và MySqlGuestReservationService.Lookup/Cancel/ForSessions. Dùng GuestSession/GuestReservationLookup thật, SĐT chuẩn hóa hiện hành, Active/Confirmed/public DTO không Customer PII/ID nguồn; không gọi Staff route. Lookup phiên/preview RR read-only không maintenance/audit; lookup kết hợp giữ hợp đồng maintenance NoShow writer riêng trước RR snapshot, một read clock chung booking/Active/ReturnBy (ngoài clock maintenance). Không giả ActiveSession=null. Xem docs/MySql_Migration_04e4_GuestSessions.md và bảng bàn giao mới nhất.
+
+Writer khám phá ID ngoài khóa rồi Serializable Room → Customer → Confirmed candidates → Reservation nguồn → RoomSession nếu gia hạn; kiểm tra lại membership/IDs/status/observedEnd trước clock sau chờ. Hủy đúng/trước Start−2h, Confirmed còn hạn/chưa session, lý do cố định và audit Guest cùng transaction. Gia hạn +30/+60 booking Active trước/đúng ExpectedEnd; giữ ticks/actual/Reservation/snapshot, kiểm tra ca/Room/Customer, không walk-in/autocheckout/NoShow khi ghi thất bại. Guard UPDATE, rollback audit, stale/duplicate và 1213/1205 báo tra cứu lại; không retry vô hạn.
+
+Build VerifyGuestMySqlDebug/Release đạt; Verify-MySqlGuestSessions bản test cuối online cả hai build đạt, gồm snapshot/current phone/public DTO/exact cutoffs/grace/rollback, Guest–Staff/booking/check-in/NoShow thật và fresh clock/phone edit sau chờ. Hồi quy Debug 26/26 bộ liên quan đạt: 8 MySQL online + 18 SQLite/WPF, AuthenticationUi 142 ảnh. Log/giới hạn trong báo cáo; Completed fixture chỉ đọc/guard, chưa checkout MySQL. Không tuyên bố chạy mọi suite.
+
+**Tiếp menu/Order/giỏ/preview/tạo/xác nhận/hủy rồi Billing/Checkout/Invoice**, giữ đủ tiền/menu/món Guest mục 22, thêm race với checkout thật khi port. Không làm lại 01–04e.4; đọc/cập nhật docs/MySql_Migration_Status.md cùng mỗi code/test/README/plan/commit/push. App/worker vẫn SQLite v8, đích MySQL v1, chưa nhập DB/Content thật hoặc cutover; UI/palette không đổi. Chỉ stage hai Compile entry csproj cho service mới; phần định dạng có sẵn vẫn ngoài commit. Giữ dashboard/ma trận quyền/audit/report/Excel/history/import/UI/ERD/từ điển/bản xuất/demo trong scope.
+
 ## Palette riêng Music Box — 24/10/2026
 
 Build VerifyStudioFinalDebug/Release đạt; hồi quy 44/44 SQLite/WPF Debug đạt và AuthenticationUi hai build cuối đạt 142 ảnh/bản. Đã xem ảnh Tổng quan có dữ liệu, trạng thái phòng và form thường/thu nhỏ. Thêm duy nhất ảnh main-room-board trong test sau CRUD phòng thật của fixture; không giả dữ liệu app. Palette/ảnh/log mới trong Ui_Operations_Design; không rerun MySQL online vì không chạm code MySQL.

@@ -1,6 +1,10 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
-Cập nhật 24/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+Cập nhật 28/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+
+**Mốc mới nhất 28/10: 04e.4 Guest đã đạt online Debug/Release**, tra cứu Confirmed + Active thật/SĐT hiện hành/hủy/gia hạn/public DTO/audit Guest. Hồi quy 26/26 bộ Debug liên quan đạt (8 MySQL online + 18 SQLite/WPF, UI 142 ảnh). Xem [báo cáo 04e.4 và log](MySql_Migration_04e4_GuestSessions.md). Tiếp menu/Order/giỏ/preview/tạo/xác nhận/hủy rồi Billing/checkout/invoice; chưa đổi App/worker/provider hoặc nhập database/Content thật. Các mục 24/10 bên dưới là lịch sử, không phải yêu cầu làm lại 04e.4.
+
+Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 16 bộ MySQL (thêm MySqlGuestSessions); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 60 bộ trong lượt 28/10.
 
 Ngày 24/10: theo yêu cầu người dùng, rà soát UI/nhập liệu và chạy hồi quy toàn bộ; xem [báo cáo](Ui_Validation_Navigation_Review.md). Không port service mới ở lượt này; MySQL vẫn hoàn tất đến 04e.3, tiếp 04e.4 Guest. App/worker vẫn SQLite v8, đích MySQL v1; không nhập database hoặc Content thật và không cutover.
 
@@ -54,12 +58,13 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04e.1 | MySqlRoomSessionService.CheckIn | **Đã đạt online Debug/Release 21/10**, gồm writer thật/replay/Room/Customer/NoShow/clock sau lock | [04e.1](MySql_Migration_04e1_CheckIn.md), Verify-MySqlCheckIn |
 | 04e.2 | MySqlRoomSessionService walk-in: list/preview/create/read/own receipt | **Đã đạt online Debug/Release 21/10**, gồm snapshot/receipt/rollback/writer thật/retry NoShow có giới hạn | [04e.2](MySql_Migration_04e2_WalkIn.md), Verify-MySqlWalkIn |
 | 04e.3 | MySqlStaffSessionService.Search/Preview/Extend và core gia hạn Staff | **Đã đạt online Debug/Release 22/10**, View/Extend độc lập, stale/overlap/rollback/writer thật/snapshot | [04e.3](MySql_Migration_04e3_SessionsExtension.md), Verify-MySqlSessions |
+| 04e.4 | MySqlGuestSessionService và MySqlGuestReservationService: lookup Confirmed/Active, hủy và gia hạn Guest | **Đã đạt online Debug/Release 28/10**, current phone/public DTO/snapshot/Guest audit/rollback/writer races/fresh clock | [04e.4](MySql_Migration_04e4_GuestSessions.md), Verify-MySqlGuestSessions |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
 ## Chưa chuyển — danh sách tiếp tục
 
-1. **04e.4 Guest session/gia hạn/lookup/hủy booking đầy đủ**: membership theo SĐT hiện hành, DTO public và audit Guest, không gọi Staff service hoặc giả ActiveSession=null. Phần tiền/menu/món tiếp theo nhóm tương ứng, không cắt scope.
+1. **Tiếp menu/Order/giỏ/preview/tạo/xác nhận/hủy** cho Guest và Staff. 04e.4 lookup Confirmed/Active/hủy/gia hạn đã nghiệm thu; không làm lại. Trang phiên Guest MySQL vẫn cần tiền/menu/món ở nhóm tương ứng, giữ đầy đủ mục 22 và không dùng dữ liệu giả.
 2. Giữ kiểm tra cạnh tranh cùng các writer đã có; bổ sung checkout–gia hạn/order bằng service thật khi port checkout, không coi Completed fixture là checkout đã nghiệm thu.
 3. Order/menu/cart/preview/tạo/xác nhận/hủy, billing/tạm tính, checkout/Invoice snapshot/idempotence/in/đọc lịch sử; bổ sung cạnh tranh checkout–gia hạn–order bằng service thật.
 4. Dashboard, ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
@@ -92,3 +97,7 @@ Bổ sung 04e.2: build VerifyWalkInMySqlDebug/Release đạt; Verify-MySqlWalkIn
 ## Lượt kiểm tra 22/10/2026 — 04e.3
 
 Build VerifySessionsMySqlDebug/Release và Verify-MySqlSessions online cả hai build đạt (exit 0). Hồi quy MySqlCheckIn/WalkIn/Availability/Reservations/Calendar/Foundation online Debug đạt. 16 bộ SQLite/WPF Debug Sessions/Extension/WalkIn/CheckIn/Availability/Calendar/Reservations/GuestCalendar/Authentication/Foundation/StaffReservations/Rooms/Customers/GuestSessions/GuestLookup/AuthenticationUi đạt, UI 131 ảnh. Không thay UI/provider hoặc nhập dữ liệu thật.
+
+## Lượt kiểm tra 28/10/2026 — 04e.4
+
+Build VerifyGuestMySqlDebug/Release đạt. Verify-MySqlGuestSessions bản cuối online Debug/Release đạt, log `%TEMP%/MusicBoxMySqlGuestFinalDebug_20261028.log` và `%TEMP%/MusicBoxMySqlGuestFinalRelease_20261028.log`. Hồi quy 26/26 bộ Debug đạt (8 MySQL online + 18 SQLite/WPF); summary `%TEMP%/MusicBoxGuestRegression_6b820d8e8eff48a68a3f879ffab44ec8/results.json`, AuthenticationUi 142 ảnh. Danh sách bộ/ca/ranh giới trong báo cáo 04e.4. Chỉ database test GUID/thư mục tạm; không dữ liệu thật/Content/provider/cutover. Completed fixture không chứng minh checkout MySQL; còn menu/món/tiền và nhóm tiếp theo.
