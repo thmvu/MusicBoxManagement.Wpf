@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+MySQL 04f (28/10/2026): thêm `MySqlOrderService` cho menu/giỏ/preview, Guest tạo Pending và xem/hủy, Staff tạo Completed sau phục vụ, xem lịch sử/phục vụ/hủy theo quyền riêng. Giữ giá snapshot, số lượng gộp 1–10, ca mở cửa, SĐT hiện hành và transaction/audit. Xem [báo cáo 04f](docs/MySql_Migration_04f_Orders.md) và [bảng bàn giao](docs/MySql_Migration_Status.md) để biết kết quả kiểm tra. Tiếp Billing/tiền tạm tính rồi Checkout/Invoice; app vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục trước bên dưới giữ làm lịch sử triển khai.
+
 MySQL 04e.4 (28/10/2026): thêm `MySqlGuestSessionService` và `MySqlGuestReservationService` cho tra cứu Confirmed/Active theo SĐT hiện hành, hủy đúng mốc 2 giờ và gia hạn +30/+60 với audit Guest/transaction/kiểm tra lại sau khóa. Xem [báo cáo và bằng chứng kiểm tra](docs/MySql_Migration_04e4_GuestSessions.md), [bảng bàn giao hiện hành](docs/MySql_Migration_Status.md). Bước tiếp là menu/Order rồi Billing/checkout/invoice cùng các nhóm còn lại; App/worker vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục ngày 24/10 trở về trước bên dưới là mốc lịch sử.
 
 Palette Music Box 24/10/2026: theo lựa chọn lấy cảm giác chung từ giao diện web tham khảo, đã phối riêng graphite/olive, nền sáng hơi ấm và điểm sage/brass. Màu dùng chung từ brush trong App.xaml; giữ nguyên font thao tác, form và nghiệp vụ. Xem [palette và ảnh kiểm tra](docs/Ui_Operations_Design.md).

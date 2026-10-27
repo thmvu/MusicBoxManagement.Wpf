@@ -1,5 +1,15 @@
 # Music Box WPF
 
+## MySQL 04f — Menu/giỏ/đơn món (28/10/2026)
+
+Đã có MySqlOrderService với workspace, menu/preview Guest–Staff, CreateGuest Pending/CreateStaff Completed (món đã phục vụ), ListGuest Active đúng SĐT hiện hành/ListStaff cả lịch sử theo View, Confirm/Cancel chỉ Pending trong Active. Quyền Order.Create/View/Confirm/Cancel độc lập, Staff null/revoke/stamp không fallback Guest; dùng DTO hiện có không Customer PII/ID nguồn. ForOrders đã nối nội bộ từ MySqlGuestReservationService, chưa wiring UI/provider. Xem docs/MySql_Migration_04f_Orders.md.
+
+Đọc RR read-only cùng permission/membership/data snapshot, menu/preview/workspace một clock; List không clock/maintenance/audit. Writer Serializable khám phá ID ngoài khóa rồi Room → Customer → Reservation nguồn → RoomSession → Order nếu đổi trạng thái. Không đọc lịch/NoShow nên không lấy Confirmed candidate locks; giữ thứ tự tài nguyên chung. Recheck IDs/Active/phone/Order.Session/Pending; UPDATE có guard và audit cùng transaction. Tạo đọc/khóa Services theo ID tăng dần **trước clock/kiểm tra giờ**, gồm chờ catalog; giữ snapshot tên/giá server, số lượng gộp 1–10. Lỗi item/audit rollback; 1213/1205 báo kiểm tra lại, không retry vô hạn. Không tự dedup hai giỏ mới giống nhau hoặc sửa items/đơn đã kết thúc.
+
+Build VerifyOrdersMySqlDebug/Release và Verify-MySqlOrders online cả hai build đạt; có ca quyền riêng, DTO/current phone, ca/ticks/preview chưa chốt giá/BIGINT decimal, rollback, confirm–cancel/catalog writer thật, RR snapshot và clock sau Room/Service wait/phone edit. Hồi quy Debug 32/32 bộ liên quan đạt (8 MySQL online + 24 SQLite/WPF), AuthenticationUi 142 ảnh; log/danh sách tại báo cáo, không tuyên bố mọi suite. Completed fixture chỉ guard/history, không chứng minh checkout MySQL. Schema vẫn SQLite v8/MySQL v1, app/worker SQLite, chưa import DB/Content/cutover hoặc đổi palette. Chỉ Compile entry MySqlOrderService vào commit; định dạng csproj có sẵn vẫn riêng.
+
+**Tiếp Billing/tiền tạm tính rồi Checkout/Invoice**: giữ actual ticks/HourlyRate snapshot/decimal/AwayFromZero/Completed-only, đọc không đóng phiên/giữ giá. Bổ sung cạnh tranh checkout–order/confirm/cancel/extension khi có Checkout MySQL thật. Không làm lại 01–04f đã nghiệm thu; đọc/cập nhật bảng bàn giao cùng code/test/docs/README/plan/commit/push. Giữ dashboard/ma trận quyền/audit/report/Excel/history/backup/import/Content/UI/ERD/từ điển/bản xuất/demo.
+
 ## MySQL 04e.4 — Guest lookup/hủy/gia hạn (28/10/2026)
 
 Đã có MySqlGuestSessionService.Lookup/PreviewExtension/Extend và MySqlGuestReservationService.Lookup/Cancel/ForSessions. Dùng GuestSession/GuestReservationLookup thật, SĐT chuẩn hóa hiện hành, Active/Confirmed/public DTO không Customer PII/ID nguồn; không gọi Staff route. Lookup phiên/preview RR read-only không maintenance/audit; lookup kết hợp giữ hợp đồng maintenance NoShow writer riêng trước RR snapshot, một read clock chung booking/Active/ReturnBy (ngoài clock maintenance). Không giả ActiveSession=null. Xem docs/MySql_Migration_04e4_GuestSessions.md và bảng bàn giao mới nhất.

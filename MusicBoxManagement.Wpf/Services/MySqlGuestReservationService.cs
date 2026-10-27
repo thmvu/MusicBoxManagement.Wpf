@@ -20,6 +20,7 @@ namespace MusicBoxManagement.Wpf.Services
             noShows = new MySqlNoShowService(database, clock);
         }
         internal MySqlGuestSessionService ForSessions() => new MySqlGuestSessionService(database, clock);
+        internal MySqlOrderService ForOrders() => new MySqlOrderService(database, clock);
 
         public GuestReservationLookup Lookup(string phoneNumber)
         {
