@@ -25,6 +25,11 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(actor, "Invoice.View");
             return new MySqlInvoiceService(database, clock);
         }
+        public MySqlDashboardService ForDashboard(LoginSession actor)
+        {
+            permissions.Demand(actor, "Dashboard.View");
+            return new MySqlDashboardService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession actor, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

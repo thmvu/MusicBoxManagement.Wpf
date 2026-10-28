@@ -1,5 +1,15 @@
 # Music Box WPF
 
+## MySQL 04j — Dashboard (28/10/2026)
+
+Đã thêm MySqlDashboardService.Read/ReadRevenueToday và ForDashboard theo Dashboard.View độc lập Reservation/Calendar/Session/Order/Invoice/CRUD. RR read-only cùng ReadAccess/quyền–metadata–dữ liệu, một clock sau quyền/trước projection như SQLite; không Demand writer/maintenance/audit/checkout/cache. Shared MySqlScheduleRules giữ trạng thái phòng/ReturnBy theo Room hoặc Customer, booking hôm nay/effective NoShow/Active từ ngày trước/Pending-only, bốn cảnh báo và tick/grace/ca. DTO hiện có không PII. Revenue PaidAt ngày Việt Nam/GetDecimal/decimal, null thiếu quyền/0 đủ quyền chưa thu; chỉ Admin hoặc Manager đủ Report.View, Staff không tổng hợp kể cả gán nhầm quyền.
+
+Xem docs/MySql_Migration_04j_Dashboard.md cho build/test/log và giới hạn. Fixture tạo booking/check-in/walk-in/món/Completed/Invoice bằng service MySQL thật; RR reader giữ quyền/Active/Pending/tên phòng/doanh thu cũ dù checkout/metadata/revoke writer đã commit. Ca tràn tổng là corruption fixture trên Invoice thật: xác nhận trigger chặn UPDATE, lưu DDL/bỏ tạm chỉ trong GUID DB/phục hồi tiền và trigger trong finally rồi xác nhận chặn lại; không sửa trigger production. Lượt test đầu lỗi cách dựng fixture `Invoice is immutable` được giữ riêng trong báo cáo, không nhận là đạt toàn suite.
+
+Build VerifyDashboardMySqlDebug/Release và Verify-MySqlDashboard bản test cuối online hai build đạt exit 0. Hồi quy Debug 15/15 bộ liên quan đạt (5 MySQL gồm bài mới + Calendar/Authentication/StaffReservations/Foundation, 10 SQLite/WPF có Workflow/Checkout/Invoice/Dashboard/UI), AuthenticationUi 142 ảnh. Log/phạm vi trong báo cáo; không mọi suite hoặc toàn bộ 14 race checkout rerun. Không sửa UI/DTO/VM/provider/import. Runner có 44 SQLite/WPF + 22 MySQL, không phải số đã chạy trong lượt này.
+
+**Tiếp ma trận quyền Staff/Manager và audit viewer MySQL**; không làm lại 01–04j đã nghiệm thu, đọc/cập nhật bảng bàn giao cùng code/test/docs/README/plan/commit/push. Giữ report/Excel/history/worker/provider/UI/import/Content/ERD/từ điển/demo/máy in thật. App/worker vẫn SQLite v8/đích MySQL v1, chưa import/cutover hoặc wiring Dashboard UI. Chỉ Compile entry MySqlDashboardService; định dạng csproj có sẵn giữ riêng.
+
 ## MySQL 04i — Lịch sử/in hóa đơn (28/10/2026)
 
 Đã có MySqlInvoiceService.Search/Read/ReadForPrint, ForInvoices từ MySqlStaffReservationService kiểm tra Invoice.View độc lập Reservation.View/CRUD khác. Search mã exact trim/uppercase/parameter, PaidAt ngày UTC+7 [from, sau to), SĐT chuẩn hóa hiện hành qua CustomerId, AND/sort; detail giữ room/order/cashier snapshots, GetDecimal từ DECIMAL(29,0), UTC ticks/Completed/consistency guards, không tính lại lịch sử. RR read-only/quyền–header–items cùng snapshot/một clock, không audit/NoShow/ghi dữ liệu; View/Print hiện hành và dependency, không Guest hoặc receipt bypass.

@@ -75,6 +75,7 @@
     <Compile Include="Services\MySqlCheckoutService.cs" />
     <Compile Include="Services\IInvoiceService.cs" />
     <Compile Include="Services\MySqlInvoiceService.cs" />
+    <Compile Include="Services\MySqlDashboardService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
     <Compile Include="ViewModels\ReportExportWorkflow.cs" />
