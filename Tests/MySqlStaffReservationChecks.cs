@@ -16,6 +16,7 @@ public static class MusicBoxMySqlStaffReservationChecks
     public static void Run()
     {
         var name="musicbox_test_"+Guid.NewGuid().ToString("N");var db=new MySqlDatabase(name);const string password="Staff-Booking-2026!";
+        Console.WriteLine("Staff reservation test database: "+name);
         try
         {
             var auth=new MySqlAuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin",password).GetAwaiter().GetResult();
@@ -65,6 +66,7 @@ public static class MusicBoxMySqlStaffReservationChecks
             Reject<InvalidOperationException>(()=>reads.Cancel(admin,byStaff.ReservationId,"Đã nhận phòng"));
             Console.WriteLine("PASS MySQL StaffReservations: View-only/current flags, PII snapshot/phone/date/status, real CancelStaff/audit/replay, NoShow ticks, revoke during maintenance/read, Cancel-only and stamp guards.");
         }
+        catch(Exception error){Console.WriteLine("Staff reservation failure before cleanup: "+error);throw;}
         finally
         {
             if(!System.Text.RegularExpressions.Regex.IsMatch(name,@"\Amusicbox_test_[0-9a-f]{32}\z"))throw new Exception("Unsafe cleanup.");

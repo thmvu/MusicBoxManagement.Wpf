@@ -25,6 +25,7 @@ function Assert-Rejected($connection, $sql, $message, $numbers) {
 
 # Only this GUID database may be dropped. Never read or alter the live SQLite file.
 $testName = 'musicbox_test_' + [Guid]::NewGuid().ToString('N')
+Write-Output "Foundation test database: $testName"
 Assert-True ($testName -cmatch '^musicbox_test_[0-9a-f]{32}$') 'Unsafe test database name.'
 $database = [MusicBoxManagement.Wpf.Data.MySqlDatabase]::new($testName)
 $connection = $null
@@ -101,6 +102,9 @@ VALUES(1,'TEST-1',79228162514264337593543900335,50000,79228162514264337593543950
     try { $database.Initialize() } catch { $newerBlocked = $_.Exception.GetBaseException().Message.Contains('mới hơn') }
     Assert-True $newerBlocked 'Newer schema was not blocked.'
     Write-Output 'PASS MySQL Aiven schema/seed/idempotence/UTF-8/RBAC/CHECK/FK/rollback/UTC ticks/Active uniqueness/walk-in/snapshots/decimal/immutable invoice/version guard.'
+} catch {
+    Write-Output ("Foundation failure before cleanup: " + $_.Exception.GetBaseException().GetType().FullName + ': ' + $_.Exception.GetBaseException().Message)
+    throw
 } finally {
     if ($connection) { $connection.Dispose() }
     # Recheck the fixed test prefix immediately before the cloud deletion.

@@ -6,7 +6,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    // Staff booking reads/cancellation; the Invoice factory checks its own independent right.
+    // Staff booking reads/cancellation; factories check their own independent rights.
     public sealed class MySqlStaffReservationService
     {
         private readonly MySqlDatabase database;
@@ -29,6 +29,11 @@ namespace MusicBoxManagement.Wpf.Services
         {
             permissions.Demand(actor, "Dashboard.View");
             return new MySqlDashboardService(database, clock);
+        }
+        public MySqlPermissionManagementService ForPermissions(LoginSession actor)
+        {
+            permissions.Demand(actor, "Permission.Manage");
+            return new MySqlPermissionManagementService(database, clock);
         }
         public StaffReservationSearch Search(LoginSession actor, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
