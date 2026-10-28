@@ -2,6 +2,14 @@
 
 Ngày lập: 02/10/2026. Cập nhật tiến độ: 28/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
 
+## MySQL 05b — Tra cứu nhật ký (28/10/2026)
+
+Đã có MySqlAuditLogService.Search/Read và ForAudit, Audit.View Admin-only hiện hành, RR read-only cùng quyền/metadata/dữ liệu; lọc ngày Việt Nam/actor/action/entity exact AND, keyset ID giảm dần/pageSize 1–200/pageSize+1/HasMore. DTO giữ nội dung/actor/user nullable/tên hiện hành/ticks; đọc không log/maintenance/ghi dữ liệu. MySQL UTC O cố định so sánh exact tick, không áp dụng julianday hoặc coi chuỗi legacy offset/Z là dữ liệu MySQL hợp lệ; import sau này phải chuẩn hóa UTC. SQLite service/UI không sửa.
+
+Build VerifyAuditMySqlDebug/Release, bài MySqlAuditLog online Debug và Release retry đạt exit 0. Release đầu Connect Timeout khi clock hook mở TCP writer phụ; giữ log gốc và retry, không đổi SSL/timeout/quyền/assertion. Bài mới có audit Customer service thật, trigger chặn ghi khi đọc, snapshot tên/quyền khi writer khóa user commit trước reader, filters/ticks/cursor/current role/stamp/logout. Xem docs/MySql_Migration_05b_AuditLog.md cho toàn bộ log/phạm vi hồi quy.
+
+**Tiếp báo cáo doanh thu MySQL**, sau đó phòng/booking/món/Excel/history và worker/provider/UI/import/Content/ERD/từ điển/demo/máy in thật. Chưa wiring audit UI/import/cutover: App/worker SQLite v8, MySQL v1. Chỉ Compile entry MySqlAuditLogService, định dạng csproj có sẵn giữ riêng. Cập nhật bàn giao cùng code/test/docs/README/plan/commit/push; không làm lại 01–05b đã nghiệm thu.
+
 ## MySQL 05a — Ma trận quyền, ngày 28/10/2026
 
 Thêm MySqlPermissionManagementService.Read/Update/ValidateSelection và ForPermissions. Admin chỉnh Staff/Manager riêng; giữ Admin cố định/Staff không Report/quản trị Admin-only/dependency, raw Revision/effective/cleanup/no-op/atomic audit. Read RR read-only, writer Serializable khóa đúng role trước kiểm tra lại actor/stale/replace grants/clock/audit; không đổi user role/stamp. Helper validation thuần dùng chung luật hiện có, không mở SQLite. Xem [05a và kết quả](docs/MySql_Migration_05a_PermissionMatrix.md).
@@ -79,7 +87,7 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
 | WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
-| MySQL Aiven | **Đến 05a ma trận quyền đạt online Debug/Release 28/10**, kết quả và phạm vi tại báo cáo 05a/bảng bàn giao | 05b đọc nhật ký và các nhóm còn lại; chưa đổi provider/import hoặc nghiệm thu máy in thật |
+| MySQL Aiven | **Đến 05b nhật ký đạt online Debug/Release 28/10**, kết quả và phạm vi tại báo cáo 05b/bảng bàn giao | Báo cáo doanh thu và các nhóm còn lại; chưa đổi provider/import hoặc nghiệm thu máy in thật |
 
 Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; tiến độ MySQL hiện hành xem [bảng bàn giao](docs/MySql_Migration_Status.md), không làm lại service đã nghiệm thu. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 

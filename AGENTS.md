@@ -1,5 +1,13 @@
 # Music Box WPF
 
+## MySQL 05b — Tra cứu nhật ký (28/10/2026)
+
+Đã có MySqlAuditLogService.Search/Read và ForAudit, Audit.View Admin-only hiện hành, RR read-only cùng quyền/metadata/dữ liệu; lọc ngày Việt Nam/actor/action/entity exact AND, keyset ID giảm dần/pageSize 1–200/pageSize+1/HasMore. DTO giữ nội dung/actor/user nullable/tên hiện hành/ticks; đọc không log/maintenance/ghi dữ liệu. MySQL UTC O cố định so sánh exact tick, không áp dụng julianday hoặc coi chuỗi legacy offset/Z là dữ liệu MySQL hợp lệ; import sau này phải chuẩn hóa UTC. SQLite service/UI không sửa.
+
+Build VerifyAuditMySqlDebug/Release, bài MySqlAuditLog online Debug và Release retry đạt exit 0. Release đầu Connect Timeout khi clock hook mở TCP writer phụ; giữ log gốc và retry, không đổi SSL/timeout/quyền/assertion. Bài mới có audit Customer service thật, trigger chặn ghi khi đọc, snapshot tên/quyền khi writer khóa user commit trước reader, filters/ticks/cursor/current role/stamp/logout. Xem docs/MySql_Migration_05b_AuditLog.md cho toàn bộ log/phạm vi hồi quy.
+
+**Tiếp báo cáo doanh thu MySQL**, sau đó phòng/booking/món/Excel/history và worker/provider/UI/import/Content/ERD/từ điển/demo/máy in thật. Chưa wiring audit UI/import/cutover: App/worker SQLite v8, MySQL v1. Chỉ Compile entry MySqlAuditLogService, định dạng csproj có sẵn giữ riêng. Cập nhật bàn giao cùng code/test/docs/README/plan/commit/push; không làm lại 01–05b đã nghiệm thu.
+
 ## MySQL 05a — Ma trận quyền (28/10/2026)
 
 Đã có MySqlPermissionManagementService.Read/Update/ValidateSelection và ForPermissions theo Permission.Manage Admin-only, độc lập Reservation.View. Read RR read-only dùng ReadAccess cùng raw matrix, không clock/audit/maintenance. Update precheck/copy selection rồi Serializable khóa AspNetRoles đúng PK Id/Name của Staff hoặc Manager FOR UPDATE (kể cả empty), Demand hiện hành sau chờ, raw Revision/stale/no-op, replace grants đúng role/insert guard, một UTC clock/audit Permission.Update/RolePermission cùng commit. 1213/1205 báo tải lại, không tự retry. Không advisory lock toàn app hoặc đổi account/stamp; Admin cố định, hai role độc lập, Staff không Report, admin-only/dependency giữ nguyên. ValidateSelection tái sử dụng helper thuần hiện có, không mở SQLite/đổi luật.

@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+MySQL 05b: thêm tra cứu/chi tiết nhật ký Admin-only, lọc ngày Việt Nam/actor/action/entity và phân trang keyset, đọc RR read-only không ghi log. Online Debug/Release đạt (Release chạy lại sau timeout). Xem [05b](docs/MySql_Migration_05b_AuditLog.md) và [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.
+
 MySQL 05a (28/10/2026): thêm `MySqlPermissionManagementService` để Admin đọc/lưu quyền Staff và Manager riêng, giữ giới hạn quyền/dependency, Revision chống form cũ và audit cùng transaction. Khóa đúng vai trò rồi kiểm tra lại quyền sau chờ; đã kiểm tra online Debug/Release với hai writer và service khóa tài khoản thật. Xem [05a và bằng chứng](docs/MySql_Migration_05a_PermissionMatrix.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp 05b đọc nhật ký MySQL; App/worker/UI vẫn SQLite, chưa import/cutover. Các mục dưới là lịch sử.
 
 MySQL 04j (28/10/2026): thêm `MySqlDashboardService` đọc trạng thái phòng, booking hôm nay, phiên Active, Pending và cảnh báo trong cùng snapshot quyền/dữ liệu. Doanh thu Invoice.PaidAt theo ngày Việt Nam chỉ Admin hoặc Manager đủ Report.View; Staff không nhận tổng. Xem [04j và kết quả kiểm tra](docs/MySql_Migration_04j_Dashboard.md), [bảng bàn giao](docs/MySql_Migration_Status.md). App/worker/UI mặc định vẫn SQLite; tiếp ma trận quyền và audit MySQL, chưa import/cutover. Các mục dưới là lịch sử triển khai.
