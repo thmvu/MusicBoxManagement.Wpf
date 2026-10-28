@@ -48,6 +48,7 @@ public static class MusicBoxMySqlOrderChecks
     public static void Run()
     {
         var name="musicbox_test_"+Guid.NewGuid().ToString("N");var db=new MySqlDatabase(name);
+        Console.WriteLine("Order test database: "+name);
         try
         {
             const string password="Orders-MySql-2026!";var auth=new MySqlAuthenticationService(db);

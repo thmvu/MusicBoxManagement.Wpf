@@ -6,7 +6,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    // Internal booking reads/cancellation only. No Guest fallback or check-in stub.
+    // Staff booking reads/cancellation; the Invoice factory checks its own independent right.
     public sealed class MySqlStaffReservationService
     {
         private readonly MySqlDatabase database;
@@ -20,6 +20,11 @@ namespace MusicBoxManagement.Wpf.Services
             permissions = new MySqlPermissionService(database);
         }
 
+        public MySqlInvoiceService ForInvoices(LoginSession actor)
+        {
+            permissions.Demand(actor, "Invoice.View");
+            return new MySqlInvoiceService(database, clock);
+        }
         public StaffReservationSearch Search(LoginSession actor, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {

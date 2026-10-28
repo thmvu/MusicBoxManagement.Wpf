@@ -2,7 +2,9 @@
 
 Cập nhật 28/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
 
-**Mốc mới nhất 28/10: 04h Checkout/Invoice nền tảng đã đạt online Debug/Release**, selector/preview CheckOut-only, Confirm chốt tiền/giờ mới và hủy Pending/hoàn tất phiên–nguồn/tạo Invoice/audit cùng transaction, replay/rollback và 14 ca writer thật hai thứ tự. Hồi quy 40/40 bộ Debug liên quan đạt (13 MySQL + 27 SQLite/WPF), UI 142 ảnh. Xem [04h và log](MySql_Migration_04h_Checkout.md). Tiếp đọc/tìm/in Invoice; app/worker vẫn SQLite, chưa import DB/Content thật hoặc cutover.
+**Mốc mới nhất 28/10: 04i tra cứu/đọc và luồng in hóa đơn MySQL đã đạt online Debug/Release**. Search mã/PaidAt ngày Việt Nam/SĐT hiện hành; View/Print hiện hành, RR read-only, snapshot/decimal/consistency. Hai VM dùng IInvoiceService với MySQL trong fixture WPF, máy in giả, 7 ảnh/bản và phiếu 70 dòng/4 trang; chưa nghiệm thu giấy/driver thật. 44/44 bộ SQLite/WPF Debug và Invoices/InvoicePrinting thêm Release đạt. Hồi quy MySQL và lịch sử lỗi kết nối/chạy lại ghi tại [04i](MySql_Migration_04i_InvoiceHistoryPrinting.md). Tiếp Dashboard MySQL; app/worker vẫn SQLite, chưa import DB/Content thật hoặc cutover.
+
+Trước đó 28/10: 04h Checkout/Invoice nền tảng đã đạt online Debug/Release, selector/preview CheckOut-only, Confirm chốt tiền/giờ mới và hủy Pending/hoàn tất phiên–nguồn/tạo Invoice/audit cùng transaction, replay/rollback và 14 ca writer thật hai thứ tự. Hồi quy lượt đó 40/40 bộ Debug liên quan đạt (13 MySQL + 27 SQLite/WPF), UI 142 ảnh. Xem [04h và log](MySql_Migration_04h_Checkout.md).
 
 Trước đó 28/10: 04g Billing đạt online Debug/Release, tiền tạm tính Guest/Staff/actual ticks/snapshot/decimal/Completed-only và calculator RR Preview/Serializable Confirm. Hồi quy lượt đó 34/34 bộ đạt; xem [04g](MySql_Migration_04g_Billing.md).
 
@@ -12,7 +14,7 @@ Hồi quy lượt 04f: 32/32 bộ Debug liên quan đạt (8 MySQL online + 24 S
 
 Trước đó 28/10: 04e.4 Guest đã đạt online Debug/Release, tra cứu Confirmed + Active thật/SĐT hiện hành/hủy/gia hạn/public DTO/audit Guest. Hồi quy lượt đó 26/26 bộ Debug liên quan đạt (8 MySQL online + 18 SQLite/WPF, UI 142 ảnh). Xem [báo cáo 04e.4 và log](MySql_Migration_04e4_GuestSessions.md). Các mục cũ bên dưới là lịch sử, không phải yêu cầu làm lại phần đã nghiệm thu.
 
-Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 19 bộ MySQL (thêm MySqlCheckout); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 63 bộ trong lượt 28/10.
+Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 21 bộ MySQL (thêm MySqlInvoices/MySqlInvoicePrinting); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 65 bộ trong lượt 04i.
 
 Ngày 24/10: theo yêu cầu người dùng, rà soát UI/nhập liệu và chạy hồi quy toàn bộ; xem [báo cáo](Ui_Validation_Navigation_Review.md). Không port service mới ở lượt này; MySQL vẫn hoàn tất đến 04e.3, tiếp 04e.4 Guest. App/worker vẫn SQLite v8, đích MySQL v1; không nhập database hoặc Content thật và không cutover.
 
@@ -70,15 +72,16 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04f | MySqlOrderService, ForOrders: workspace/menu/giỏ/preview/tạo Guest–Staff/xem/phục vụ/hủy | **Đã đạt online Debug/Release 28/10**, quyền riêng/current phone/snapshot/ca/rollback/races/clock sau Room và Service wait | [04f](MySql_Migration_04f_Orders.md), Verify-MySqlOrders |
 | 04g | MySqlBillingService, ForBilling: tiền tạm tính Guest/Staff và calculator chung cho Checkout | **Đã đạt online Debug/Release bản cuối 28/10**, precision/oracle/Completed-only/live View/current phone/RR snapshot/shared reader-writer/rollback/fresh clock | [04g](MySql_Migration_04g_Billing.md), Verify-MySqlBilling |
 | 04h | MySqlCheckoutService: selector/preview/Confirm thanh toán và tạo Invoice | **Đã đạt online Debug/Release 28/10**, atomic/source-Pending-session-invoice-audit/rollback/replay/14 ordered writer races/fresh clock/decimal/MVCC | [04h](MySql_Migration_04h_Checkout.md), Verify-MySqlCheckout |
+| 04i | MySqlInvoiceService.Search/Read/ReadForPrint, ForInvoices và IInvoiceService cho hai VM xem/in | **Đã đạt online Debug/Release 28/10**, current rights/filters/snapshot/decimal/RR/MVCC; WPF MySQL với máy in giả, 70 dòng/4 trang, revoke/dialog/busy/failure | [04i](MySql_Migration_04i_InvoiceHistoryPrinting.md), Verify-MySqlInvoices/Verify-MySqlInvoicePrinting |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
 ## Chưa chuyển — danh sách tiếp tục
 
-1. **Tiếp đọc/tìm/in Invoice lịch sử** theo Invoice.View/Print, giữ snapshot/decimal/bất biến, lọc PaidAt Việt Nam/mã/SĐT hiện hành. Không mở lịch sử public hoặc dùng receipt checkout để bypass quyền. Không làm lại 01–04h đã nghiệm thu.
+1. **Tiếp Dashboard MySQL** theo Dashboard.View: phòng hiện tại/booking hôm nay/Active/Pending/cảnh báo trong cùng snapshot; doanh thu PaidAt chỉ Admin hoặc Manager đủ Report.View, Staff không tổng hợp. Không làm lại 01–04i đã nghiệm thu.
 2. Giữ hồi quy các writer thật và 14 ca hai thứ tự checkout–order/confirm/cancel/gia hạn đã có; bổ sung khi thay luồng/provider/import. Completed/Invoice thật đã được kiểm tra ở 04h, không lấy fixture cũ thay bằng chứng này.
-3. Dashboard, ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
-4. Worker/provider wiring, kiểm tra UI trên MySQL, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
+3. Ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
+4. Worker/provider wiring, kiểm tra UI toàn app trên MySQL và máy in/driver thật, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
 
 ## Nhật ký nhập dữ liệu thật — hiện chưa có lượt nhập
 
@@ -123,3 +126,9 @@ Build VerifyBillingMySqlDebug/Release và VerifyBillingFinalDebug/Release đạt
 ## Lượt kiểm tra 28/10/2026 — 04h
 
 Build VerifyCheckoutMySqlDebug/Release và Verify-MySqlCheckout online cả hai build đạt (exit 0); log `%TEMP%/MusicBoxMySqlCheckoutDebug_20261028.log` và `%TEMP%/MusicBoxMySqlCheckoutRelease_20261028.log`. Hồi quy 40/40 bộ Debug đạt (13 MySQL + 27 SQLite/WPF), summary `%TEMP%/MusicBoxCheckoutRegression_b662323f67d24e83ad3eb96d9194e24e/results.json`; AuthenticationUi 142 ảnh, InvoicePrinting SQLite không máy in thật. Danh sách/giới hạn trong 04h. Positive Completed/Invoice đều qua service thật; mới nghiệm thu core Checkout, chưa Invoice history/print MySQL hoặc provider/import/cutover.
+
+## Lượt kiểm tra 28/10/2026 — 04i
+
+Build VerifyInvoicesMySqlDebug/Release đạt; MySqlInvoices/MySqlInvoicePrinting online cả hai build đạt. Backend log Debug `%TEMP%/MusicBoxMySqlInvoicesDebug_20261028.log`, Release cuối `%TEMP%/MusicBoxMySqlInvoicesReleaseDiagnostic_20261028.log`; in `%TEMP%/MusicBoxMySqlInvoicePrintingDebug_20261028.log` và `%TEMP%/MusicBoxMySqlInvoicePrintingRelease_20261028.log`. 44/44 SQLite/WPF Debug đạt, summary `%TEMP%/MusicBoxRegression_a3b70b707c494e06bc2790c323b83c8e/results.json`, UI 142 ảnh; Invoices/InvoicePrinting SQLite thêm Release đạt. MySQL print 7 ảnh/bản, 70 dòng/4 trang, xem ảnh Debug và SHA256 7 cặp giống Release.
+
+Hồi quy 8 bộ MySQL liên quan: Billing/StaffReservations/Customers/Authentication/Foundation/Services đạt ngay, Orders/Checkout ban đầu Connect Timeout (summary `%TEMP%/MusicBoxInvoiceMySqlRegression_419d18e997fc4c2e80546e8dcc37a24c/results.json` giữ nguyên 6/8). Chạy lại tuần tự hai writer đạt exit 0, summary `%TEMP%/MusicBoxInvoiceWriterRetry_579df3c6397d40ed80066b28281cbcde/results.json`; mới nhất 8/8, gồm 14 ca checkout cạnh tranh thật. Backend Invoice Release cũng có timeout/Broken trước lượt cuối đạt; báo cáo 04i giữ lịch sử/diagnostic/giới hạn, không đổi config hoặc assertion để che lỗi. Không tuyên bố đã chạy mọi suite MySQL. Chỉ GUID/thư mục tạm, WPF in dùng máy in giả; App/worker/schema/Content/dữ liệu thật chưa đổi.

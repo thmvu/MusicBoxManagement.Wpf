@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class InvoicesViewModel : INotifyPropertyChanged
     {
-        private readonly InvoiceService service;
+        private readonly IInvoiceService service;
         private readonly LoginSession actor;
         private static readonly CultureInfo Vietnamese = CultureInfo.GetCultureInfo("vi-VN");
         private bool busy, access;
@@ -19,7 +19,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private DateTime? from, to;
         private InvoiceSummary selected;
         private InvoiceDetails details;
-        public InvoicesViewModel(InvoiceService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public InvoicesViewModel(IInvoiceService service, LoginSession actor) { this.service = service; this.actor = actor; }
         public ObservableCollection<InvoiceSummary> Items { get; } = new ObservableCollection<InvoiceSummary>();
         public ObservableCollection<InvoiceLine> Lines { get; } = new ObservableCollection<InvoiceLine>();
         public string NumberQuery { get => number; set { if (busy) return; number = value; FilterChanged(); Notify(); } }

@@ -59,6 +59,7 @@ public static class MusicBoxMySqlCheckoutChecks
     public static void Run()
     {
         var name="musicbox_test_"+Guid.NewGuid().ToString("N");var db=new MySqlDatabase(name);
+        Console.WriteLine("Checkout test database: "+name);
         try
         {
             var auth=new MySqlAuthenticationService(db);var admin=auth.SetupAdminAsync("admin","Admin test",Password).GetAwaiter().GetResult();

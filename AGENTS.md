@@ -1,5 +1,17 @@
 # Music Box WPF
 
+## MySQL 04i — Lịch sử/in hóa đơn (28/10/2026)
+
+Đã có MySqlInvoiceService.Search/Read/ReadForPrint, ForInvoices từ MySqlStaffReservationService kiểm tra Invoice.View độc lập Reservation.View/CRUD khác. Search mã exact trim/uppercase/parameter, PaidAt ngày UTC+7 [from, sau to), SĐT chuẩn hóa hiện hành qua CustomerId, AND/sort; detail giữ room/order/cashier snapshots, GetDecimal từ DECIMAL(29,0), UTC ticks/Completed/consistency guards, không tính lại lịch sử. RR read-only/quyền–header–items cùng snapshot/một clock, không audit/NoShow/ghi dữ liệu; View/Print hiện hành và dependency, không Guest hoặc receipt bypass.
+
+IInvoiceService chỉ Search/Read/ReadForPrint cho hai provider thật. InvoiceService SQLite chỉ thêm implements; InvoicesViewModel/InvoicePrintViewModel chỉ đổi kiểu field/constructor, giữ logic và UI. Cùng luồng WPF mới nhận MySqlInvoiceService trong fixture: chuẩn bị/read trước dialog/read sau chọn máy, hủy/reprint/busy/duplicate/close/revoke/stale/queue failure/PrintableArea/pagination. App vẫn truyền SQLite như trước, không đổi provider mặc định. Xem docs/MySql_Migration_04i_InvoiceHistoryPrinting.md.
+
+Build VerifyInvoicesMySqlDebug/Release đạt; hai bộ mới MySqlInvoices/MySqlInvoicePrinting online hai build đạt, dữ liệu Invoice/Completed qua Checkout thật và máy in giả, không gửi giấy. 44/44 SQLite/WPF Debug và Invoices/InvoicePrinting thêm Release đạt; UI 142 ảnh. MySQL print 7 ảnh/build, 70 dòng/4 trang, đã xem thường/compact/4 trang Debug và so SHA256 cả 7 cặp giống Release. Các lượt timeout/Broken Open/reset/TLS, kết quả hồi quy và chạy lại ghi rõ trong báo cáo; không sửa config kết nối/SSL/permission để qua test. Thêm log GUID/lỗi trước cleanup; không xóa schema chưa xác định thuộc lượt của mình.
+
+**Tiếp Dashboard MySQL** theo Dashboard.View/room status/today booking/Active/Pending/cảnh báo, doanh thu PaidAt Admin hoặc Manager đủ Report.View, Staff không tổng hợp. Không làm lại 01–04i; đọc/cập nhật bảng bàn giao cùng code/test/docs/README/plan/commit/push. Còn ma trận quyền/audit/report/Excel/history/worker/provider/UI/import/Content/ERD/từ điển/demo, App/worker vẫn SQLite v8/đích MySQL v1, chưa import/cutover hoặc máy in thật. Chỉ hai Compile entry IInvoiceService/MySqlInvoiceService, giữ định dạng csproj có sẵn riêng.
+
+Hồi quy MySQL Debug liên quan mới nhất 8/8 đạt: Billing/StaffReservations/Customers/Authentication/Foundation/Services ngay lượt đầu, Orders/Checkout chạy lại tuần tự đạt sau timeout (không nới assertion, Checkout giữ 14 ca writer/MVCC/fresh clock/logout). Giữ summary đầu 6/8 và summary retry 2/2 trong báo cáo, không tuyên bố đã chạy cả 21 bộ MySQL. Runner hiện có 44 SQLite/WPF + 21 MySQL.
+
 ## MySQL 04h — Thanh toán/Invoice nền tảng (28/10/2026)
 
 Đã có MySqlCheckoutService.ListActiveStaff/PreviewStaff/ConfirmStaff theo CheckOut hiện hành độc lập View/Order/Invoice/CRUD, không Guest fallback. Selector/preview RR read-only/snapshot quyền–bill–CompletedOrders, không chốt tiền/NoShow/audit. Confirm khám phá IDs ngoài writer locks rồi Serializable Room → Customer → Reservation nguồn → Session → Orders theo ID; recheck IDs/actor/quyền sau chờ (gồm logout bộ nhớ), Invoice cũ replay trước clock/payment validation. Không đọc lịch nên không candidate locks.

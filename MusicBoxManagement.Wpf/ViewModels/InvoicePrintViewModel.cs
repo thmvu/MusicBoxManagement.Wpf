@@ -11,13 +11,13 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class InvoicePrintViewModel : INotifyPropertyChanged
     {
-        private readonly InvoiceService service;
+        private readonly IInvoiceService service;
         private readonly LoginSession actor;
         private readonly int invoiceId;
         private bool busy;
         private FlowDocument document;
         private string status = "Xem trước khổ A4. Bản gửi in sẽ dàn trang theo vùng in của máy đã chọn.";
-        public InvoicePrintViewModel(InvoiceService service, LoginSession actor, InvoiceDetails details)
+        public InvoicePrintViewModel(IInvoiceService service, LoginSession actor, InvoiceDetails details)
         {
             this.service = service; this.actor = actor; invoiceId = details.Invoice.InvoiceId;
             if (!details.CanPrint) throw new UnauthorizedAccessException("Không có quyền in hóa đơn.");
