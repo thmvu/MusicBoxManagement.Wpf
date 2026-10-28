@@ -72,6 +72,7 @@
     <Compile Include="Services\MySqlGuestReservationService.cs" />
     <Compile Include="Services\MySqlOrderService.cs" />
     <Compile Include="Services\MySqlBillingService.cs" />
+    <Compile Include="Services\MySqlCheckoutService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
     <Compile Include="ViewModels\ReportExportWorkflow.cs" />

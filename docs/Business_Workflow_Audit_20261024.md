@@ -1,6 +1,6 @@
 # Đối chiếu luồng nghiệp vụ hiện hành — 24/10/2026
 
-**Cập nhật migration 28/10:** [04e.4 Guest](MySql_Migration_04e4_GuestSessions.md), [04f Order/menu/giỏ](MySql_Migration_04f_Orders.md) và [04g Billing](MySql_Migration_04g_Billing.md) đã đạt online Debug/Release; [bảng bàn giao](MySql_Migration_Status.md) là nguồn tiến độ hiện hành. Nội dung kiểm toán ngày 24/10 bên dưới giữ làm bằng chứng theo thời điểm. MySQL còn Checkout/Invoice và chuỗi thanh toán đầy đủ; kết quả Workflow SQLite hoặc shared calculator fixture không thay thế nghiệm thu chuỗi đó.
+**Cập nhật migration 28/10:** [04e.4 Guest](MySql_Migration_04e4_GuestSessions.md), [04f Order](MySql_Migration_04f_Orders.md), [04g Billing](MySql_Migration_04g_Billing.md) và [04h Checkout/Invoice](MySql_Migration_04h_Checkout.md) đạt online Debug/Release. 04h dùng service MySQL thật cho booking/check-in/walk-in/món/Completed/Invoice và 14 ca writer hai thứ tự; [bảng bàn giao](MySql_Migration_Status.md) ghi phạm vi hiện hành. Nội dung ngày 24/10 dưới đây giữ theo thời điểm, không dùng Workflow SQLite hoặc fixture cũ thay bằng chứng MySQL. Còn đọc/in Invoice, các nhóm quản trị/báo cáo/history và import/UI/provider/cutover; chưa nghiệm thu mọi tổ hợp hoặc dữ liệu thật.
 
 ## Kết luận và phạm vi
 

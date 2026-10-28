@@ -2,7 +2,9 @@
 
 Cập nhật 28/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
 
-**Mốc mới nhất 28/10: 04g Billing đã đạt online Debug/Release**, tiền tạm tính Guest/Staff, actual ticks/giá snapshot/decimal/Completed-only/RR snapshot và calculator chung RR Preview/Serializable Confirm. Hồi quy 34/34 bộ Debug liên quan đạt (9 MySQL + 25 SQLite/WPF), UI 142 ảnh. Xem [04g và bằng chứng/build/log](MySql_Migration_04g_Billing.md). Tiếp Checkout/Invoice; app/worker vẫn SQLite, chưa import DB/Content thật hoặc cutover.
+**Mốc mới nhất 28/10: 04h Checkout/Invoice nền tảng đã đạt online Debug/Release**, selector/preview CheckOut-only, Confirm chốt tiền/giờ mới và hủy Pending/hoàn tất phiên–nguồn/tạo Invoice/audit cùng transaction, replay/rollback và 14 ca writer thật hai thứ tự. Hồi quy 40/40 bộ Debug liên quan đạt (13 MySQL + 27 SQLite/WPF), UI 142 ảnh. Xem [04h và log](MySql_Migration_04h_Checkout.md). Tiếp đọc/tìm/in Invoice; app/worker vẫn SQLite, chưa import DB/Content thật hoặc cutover.
+
+Trước đó 28/10: 04g Billing đạt online Debug/Release, tiền tạm tính Guest/Staff/actual ticks/snapshot/decimal/Completed-only và calculator RR Preview/Serializable Confirm. Hồi quy lượt đó 34/34 bộ đạt; xem [04g](MySql_Migration_04g_Billing.md).
 
 Trước đó 28/10: 04f Order đạt online Debug/Release, gồm menu/giỏ/preview/tạo Guest–Staff/xem/phục vụ/hủy, quyền riêng/Active/current phone/snapshot/transaction/audit. Xem [báo cáo 04f](MySql_Migration_04f_Orders.md).
 
@@ -10,7 +12,7 @@ Hồi quy lượt 04f: 32/32 bộ Debug liên quan đạt (8 MySQL online + 24 S
 
 Trước đó 28/10: 04e.4 Guest đã đạt online Debug/Release, tra cứu Confirmed + Active thật/SĐT hiện hành/hủy/gia hạn/public DTO/audit Guest. Hồi quy lượt đó 26/26 bộ Debug liên quan đạt (8 MySQL online + 18 SQLite/WPF, UI 142 ảnh). Xem [báo cáo 04e.4 và log](MySql_Migration_04e4_GuestSessions.md). Các mục cũ bên dưới là lịch sử, không phải yêu cầu làm lại phần đã nghiệm thu.
 
-Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 18 bộ MySQL (thêm MySqlBilling); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 62 bộ trong lượt 28/10.
+Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 19 bộ MySQL (thêm MySqlCheckout); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 63 bộ trong lượt 28/10.
 
 Ngày 24/10: theo yêu cầu người dùng, rà soát UI/nhập liệu và chạy hồi quy toàn bộ; xem [báo cáo](Ui_Validation_Navigation_Review.md). Không port service mới ở lượt này; MySQL vẫn hoàn tất đến 04e.3, tiếp 04e.4 Guest. App/worker vẫn SQLite v8, đích MySQL v1; không nhập database hoặc Content thật và không cutover.
 
@@ -67,16 +69,16 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04e.4 | MySqlGuestSessionService và MySqlGuestReservationService: lookup Confirmed/Active, hủy và gia hạn Guest | **Đã đạt online Debug/Release 28/10**, current phone/public DTO/snapshot/Guest audit/rollback/writer races/fresh clock | [04e.4](MySql_Migration_04e4_GuestSessions.md), Verify-MySqlGuestSessions |
 | 04f | MySqlOrderService, ForOrders: workspace/menu/giỏ/preview/tạo Guest–Staff/xem/phục vụ/hủy | **Đã đạt online Debug/Release 28/10**, quyền riêng/current phone/snapshot/ca/rollback/races/clock sau Room và Service wait | [04f](MySql_Migration_04f_Orders.md), Verify-MySqlOrders |
 | 04g | MySqlBillingService, ForBilling: tiền tạm tính Guest/Staff và calculator chung cho Checkout | **Đã đạt online Debug/Release bản cuối 28/10**, precision/oracle/Completed-only/live View/current phone/RR snapshot/shared reader-writer/rollback/fresh clock | [04g](MySql_Migration_04g_Billing.md), Verify-MySqlBilling |
+| 04h | MySqlCheckoutService: selector/preview/Confirm thanh toán và tạo Invoice | **Đã đạt online Debug/Release 28/10**, atomic/source-Pending-session-invoice-audit/rollback/replay/14 ordered writer races/fresh clock/decimal/MVCC | [04h](MySql_Migration_04h_Checkout.md), Verify-MySqlCheckout |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
 ## Chưa chuyển — danh sách tiếp tục
 
-1. **Tiếp Checkout/Invoice nền tảng**: Preview/selector CheckOut-only, Confirm kiểm tra quyền/khóa rồi tính lại giờ/tiền, Cash/BankTransfer, hủy Pending + Session/Reservation Completed + Invoice snapshot/PaidAt/audit cùng commit, rollback/replay. 04e.4/04f/04g đã nghiệm thu, không làm lại; Billing đạt chưa có nghĩa đã thu tiền.
-2. Giữ kiểm tra cạnh tranh cùng các writer đã có; bổ sung checkout–gia hạn/order bằng service thật khi port checkout, không coi Completed fixture là checkout đã nghiệm thu.
-3. Đọc/tìm/in Invoice lịch sử theo quyền View/Print, giữ snapshot/tiền decimal/bất biến; không mở lịch sử public hoặc dùng receipt checkout để bypass quyền.
-4. Dashboard, ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
-5. Worker/provider wiring, kiểm tra UI trên MySQL, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
+1. **Tiếp đọc/tìm/in Invoice lịch sử** theo Invoice.View/Print, giữ snapshot/decimal/bất biến, lọc PaidAt Việt Nam/mã/SĐT hiện hành. Không mở lịch sử public hoặc dùng receipt checkout để bypass quyền. Không làm lại 01–04h đã nghiệm thu.
+2. Giữ hồi quy các writer thật và 14 ca hai thứ tự checkout–order/confirm/cancel/gia hạn đã có; bổ sung khi thay luồng/provider/import. Completed/Invoice thật đã được kiểm tra ở 04h, không lấy fixture cũ thay bằng chứng này.
+3. Dashboard, ma trận quyền Staff/Manager và audit viewer, các báo cáo/Excel, lịch sử Customer 8f.1–8f.2; account service 02b không có nghĩa toàn bộ quản trị mới đã port.
+4. Worker/provider wiring, kiểm tra UI trên MySQL, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
 
 ## Nhật ký nhập dữ liệu thật — hiện chưa có lượt nhập
 
@@ -117,3 +119,7 @@ Build VerifyOrdersMySqlDebug/Release và Verify-MySqlOrders online hai build đ�
 ## Lượt kiểm tra 28/10/2026 — 04g
 
 Build VerifyBillingMySqlDebug/Release và VerifyBillingFinalDebug/Release đạt. Verify-MySqlBilling bản cuối online cả hai Final đạt, log `%TEMP%/MusicBoxMySqlBillingFinalDebug_20261028.log` và `%TEMP%/MusicBoxMySqlBillingFinalRelease_20261028.log`. Hồi quy Debug 34/34 bộ liên quan trên VerifyBillingMySqlDebug đạt (9 MySQL + 25 SQLite/WPF), summary `%TEMP%/MusicBoxBillingRegression_000b37aa9aa048c99131db2e2321db20/results.json`, UI 142 ảnh. Sau điều chỉnh helper mới hỗ trợ RR Preview, Billing được kiểm tra lại hai Final; không thay service SQLite/các service MySQL cũ. Chi tiết/phạm vi trong báo cáo 04g. Chỉ GUID/thư mục tạm, chưa import/provider/cutover; fixture/shared writer không nghiệm thu Checkout MySQL.
+
+## Lượt kiểm tra 28/10/2026 — 04h
+
+Build VerifyCheckoutMySqlDebug/Release và Verify-MySqlCheckout online cả hai build đạt (exit 0); log `%TEMP%/MusicBoxMySqlCheckoutDebug_20261028.log` và `%TEMP%/MusicBoxMySqlCheckoutRelease_20261028.log`. Hồi quy 40/40 bộ Debug đạt (13 MySQL + 27 SQLite/WPF), summary `%TEMP%/MusicBoxCheckoutRegression_b662323f67d24e83ad3eb96d9194e24e/results.json`; AuthenticationUi 142 ảnh, InvoicePrinting SQLite không máy in thật. Danh sách/giới hạn trong 04h. Positive Completed/Invoice đều qua service thật; mới nghiệm thu core Checkout, chưa Invoice history/print MySQL hoặc provider/import/cutover.

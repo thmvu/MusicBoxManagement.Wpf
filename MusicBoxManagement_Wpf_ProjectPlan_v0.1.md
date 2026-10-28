@@ -2,6 +2,14 @@
 
 Ngày lập: 02/10/2026. Cập nhật tiến độ: 28/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
 
+## MySQL 04h — Thanh toán/Invoice nền tảng, ngày 28/10/2026
+
+Thêm MySqlCheckoutService.ListActiveStaff/PreviewStaff/ConfirmStaff theo Session.CheckOut độc lập View/Order/Invoice/CRUD. Selector/preview RR read-only cùng snapshot; Confirm Serializable Room → Customer → Reservation nguồn → Session → Orders, kiểm tra lại actor/IDs/status, tính tiền/clock mới từ Billing, Cash/BankTransfer, hủy Pending và Session/Reservation Completed + Invoice decimal/snapshot/PaidAt/audit cùng commit. Replay có quyền trả Invoice cũ, không clock/đổi payment/log; lỗi rollback toàn bộ. Báo cáo/ca kiểm tra tại [04h](docs/MySql_Migration_04h_Checkout.md), trạng thái hiện hành tại [bảng bàn giao](docs/MySql_Migration_Status.md).
+
+Build Debug/Release và Verify-MySqlCheckout online hai build đạt; hồi quy 40/40 bộ Debug liên quan (13 MySQL + 27 SQLite/WPF), UI 142 ảnh đạt. Test tạo Completed/Invoice bằng service thật, có 14 ca hai thứ tự checkout–món/gia hạn thật, rollback/replay/fresh clock/MVCC. Chưa nghiệm thu đọc/in Invoice MySQL hoặc nhập thật/provider.
+
+Tiếp đọc/tìm/in Invoice theo View/Print; giữ dashboard/ma trận quyền/audit/báo cáo/Excel/history, worker/provider/UI, backup/import/đối chiếu DB + Content/cutover/ERD/từ điển/demo. App vẫn SQLite v8, đích MySQL v1; chưa nhập dữ liệu thật hoặc đổi UI/provider. Các mục cũ bên dưới là lịch sử.
+
 ## MySQL 04g — Tiền tạm tính, ngày 28/10/2026
 
 Thêm MySqlBillingService.ReadGuest/ReadStaff, ForBilling từ lookup Guest/phiên Staff: current phone hoặc Session.View hiện hành độc lập Order.View/CheckOut/CRUD; public SessionBill không PII/chi tiết đơn. Actual ticks/UTC, HourlyRate và UnitPrice snapshot, decimal/AwayFromZero một lần, chỉ Completed; không cap theo ExpectedEnd/ReturnBy/ca hoặc ghi dữ liệu khi đọc. Helper internal cùng database/connection/transaction RR hoặc Serializable cho Preview/Confirm Checkout, quyền CheckOut của caller độc lập Session.View. Xem [04g và kết quả kiểm tra](docs/MySql_Migration_04g_Billing.md).
@@ -43,7 +51,7 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
 | WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
-| MySQL Aiven | **Đến 04g tiền tạm tính đã đạt online Debug/Release bản cuối 28/10**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | Checkout/invoice và các nhóm còn lại |
+| MySQL Aiven | **Đến 04h thanh toán/tạo Invoice đã đạt online Debug/Release 28/10**. Tiến độ và nhập dữ liệu thật tại docs/MySql_Migration_Status.md | Đọc/tìm/in Invoice và các nhóm còn lại |
 
 Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; tiến độ MySQL hiện hành xem [bảng bàn giao](docs/MySql_Migration_Status.md), không làm lại service đã nghiệm thu. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 
