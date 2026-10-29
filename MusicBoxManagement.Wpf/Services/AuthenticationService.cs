@@ -7,7 +7,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class AuthenticationService
+    public sealed class AuthenticationService : IAuthenticationService
     {
         private readonly SqliteDatabase database;
         public AuthenticationService(SqliteDatabase database) { this.database = database; }

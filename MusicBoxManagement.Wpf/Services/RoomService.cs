@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class RoomService
+    public sealed class RoomService : IRoomService
     {
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;

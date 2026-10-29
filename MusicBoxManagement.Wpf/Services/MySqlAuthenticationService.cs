@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlAuthenticationService
+    public sealed class MySqlAuthenticationService : IAuthenticationService
     {
         private readonly MySqlDatabase database;
         public MySqlAuthenticationService(MySqlDatabase database) { this.database = database; }

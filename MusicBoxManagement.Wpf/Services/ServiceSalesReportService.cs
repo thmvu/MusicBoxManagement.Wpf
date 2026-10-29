@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class ServiceSalesReportService
+    public sealed class ServiceSalesReportService : IServiceSalesReportService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;

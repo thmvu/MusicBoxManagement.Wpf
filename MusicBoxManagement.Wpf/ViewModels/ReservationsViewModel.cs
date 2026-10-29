@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class ReservationsViewModel : INotifyPropertyChanged
     {
-        private readonly StaffReservationService service;
+        private readonly IStaffReservationService service;
         private readonly LoginSession session;
         private readonly IClock clock;
         private StaffReservation selected;
@@ -49,8 +49,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool CanConfirm => !busy && confirming && canView && canCancel && Selected != null;
         public bool IsConfirming => confirming;
         public event PropertyChangedEventHandler PropertyChanged;
-        public ReservationsViewModel(StaffReservationService service, LoginSession session) : this(service, session, new SystemClock()) { }
-        public ReservationsViewModel(StaffReservationService service, LoginSession session, IClock clock)
+        public ReservationsViewModel(IStaffReservationService service, LoginSession session) : this(service, session, new SystemClock()) { }
+        public ReservationsViewModel(IStaffReservationService service, LoginSession session, IClock clock)
         {
             this.service = service; this.session = session; this.clock = clock;
             FromDate = clock.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;

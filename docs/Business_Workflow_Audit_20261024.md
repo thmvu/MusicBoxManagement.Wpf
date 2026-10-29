@@ -1,5 +1,16 @@
 # Đối chiếu luồng nghiệp vụ hiện hành — 24/10/2026
 
+## Hoàn tất chuyển MySQL/Aiven — 29/10/2026
+
+Đã port báo cáo phòng/booking/món + Excel và lịch sử khách; nối toàn bộ VM/Views qua service contracts, App và NoShow worker cùng provider. **App.config mặc định MySql / musicbox**, không tự fallback SQLite. Không đổi giao diện/luật/quyền/SSL. [Ports/wiring](MySql_Migration_06b_08_ReportsHistoryWiring.md), [nhập/cutover/khôi phục](MySql_Migration_09_Import_Cutover.md).
+
+Đã nhập nguồn mặc định người dùng xác nhận: SQLite v1 chỉ RoomTypes2, nâng bản sao v8 rồi đối chiếu 15 bảng trên Aiven, SQLite gốc hash không đổi. Roles3/Permission27/RolePermission43 là migration nền tảng; các bảng tài khoản/nghiệp vụ/audit đều0, Content không có ảnh phòng thật. Không tạo tài khoản/doanh thu giả. Mở Release thật thấy Khách/Standard/VIP/**Thiết lập Admin**; người dùng tự tạo Admin lần đầu. Hồ sơ nhập riêng ngoài Git trong AppData Backups, không chạy import lại sau vận hành.
+
+Kiểm tra: runner Debug70/70 (44 local+26 MySQL lúc bắt đầu), Release local44/44; RemainingReads/OperationsUi/Import bản cuối cả Debug/Release đạt riêng, AuthenticationUi Release142 ảnh. Runner hiện72=44+28, không tuyên bố cả72 hai cấu hình. Giữ log/phạm vi trong cutover report; không nới SSL/timeout/assertion. Có [ERD16 bảng/từ điển/SVG/PNG](ERD_Full_And_DataDictionary.md) và [demo/vận hành](MySql_Demo_And_Operations.md).
+
+Còn nghiệm thu người dùng tại quầy/mạng thật và in giấy/driver thật; kiểm tra máy in giả không thay phần này. Ảnh vẫn local, không cloud upload/sync hai chiều; rollback snapshot không chứa dữ liệu MySQL phát sinh sau cutover. Các mốc bên dưới là lịch sử, **không làm lại 01–09 hoặc coi App còn SQLite**. Định dạng csproj có sẵn giữ ngoài commit; cập nhật bàn giao/code/test/README/plan/commit/push cùng thay đổi tiếp theo.
+
+
 **Bổ sung 06a ngày 29/10:** [doanh thu/Excel MySQL](MySql_Migration_06a_Revenue.md) online Debug/Release đạt; PaidAt/group snapshot/decimal/Active exclusion/current View–Export và RR với checkout/revoke thật. Chưa nối UI/provider/import hoặc chuyển các báo cáo phòng/booking/món; tiếp sử dụng phòng. Các mốc dưới giữ theo thời điểm.
 
 **Bổ sung 05b nhật ký 28/10:** [service/bằng chứng](MySql_Migration_05b_AuditLog.md) đạt online Debug/Release retry, 11/11 bộ Debug liên quan đạt. Audit.View Admin-only/current rights/RR snapshot/keyset/UTC ticks/read-only; chưa wiring UI/provider/import. Giữ riêng timeout Release đầu và lượt retry; tiếp báo cáo doanh thu MySQL. Các mốc dưới là lịch sử.

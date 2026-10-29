@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
@@ -61,6 +62,7 @@
     <Compile Include="Data\SqliteDatabase.cs" />
     <Compile Include="Data\AivenDatabase.cs" />
     <Compile Include="Data\MySqlDatabase.cs" />
+    <Compile Include="Data\MySqlDataMigration.cs" />
     <Compile Include="Models\ServiceSalesReport.cs" />
     <Compile Include="Models\ReportExcelFile.cs" />
     <Compile Include="Services\ReportExcelWriter.cs" />
@@ -74,11 +76,17 @@
     <Compile Include="Services\MySqlBillingService.cs" />
     <Compile Include="Services\MySqlCheckoutService.cs" />
     <Compile Include="Services\IInvoiceService.cs" />
+    <Compile Include="Services\ServiceContracts.cs" />
+    <Compile Include="Services\ApplicationServices.cs" />
     <Compile Include="Services\MySqlInvoiceService.cs" />
     <Compile Include="Services\MySqlDashboardService.cs" />
     <Compile Include="Services\MySqlPermissionManagementService.cs" />
     <Compile Include="Services\MySqlAuditLogService.cs" />
     <Compile Include="Services\MySqlReportService.cs" />
+    <Compile Include="Services\MySqlRoomUsageReportService.cs" />
+    <Compile Include="Services\MySqlBookingStatusReportService.cs" />
+    <Compile Include="Services\MySqlServiceSalesReportService.cs" />
+    <Compile Include="Services\MySqlCustomerHistoryService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
     <Compile Include="ViewModels\ReportExportWorkflow.cs" />

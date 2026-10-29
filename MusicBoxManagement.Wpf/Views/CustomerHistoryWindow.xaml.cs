@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class CustomerHistoryWindow : Window
     {
         private readonly CustomerHistoryViewModel viewModel;
-        public CustomerHistoryWindow(CustomerHistoryService service, LoginSession actor, int customerId)
+        public CustomerHistoryWindow(ICustomerHistoryService service, LoginSession actor, int customerId)
         {
             InitializeComponent(); DataContext = viewModel = new CustomerHistoryViewModel(service, actor, customerId);
             Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };

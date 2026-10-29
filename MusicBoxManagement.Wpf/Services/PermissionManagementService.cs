@@ -10,7 +10,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class PermissionManagementService
+    public sealed class PermissionManagementService : IPermissionManagementService
     {
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;

@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class RoomTypeEditViewModel : INotifyPropertyChanged
     {
-        private readonly RoomTypeService service;
+        private readonly IRoomTypeService service;
         private readonly LoginSession session;
         private readonly RoomType original;
         private bool isBusy;
@@ -28,7 +28,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Status => status;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public RoomTypeEditViewModel(RoomTypeService service, LoginSession session, RoomType original)
+        public RoomTypeEditViewModel(IRoomTypeService service, LoginSession session, RoomType original)
         {
             this.service = service;
             this.session = session;

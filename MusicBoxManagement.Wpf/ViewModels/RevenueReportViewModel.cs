@@ -19,14 +19,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
 
     public sealed class RevenueReportViewModel : INotifyPropertyChanged
     {
-        private readonly ReportService service;
+        private readonly IReportService service;
         private readonly LoginSession actor;
         private DateTime? from, to;
         private string roomType, mode = "Day", status = "Đang tải báo cáo…";
         private bool busy;
         private RevenueReport report;
 
-        public RevenueReportViewModel(ReportService service, LoginSession actor)
+        public RevenueReportViewModel(IReportService service, LoginSession actor)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
             this.actor = actor;

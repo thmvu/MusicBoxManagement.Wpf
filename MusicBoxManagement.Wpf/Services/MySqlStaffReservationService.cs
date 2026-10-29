@@ -7,14 +7,18 @@ using MusicBoxManagement.Wpf.Models;
 namespace MusicBoxManagement.Wpf.Services
 {
     // Staff booking reads/cancellation; factories check their own independent rights.
-    public sealed class MySqlStaffReservationService
+    public sealed class MySqlStaffReservationService : IStaffReservationService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;
+        private readonly string storageRoot;
         private readonly MySqlPermissionService permissions;
         public MySqlStaffReservationService(MySqlDatabase database) : this(database, new SystemClock()) { }
         public MySqlStaffReservationService(MySqlDatabase database, IClock clock)
+            : this(database, clock, System.IO.Path.GetDirectoryName(SqliteDatabase.DefaultPath)) { }
+        public MySqlStaffReservationService(MySqlDatabase database, IClock clock, string storageRoot)
         {
+            this.storageRoot = storageRoot;
             this.database = database ?? throw new ArgumentNullException(nameof(database));
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
             permissions = new MySqlPermissionService(database);
@@ -45,6 +49,17 @@ namespace MusicBoxManagement.Wpf.Services
             permissions.Demand(actor, "Report.View");
             return new MySqlReportService(database, clock);
         }
+        public MySqlRoomSessionService ForWalkIn(LoginSession actor) { permissions.Demand(actor,"Session.WalkIn"); return new MySqlRoomSessionService(database,clock); }
+        public MySqlStaffSessionService ForSessions(LoginSession actor) { permissions.Demand(actor,"Session.View"); return new MySqlStaffSessionService(database,clock); }
+        public MySqlOrderService ForOrders(LoginSession actor) { var result=new MySqlOrderService(database,clock);result.ReadWorkspaceStaff(actor);return result; }
+        public MySqlCheckoutService ForCheckout(LoginSession actor) { permissions.Demand(actor,"Session.CheckOut");return new MySqlCheckoutService(database,clock); }
+        public MySqlAccountManagementService ForAccounts(LoginSession actor) { permissions.Demand(actor,"User.Manage");return new MySqlAccountManagementService(database,clock); }
+        public MySqlRoomUsageReportService ForRoomReports(LoginSession actor) { permissions.Demand(actor,"Report.View");return new MySqlRoomUsageReportService(database,clock); }
+        public MySqlBookingStatusReportService ForBookingReports(LoginSession actor) { permissions.Demand(actor,"Report.View");return new MySqlBookingStatusReportService(database,clock); }
+        public MySqlServiceSalesReportService ForServiceReports(LoginSession actor) { permissions.Demand(actor,"Report.View");return new MySqlServiceSalesReportService(database,clock); }
+        public MySqlCalendarService ForCalendar(LoginSession actor) { permissions.Demand(actor,"Calendar.View");return new MySqlCalendarService(database,clock); }
+        public MySqlStaffBookingService ForBooking(LoginSession actor) { permissions.Demand(actor,"Reservation.Create");return new MySqlStaffBookingService(database,actor,storageRoot,clock); }
+        public RoomSession CheckIn(LoginSession actor,int reservationId) => new MySqlRoomSessionService(database,clock).CheckIn(actor,reservationId);
         public StaffReservationSearch Search(LoginSession actor, DateTime? fromDate = null, DateTime? toDate = null,
             string phoneNumber = null, string status = null)
         {
@@ -105,5 +120,20 @@ ORDER BY b.StartTime,b.ReservationId;";
             DateTime.SpecifyKind(value.Date, DateTimeKind.Unspecified), BookingHours.VietnamOffset)
             .ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
         private static DateTimeOffset Parse(string value) => DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture).ToUniversalTime();
+        IRoomSessionService IStaffReservationService.ForWalkIn(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForWalkIn(session);
+        IStaffSessionService IStaffReservationService.ForSessions(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForSessions(session);
+        IOrderService IStaffReservationService.ForOrders(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForOrders(session);
+        ICheckoutService IStaffReservationService.ForCheckout(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForCheckout(session);
+        IInvoiceService IStaffReservationService.ForInvoices(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForInvoices(session);
+        IDashboardService IStaffReservationService.ForDashboard(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForDashboard(session);
+        IAuditLogService IStaffReservationService.ForAudit(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForAudit(session);
+        IReportService IStaffReservationService.ForReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForReports(session);
+        IRoomUsageReportService IStaffReservationService.ForRoomReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForRoomReports(session);
+        IBookingStatusReportService IStaffReservationService.ForBookingReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForBookingReports(session);
+        IPermissionManagementService IStaffReservationService.ForPermissions(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForPermissions(session);
+        IServiceSalesReportService IStaffReservationService.ForServiceReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForServiceReports(session);
+        IAccountManagementService IStaffReservationService.ForAccounts(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForAccounts(session);
+        ICalendarService IStaffReservationService.ForCalendar(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForCalendar(session);
+        IBookingService IStaffReservationService.ForBooking(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForBooking(session);
     }
 }

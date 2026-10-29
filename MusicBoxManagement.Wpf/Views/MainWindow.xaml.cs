@@ -12,19 +12,19 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class MainWindow : Window
     {
         private readonly MainViewModel viewModel;
-        private readonly AuthenticationService authentication;
-        private readonly PermissionService permissions;
-        private readonly RoomTypeService roomTypes;
-        private readonly RoomService rooms;
-        private readonly ServiceCatalogService services;
+        private readonly IAuthenticationService authentication;
+        private readonly IPermissionService permissions;
+        private readonly IRoomTypeService roomTypes;
+        private readonly IRoomService rooms;
+        private readonly IServiceCatalogService services;
         private bool isOpeningServices;
-        private readonly CustomerService customers;
+        private readonly ICustomerService customers;
         private bool isOpeningCustomers;
-        private readonly GuestBookingService guestBooking;
+        private readonly IBookingService guestBooking;
         private bool isOpeningBooking;
-        private readonly GuestReservationService guestLookup;
+        private readonly IGuestReservationService guestLookup;
         private bool isOpeningLookup;
-        private readonly StaffReservationService reservations;
+        private readonly IStaffReservationService reservations;
         private bool isOpeningReservations;
         private bool isOpeningStaffBooking;
         private bool isOpeningCalendar;
@@ -47,7 +47,7 @@ namespace MusicBoxManagement.Wpf.Views
         private bool isOpeningEditor;
         private bool isOpeningRooms;
 
-        public MainWindow(MainViewModel viewModel, AuthenticationService authentication, PermissionService permissions, RoomTypeService roomTypes, RoomService rooms, ServiceCatalogService services, CustomerService customers, GuestBookingService guestBooking, GuestReservationService guestLookup, StaffReservationService reservations)
+        public MainWindow(MainViewModel viewModel, IAuthenticationService authentication, IPermissionService permissions, IRoomTypeService roomTypes, IRoomService rooms, IServiceCatalogService services, ICustomerService customers, IBookingService guestBooking, IGuestReservationService guestLookup, IStaffReservationService reservations)
         {
             InitializeComponent();
             Width = Math.Min(Width, SystemParameters.WorkArea.Width);

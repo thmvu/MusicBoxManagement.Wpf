@@ -7,7 +7,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class StaffReservationService
+    public sealed class StaffReservationService : IStaffReservationService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;
@@ -150,5 +150,20 @@ ORDER BY b.StartTime,b.ReservationId;";
         private static string DayUtc(DateTime date) => new DateTimeOffset(DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified), BookingHours.VietnamOffset)
             .ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
         private static DateTimeOffset Parse(string value) => DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture);
+        IRoomSessionService IStaffReservationService.ForWalkIn(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForWalkIn(session);
+        IStaffSessionService IStaffReservationService.ForSessions(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForSessions(session);
+        IOrderService IStaffReservationService.ForOrders(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForOrders(session);
+        ICheckoutService IStaffReservationService.ForCheckout(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForCheckout(session);
+        IInvoiceService IStaffReservationService.ForInvoices(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForInvoices(session);
+        IDashboardService IStaffReservationService.ForDashboard(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForDashboard(session);
+        IAuditLogService IStaffReservationService.ForAudit(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForAudit(session);
+        IReportService IStaffReservationService.ForReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForReports(session);
+        IRoomUsageReportService IStaffReservationService.ForRoomReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForRoomReports(session);
+        IBookingStatusReportService IStaffReservationService.ForBookingReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForBookingReports(session);
+        IPermissionManagementService IStaffReservationService.ForPermissions(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForPermissions(session);
+        IServiceSalesReportService IStaffReservationService.ForServiceReports(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForServiceReports(session);
+        IAccountManagementService IStaffReservationService.ForAccounts(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForAccounts(session);
+        ICalendarService IStaffReservationService.ForCalendar(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForCalendar(session);
+        IBookingService IStaffReservationService.ForBooking(MusicBoxManagement.Wpf.Models.LoginSession @session) => ForBooking(session);
     }
 }

@@ -18,14 +18,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
 
     public sealed class RoomUsageReportViewModel : INotifyPropertyChanged
     {
-        private readonly RoomUsageReportService service;
+        private readonly IRoomUsageReportService service;
         private readonly LoginSession actor;
         private DateTime? from, to;
         private int? roomId;
         private bool busy;
         private RoomUsageReport report;
         private string status = "Đang tải báo cáo…";
-        public RoomUsageReportViewModel(RoomUsageReportService service, LoginSession actor)
+        public RoomUsageReportViewModel(IRoomUsageReportService service, LoginSession actor)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service)); this.actor = actor;
             var today = DateTimeOffset.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;

@@ -7,9 +7,9 @@ namespace MusicBoxManagement.Wpf.Views
  public partial class GuestLookupWindow:Window
  {
   private readonly GuestLookupViewModel viewModel;
-  private readonly OrderService orders;
-  private readonly BillingService billing;
-  public GuestLookupWindow(GuestReservationService service)
+  private readonly IOrderService orders;
+  private readonly IBillingService billing;
+  public GuestLookupWindow(IGuestReservationService service)
   {InitializeComponent();orders=service.ForOrders();billing=service.ForBilling();viewModel=new GuestLookupViewModel(service);DataContext=viewModel;Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};}
   private async void Bill_Click(object sender,RoutedEventArgs args)
   {

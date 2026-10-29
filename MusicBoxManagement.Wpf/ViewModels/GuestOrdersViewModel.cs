@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class GuestOrdersViewModel : INotifyPropertyChanged
     {
-        private readonly OrderService service;
+        private readonly IOrderService service;
         private readonly string phone;
         private readonly int sessionId;
         private bool busy, valid, canCreate;
@@ -46,7 +46,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             "Đơn #"+selectedOrder.OrderId+" — "+StateLabel(selectedOrder.Status)+"\n"+
             string.Join("\n",selectedOrder.Items.Select(i=>i.ServiceNameSnapshot+" × "+i.Quantity+" · "+i.UnitPrice.ToString("N0")+" đ/món"));
         public event PropertyChangedEventHandler PropertyChanged;
-        public GuestOrdersViewModel(OrderService service,string phone,int sessionId,string roomCode)
+        public GuestOrdersViewModel(IOrderService service,string phone,int sessionId,string roomCode)
         { this.service=service;this.phone=PhoneNumberNormalizer.Normalize(phone);this.sessionId=sessionId;Title="Gọi món — phòng "+roomCode;status="Đang tải menu và đơn của phiên…"; }
         public async Task ReloadAsync()
         {

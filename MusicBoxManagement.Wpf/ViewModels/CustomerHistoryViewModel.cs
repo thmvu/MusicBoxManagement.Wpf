@@ -9,13 +9,13 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class CustomerHistoryViewModel : INotifyPropertyChanged
     {
-        private readonly CustomerHistoryService service;
+        private readonly ICustomerHistoryService service;
         private readonly LoginSession actor;
         private readonly int customerId;
         private bool busy;
         private CustomerHistory history;
         private string status = "Đang tải lịch sử…";
-        public CustomerHistoryViewModel(CustomerHistoryService service, LoginSession actor, int customerId)
+        public CustomerHistoryViewModel(ICustomerHistoryService service, LoginSession actor, int customerId)
         { this.service = service ?? throw new ArgumentNullException(nameof(service)); this.actor = actor; this.customerId = customerId; }
         public CustomerHistory History => history;
         public bool IsBusy => busy;

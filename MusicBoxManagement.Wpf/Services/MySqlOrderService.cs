@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlOrderService
+    public sealed class MySqlOrderService : IOrderService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;

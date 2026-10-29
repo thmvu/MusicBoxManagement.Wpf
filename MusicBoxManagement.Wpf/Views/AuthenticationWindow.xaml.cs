@@ -9,12 +9,12 @@ namespace MusicBoxManagement.Wpf.Views
 {
     public partial class AuthenticationWindow : Window
     {
-        private readonly AuthenticationService service;
+        private readonly IAuthenticationService service;
         private readonly bool setup;
         private bool isBusy;
         public LoginSession Session { get; private set; }
 
-        public AuthenticationWindow(AuthenticationService service, bool setup)
+        public AuthenticationWindow(IAuthenticationService service, bool setup)
         {
             InitializeComponent();
             this.service = service;
@@ -59,7 +59,7 @@ namespace MusicBoxManagement.Wpf.Views
                     ? "Dữ liệu đang bận. Hãy thử lại sau." : "Không lưu được dữ liệu tài khoản. Hãy thử lại.";
             }
             catch (Exception)
-            { StatusText.Text = "Không truy cập được dữ liệu tài khoản. Kiểm tra thư mục dữ liệu rồi thử lại."; }
+            { StatusText.Text = "Không truy cập được dữ liệu tài khoản. Kiểm tra kết nối hoặc quyền truy cập rồi thử lại."; }
             finally
             {
                 password = null;

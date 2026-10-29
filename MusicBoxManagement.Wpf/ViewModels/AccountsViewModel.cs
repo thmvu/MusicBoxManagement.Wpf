@@ -11,14 +11,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class AccountsViewModel : INotifyPropertyChanged
     {
-        private readonly AccountManagementService service;
+        private readonly IAccountManagementService service;
         private readonly LoginSession actor;
         private bool busy, access, active = true;
         private string mode = "", name, full, role = "Staff", status = "Đang tải tài khoản…";
         private UserAccount selected;
         private AccountEdit pending;
         private bool confirming;
-        public AccountsViewModel(AccountManagementService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public AccountsViewModel(IAccountManagementService service, LoginSession actor) { this.service = service; this.actor = actor; }
         public ObservableCollection<UserAccount> Items { get; } = new ObservableCollection<UserAccount>();
         public string[] Roles { get; } = new[] { "Staff", "Manager", "Admin" };
         public string UserName { get => name; set { if (!CanInput) return; name = value; Notify(); } }

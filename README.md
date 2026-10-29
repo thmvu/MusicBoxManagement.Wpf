@@ -1,5 +1,16 @@
 # Music Box Management — WPF
 
+## Hoàn tất chuyển MySQL/Aiven — 29/10/2026
+
+Đã port báo cáo phòng/booking/món + Excel và lịch sử khách; nối toàn bộ VM/Views qua service contracts, App và NoShow worker cùng provider. **App.config mặc định MySql / musicbox**, không tự fallback SQLite. Không đổi giao diện/luật/quyền/SSL. [Ports/wiring](docs/MySql_Migration_06b_08_ReportsHistoryWiring.md), [nhập/cutover/khôi phục](docs/MySql_Migration_09_Import_Cutover.md).
+
+Đã nhập nguồn mặc định người dùng xác nhận: SQLite v1 chỉ RoomTypes2, nâng bản sao v8 rồi đối chiếu 15 bảng trên Aiven, SQLite gốc hash không đổi. Roles3/Permission27/RolePermission43 là migration nền tảng; các bảng tài khoản/nghiệp vụ/audit đều0, Content không có ảnh phòng thật. Không tạo tài khoản/doanh thu giả. Mở Release thật thấy Khách/Standard/VIP/**Thiết lập Admin**; người dùng tự tạo Admin lần đầu. Hồ sơ nhập riêng ngoài Git trong AppData Backups, không chạy import lại sau vận hành.
+
+Kiểm tra: runner Debug70/70 (44 local+26 MySQL lúc bắt đầu), Release local44/44; RemainingReads/OperationsUi/Import bản cuối cả Debug/Release đạt riêng, AuthenticationUi Release142 ảnh. Runner hiện72=44+28, không tuyên bố cả72 hai cấu hình. Giữ log/phạm vi trong cutover report; không nới SSL/timeout/assertion. Có [ERD16 bảng/từ điển/SVG/PNG](docs/ERD_Full_And_DataDictionary.md) và [demo/vận hành](docs/MySql_Demo_And_Operations.md).
+
+Còn nghiệm thu người dùng tại quầy/mạng thật và in giấy/driver thật; kiểm tra máy in giả không thay phần này. Ảnh vẫn local, không cloud upload/sync hai chiều; rollback snapshot không chứa dữ liệu MySQL phát sinh sau cutover. Các mốc bên dưới là lịch sử, **không làm lại 01–09 hoặc coi App còn SQLite**. Định dạng csproj có sẵn giữ ngoài commit; cập nhật bàn giao/code/test/docs/README/plan/commit/push cùng thay đổi tiếp theo.
+
+
 MySQL 06a (29/10/2026): thêm báo cáo doanh thu PaidAt theo ngày/tháng/loại phòng snapshot và Excel ba cách nhóm, Report.View/Export hiện hành và Staff bị chặn. [Bằng chứng/phạm vi](docs/MySql_Migration_06a_Revenue.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo sử dụng phòng; App/UI vẫn SQLite, chưa import/cutover.
 
 MySQL 05b: thêm tra cứu/chi tiết nhật ký Admin-only, lọc ngày Việt Nam/actor/action/entity và phân trang keyset, đọc RR read-only không ghi log. Online Debug/Release đạt (Release chạy lại sau timeout). Xem [05b](docs/MySql_Migration_05b_AuditLog.md) và [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.

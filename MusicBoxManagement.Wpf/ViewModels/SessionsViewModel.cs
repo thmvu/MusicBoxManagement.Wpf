@@ -10,7 +10,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class SessionsViewModel : INotifyPropertyChanged
     {
-        private readonly StaffSessionService service;
+        private readonly IStaffSessionService service;
         private readonly LoginSession actor;
         private bool busy, canView, canExtend, confirming;
         private StaffSession selected;
@@ -42,7 +42,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool IsConfirming => confirming;
         public bool CanClose => !busy;
         public event PropertyChangedEventHandler PropertyChanged;
-        public SessionsViewModel(StaffSessionService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public SessionsViewModel(IStaffSessionService service, LoginSession actor) { this.service = service; this.actor = actor; }
         private void Select(StaffSession value)
         { selected = value; confirming = false; preview = null; notice = null; Notify(nameof(Selected)); Notify(nameof(Details)); Notify(nameof(Notice)); AccessChanged(); }
         private void Clear() { Select(null); Items.Clear(); canView = canExtend = false; AccessChanged(); }

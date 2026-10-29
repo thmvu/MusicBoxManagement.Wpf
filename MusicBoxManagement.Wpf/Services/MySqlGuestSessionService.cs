@@ -6,7 +6,7 @@ using MySqlConnector;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlGuestSessionService
+    public sealed class MySqlGuestSessionService : IGuestSessionService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;

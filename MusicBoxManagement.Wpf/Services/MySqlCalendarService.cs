@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 namespace MusicBoxManagement.Wpf.Services
 {
     // Staff calendar with private customer details. Guest uses MySqlGuestCalendarService.
-    public sealed class MySqlCalendarService
+    public sealed class MySqlCalendarService : ICalendarService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;

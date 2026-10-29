@@ -1,0 +1,352 @@
+[
+  {
+    "Suite": "Verify-AuditLog",
+    "ExitCode": 0,
+    "Seconds": 9.6
+  },
+  {
+    "Suite": "Verify-Accounts",
+    "ExitCode": 0,
+    "Seconds": 21.9
+  },
+  {
+    "Suite": "Verify-AuditLogUi",
+    "ExitCode": 0,
+    "Seconds": 14.7
+  },
+  {
+    "Suite": "Verify-Authentication",
+    "ExitCode": 0,
+    "Seconds": 21.2
+  },
+  {
+    "Suite": "Verify-Availability",
+    "ExitCode": 0,
+    "Seconds": 1
+  },
+  {
+    "Suite": "Verify-Billing",
+    "ExitCode": 0,
+    "Seconds": 4
+  },
+  {
+    "Suite": "Verify-BookingStatusReport",
+    "ExitCode": 0,
+    "Seconds": 5.6
+  },
+  {
+    "Suite": "Verify-BookingStatusReportUi",
+    "ExitCode": 0,
+    "Seconds": 14.7
+  },
+  {
+    "Suite": "Verify-Calendar",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-CheckIn",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-Checkout",
+    "ExitCode": 0,
+    "Seconds": 7.6
+  },
+  {
+    "Suite": "Verify-CustomerHistory",
+    "ExitCode": 0,
+    "Seconds": 3.5
+  },
+  {
+    "Suite": "Verify-CustomerHistoryUi",
+    "ExitCode": 0,
+    "Seconds": 5.6
+  },
+  {
+    "Suite": "Verify-AuthenticationUi",
+    "ExitCode": 0,
+    "Seconds": 75.1
+  },
+  {
+    "Suite": "Verify-Customers",
+    "ExitCode": 0,
+    "Seconds": 5.1
+  },
+  {
+    "Suite": "Verify-Dashboard",
+    "ExitCode": 0,
+    "Seconds": 5.6
+  },
+  {
+    "Suite": "Verify-Foundation",
+    "ExitCode": 0,
+    "Seconds": 2
+  },
+  {
+    "Suite": "Verify-Extension",
+    "ExitCode": 0,
+    "Seconds": 5.1
+  },
+  {
+    "Suite": "Verify-GuestBooking",
+    "ExitCode": 0,
+    "Seconds": 1
+  },
+  {
+    "Suite": "Verify-GuestLookup",
+    "ExitCode": 0,
+    "Seconds": 1.5
+  },
+  {
+    "Suite": "Verify-GuestCalendar",
+    "ExitCode": 0,
+    "Seconds": 2.6
+  },
+  {
+    "Suite": "Verify-GuestSessions",
+    "ExitCode": 0,
+    "Seconds": 3.6
+  },
+  {
+    "Suite": "Verify-InvoicePrinting",
+    "ExitCode": 0,
+    "Seconds": 6.2
+  },
+  {
+    "Suite": "Verify-Invoices",
+    "ExitCode": 0,
+    "Seconds": 4.2
+  },
+  {
+    "Suite": "Verify-MySqlAuditLog",
+    "ExitCode": 0,
+    "Seconds": 86.9
+  },
+  {
+    "Suite": "Verify-MySqlAccounts",
+    "ExitCode": 0,
+    "Seconds": 139
+  },
+  {
+    "Suite": "Verify-MySqlAuthentication",
+    "ExitCode": 0,
+    "Seconds": 86.5
+  },
+  {
+    "Suite": "Verify-MySqlAvailability",
+    "ExitCode": 0,
+    "Seconds": 71.4
+  },
+  {
+    "Suite": "Verify-MySqlBilling",
+    "ExitCode": 0,
+    "Seconds": 184.5
+  },
+  {
+    "Suite": "Verify-MySqlBookingReads",
+    "ExitCode": 0,
+    "Seconds": 193.8
+  },
+  {
+    "Suite": "Verify-MySqlCalendar",
+    "ExitCode": 0,
+    "Seconds": 51.9
+  },
+  {
+    "Suite": "Verify-MySqlCheckIn",
+    "ExitCode": 0,
+    "Seconds": 163.4
+  },
+  {
+    "Suite": "Verify-MySqlCustomers",
+    "ExitCode": 0,
+    "Seconds": 88.5
+  },
+  {
+    "Suite": "Verify-MySqlCheckout",
+    "ExitCode": 0,
+    "Seconds": 469.3
+  },
+  {
+    "Suite": "Verify-MySqlFoundation",
+    "ExitCode": 0,
+    "Seconds": 29.5
+  },
+  {
+    "Suite": "Verify-MySqlDashboard",
+    "ExitCode": 0,
+    "Seconds": 278.3
+  },
+  {
+    "Suite": "Verify-MySqlInvoicePrinting",
+    "ExitCode": 0,
+    "Seconds": 142.5
+  },
+  {
+    "Suite": "Verify-MySqlInvoices",
+    "ExitCode": 0,
+    "Seconds": 169.4
+  },
+  {
+    "Suite": "Verify-MySqlGuestSessions",
+    "ExitCode": 0,
+    "Seconds": 342.2
+  },
+  {
+    "Suite": "Verify-MySqlPermissionMatrix",
+    "ExitCode": 0,
+    "Seconds": 170.7
+  },
+  {
+    "Suite": "Verify-MySqlRemainingReads",
+    "ExitCode": 0,
+    "Seconds": 152.3
+  },
+  {
+    "Suite": "Verify-MySqlOrders",
+    "ExitCode": 0,
+    "Seconds": 395.5
+  },
+  {
+    "Suite": "Verify-MySqlReservations",
+    "ExitCode": 0,
+    "Seconds": 151.2
+  },
+  {
+    "Suite": "Verify-MySqlRevenueReport",
+    "ExitCode": 0,
+    "Seconds": 103.8
+  },
+  {
+    "Suite": "Verify-MySqlRoomTypes",
+    "ExitCode": 0,
+    "Seconds": 81.9
+  },
+  {
+    "Suite": "Verify-MySqlServices",
+    "ExitCode": 0,
+    "Seconds": 82.4
+  },
+  {
+    "Suite": "Verify-MySqlRooms",
+    "ExitCode": 0,
+    "Seconds": 223.9
+  },
+  {
+    "Suite": "Verify-MySqlStaffReservations",
+    "ExitCode": 0,
+    "Seconds": 105.6
+  },
+  {
+    "Suite": "Verify-MySqlSessions",
+    "ExitCode": 0,
+    "Seconds": 184.3
+  },
+  {
+    "Suite": "Verify-Orders",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-PermissionMatrix",
+    "ExitCode": 0,
+    "Seconds": 7.6
+  },
+  {
+    "Suite": "Verify-PermissionMatrixUi",
+    "ExitCode": 0,
+    "Seconds": 16.3
+  },
+  {
+    "Suite": "Verify-ReportTablesExcel",
+    "ExitCode": 0,
+    "Seconds": 7.1
+  },
+  {
+    "Suite": "Verify-Reservations",
+    "ExitCode": 0,
+    "Seconds": 4
+  },
+  {
+    "Suite": "Verify-RevenueExcel",
+    "ExitCode": 0,
+    "Seconds": 7.1
+  },
+  {
+    "Suite": "Verify-RevenueReport",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-RevenueReportUi",
+    "ExitCode": 0,
+    "Seconds": 15.8
+  },
+  {
+    "Suite": "Verify-Rooms",
+    "ExitCode": 0,
+    "Seconds": 7.6
+  },
+  {
+    "Suite": "Verify-RoomTypes",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-RoomUsageReport",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-RoomUsageReportUi",
+    "ExitCode": 0,
+    "Seconds": 15.9
+  },
+  {
+    "Suite": "Verify-Services",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-ServiceSalesReport",
+    "ExitCode": 0,
+    "Seconds": 7.1
+  },
+  {
+    "Suite": "Verify-ServiceSalesReportUi",
+    "ExitCode": 0,
+    "Seconds": 14.8
+  },
+  {
+    "Suite": "Verify-Sessions",
+    "ExitCode": 0,
+    "Seconds": 3.1
+  },
+  {
+    "Suite": "Verify-StaffBooking",
+    "ExitCode": 0,
+    "Seconds": 3.1
+  },
+  {
+    "Suite": "Verify-StaffReservations",
+    "ExitCode": 0,
+    "Seconds": 3.5
+  },
+  {
+    "Suite": "Verify-WalkIn",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-Workflows",
+    "ExitCode": 0,
+    "Seconds": 7.7
+  },
+  {
+    "Suite": "Verify-MySqlWalkIn",
+    "ExitCode": 0,
+    "Seconds": 243.9
+  }
+]

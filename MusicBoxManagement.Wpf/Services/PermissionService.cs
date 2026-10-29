@@ -15,7 +15,7 @@ namespace MusicBoxManagement.Wpf.Services
         public IReadOnlyDictionary<string, string> Permissions { get; internal set; }
     }
 
-    public sealed class PermissionService
+    public sealed class PermissionService : IPermissionService
     {
         private readonly SqliteDatabase database;
         public PermissionService(SqliteDatabase database) { this.database = database; }

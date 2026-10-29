@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class RoomTypeService
+    public sealed class RoomTypeService : IRoomTypeService
     {
         private readonly SqliteDatabase database;
 

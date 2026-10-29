@@ -10,7 +10,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class MainViewModel : INotifyPropertyChanged
     {
-        private readonly RoomTypeService service;
+        private readonly IRoomTypeService service;
         private bool isBusy;
         private string status = "Đang chuẩn bị danh mục…";
 
@@ -19,7 +19,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Status => status;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public MainViewModel(RoomTypeService service)
+        public MainViewModel(IRoomTypeService service)
         {
             this.service = service;
         }

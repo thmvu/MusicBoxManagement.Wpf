@@ -9,7 +9,7 @@ namespace MusicBoxManagement.Wpf.Views
     {
         private readonly ReservationsViewModel viewModel;
         private bool openingBooking;
-        public ReservationsWindow(StaffReservationService service, LoginSession session)
+        public ReservationsWindow(IStaffReservationService service, LoginSession session)
             : this(new ReservationsViewModel(service, session)) { }
         public ReservationsWindow(ReservationsViewModel viewModel)
         {

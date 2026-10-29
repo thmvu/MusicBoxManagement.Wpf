@@ -9,7 +9,7 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class ServicesWindow : Window
     {
         private readonly ServicesViewModel viewModel;
-        public ServicesWindow(ServiceCatalogService service, LoginSession session)
+        public ServicesWindow(IServiceCatalogService service, LoginSession session)
         {
             InitializeComponent();
             viewModel = new ServicesViewModel(service, session);

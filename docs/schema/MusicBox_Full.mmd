@@ -1,0 +1,146 @@
+erDiagram
+    RoomTypes {
+        INT RoomTypeId PK
+        VARCHAR(20) Code
+        VARCHAR(100) Name
+        INT Capacity
+        BIGINT PricePerHour
+        VARCHAR(1000) Amenities
+        VARCHAR(2000) Description
+    }
+    AspNetUsers {
+        VARCHAR(128) Id PK
+        VARCHAR(100) UserName
+        VARCHAR(100) NormalizedUserName
+        TEXT PasswordHash
+        TEXT SecurityStamp
+        VARCHAR(100) FullName
+        TINYINT IsActive
+    }
+    AspNetRoles {
+        VARCHAR(128) Id PK
+        VARCHAR(20) Name
+    }
+    AspNetUserRoles {
+        VARCHAR(128) UserId PK, FK
+        VARCHAR(128) RoleId FK
+    }
+    Permission {
+        INT PermissionId PK
+        VARCHAR(100) Code
+        VARCHAR(200) Name
+    }
+    RolePermission {
+        VARCHAR(128) RoleId PK, FK
+        INT PermissionId PK, FK
+    }
+    AuditLog {
+        INT AuditLogId PK
+        VARCHAR(20) ActorType
+        VARCHAR(128) UserId FK
+        VARCHAR(100) Action
+        VARCHAR(100) EntityName
+        VARCHAR(200) EntityId
+        TEXT Description
+        VARCHAR(33) CreatedAt
+    }
+    Rooms {
+        INT RoomId PK
+        VARCHAR(50) RoomCode
+        INT RoomTypeId FK
+        VARCHAR(100) Name
+        VARCHAR(500) ImageUrl
+        VARCHAR(2000) Description
+        TINYINT IsActive
+        VARCHAR(1000) InactiveReason
+        VARCHAR(33) CreatedAt
+    }
+    Customers {
+        INT CustomerId PK
+        VARCHAR(100) FullName
+        VARCHAR(10) PhoneNumber
+    }
+    Reservations {
+        INT ReservationId PK
+        INT CustomerId FK
+        INT RoomId FK
+        VARCHAR(33) StartTime
+        VARCHAR(33) EndTime
+        VARCHAR(20) Status
+        TEXT CancellationReason
+        VARCHAR(128) CreatedByUserId FK
+        VARCHAR(33) CreatedAt
+    }
+    RoomSessions {
+        INT RoomSessionId PK
+        INT CustomerId FK
+        INT RoomId FK
+        INT ReservationId FK
+        VARCHAR(33) ActualStartTime
+        VARCHAR(33) ExpectedEndTime
+        VARCHAR(33) ActualEndTime
+        BIGINT HourlyRate
+        TEXT RoomCodeSnapshot
+        VARCHAR(20) RoomTypeCodeSnapshot
+        TEXT RoomTypeNameSnapshot
+        VARCHAR(20) Status
+        INT ActiveRoomId
+        INT ActiveCustomerId
+    }
+    Services {
+        INT ServiceId PK
+        VARCHAR(100) Name
+        VARCHAR(20) Category
+        BIGINT Price
+        VARCHAR(2000) Description
+        TINYINT IsActive
+    }
+    Orders {
+        INT OrderId PK
+        INT RoomSessionId FK
+        VARCHAR(128) CreatedByUserId FK
+        VARCHAR(20) Status
+        VARCHAR(33) CreatedAt
+    }
+    OrderItems {
+        INT OrderItemId PK
+        INT OrderId FK
+        INT ServiceId FK
+        VARCHAR(100) ServiceNameSnapshot
+        INT Quantity
+        BIGINT UnitPrice
+    }
+    Invoices {
+        INT InvoiceId PK
+        INT RoomSessionId FK
+        VARCHAR(50) InvoiceNumber
+        DECIMAL(29_0) RoomCharge
+        DECIMAL(29_0) ServiceCharge
+        DECIMAL(29_0) TotalAmount
+        VARCHAR(20) PaymentMethod
+        VARCHAR(128) ProcessedByUserId FK
+        VARCHAR(100) ProcessedByNameSnapshot
+        VARCHAR(33) PaidAt
+    }
+    _MusicBoxSchemaVersion {
+        INT Id PK
+        INT Version
+    }
+    AspNetUsers ||--o| AspNetUserRoles : "UserId"
+    AspNetRoles ||..o{ AspNetUserRoles : "RoleId"
+    AspNetRoles ||--o{ RolePermission : "RoleId"
+    Permission ||--o{ RolePermission : "PermissionId"
+    AspNetUsers |o..o{ AuditLog : "UserId"
+    RoomTypes ||..o{ Rooms : "RoomTypeId"
+    Customers ||..o{ Reservations : "CustomerId"
+    Rooms ||..o{ Reservations : "RoomId"
+    AspNetUsers |o..o{ Reservations : "CreatedByUserId"
+    Customers ||..o{ RoomSessions : "CustomerId"
+    Rooms ||..o{ RoomSessions : "RoomId"
+    Reservations |o..o| RoomSessions : "ReservationId"
+    RoomSessions ||..o{ Orders : "RoomSessionId"
+    AspNetUsers |o..o{ Orders : "CreatedByUserId"
+    Orders ||..o{ OrderItems : "OrderId"
+    Services ||..o{ OrderItems : "ServiceId"
+    RoomSessions ||..o| Invoices : "RoomSessionId"
+    AspNetUsers ||..o{ Invoices : "ProcessedByUserId"

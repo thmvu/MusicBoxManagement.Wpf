@@ -15,7 +15,7 @@ namespace MusicBoxManagement.Wpf.Views
     {
         private readonly CalendarDayViewModel viewModel;
         private const double Header = 62, MinutesScale = 1.4, ColumnWidth = 240, Gutter = 68;
-        public CalendarDayWindow(CalendarService service, LoginSession session) : this(new CalendarDayViewModel(service, session)) { }
+        public CalendarDayWindow(ICalendarService service, LoginSession session) : this(new CalendarDayViewModel(service, session)) { }
         public CalendarDayWindow(CalendarDayViewModel viewModel)
         {
             InitializeComponent(); this.viewModel = viewModel; DataContext = viewModel;

@@ -19,7 +19,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
     }
     public sealed class CheckoutViewModel : INotifyPropertyChanged
     {
-        private readonly CheckoutService service;
+        private readonly ICheckoutService service;
         private readonly LoginSession actor;
         private static readonly CultureInfo Vietnamese = CultureInfo.GetCultureInfo("vi-VN");
         private bool busy, access, confirming, acknowledged;
@@ -27,7 +27,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private CheckoutPreview preview;
         private Invoice receipt;
         private string payment = "Cash", status = "Đang tải phiên đang sử dụng…";
-        public CheckoutViewModel(CheckoutService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public CheckoutViewModel(ICheckoutService service, LoginSession actor) { this.service = service; this.actor = actor; }
         public ObservableCollection<CheckoutSessionChoice> Sessions { get; } = new ObservableCollection<CheckoutSessionChoice>();
         public ObservableCollection<CheckoutLine> Lines { get; } = new ObservableCollection<CheckoutLine>();
         public CheckoutSessionChoice Selected

@@ -13,7 +13,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class AccountManagementService
+    public sealed class AccountManagementService : IAccountManagementService
     {
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;

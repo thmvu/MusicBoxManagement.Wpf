@@ -7,11 +7,12 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlCustomerService
+    public sealed class MySqlCustomerService : ICustomerService
     {
         private readonly MySqlDatabase database;
         private readonly MySqlPermissionService permissions;
         public MySqlCustomerService(MySqlDatabase database) { this.database = database; permissions = new MySqlPermissionService(database); }
+        internal MySqlCustomerHistoryService ForHistory() => new MySqlCustomerHistoryService(database);
 
         public CustomerList Search(LoginSession session, string nameQuery = null, string phoneQuery = null)
         {
@@ -93,5 +94,6 @@ namespace MusicBoxManagement.Wpf.Services
             }
         }
         private static Customer Read(MySqlDataReader reader) => new Customer { CustomerId = reader.GetInt32(0), FullName = reader.GetString(1), PhoneNumber = reader.GetString(2) };
+        ICustomerHistoryService ICustomerService.ForHistory() => ForHistory();
     }
 }

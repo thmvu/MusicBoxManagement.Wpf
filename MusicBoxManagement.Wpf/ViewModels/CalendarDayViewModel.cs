@@ -17,7 +17,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
     }
     public sealed class CalendarDayViewModel : INotifyPropertyChanged
     {
-        private readonly CalendarService service;
+        private readonly ICalendarService service;
         private readonly LoginSession session;
         private readonly IClock clock;
         private DateTime? date;
@@ -41,8 +41,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string CurrentRoomsStatus => string.Join("\n", Rooms.Select(r => r.RoomCode + ": " +
             (r.CurrentStatus == "Inactive" ? "Đang khóa" : r.CurrentStatus == "Occupied" ? "Đang có khách" : r.CurrentStatus == "Reserved" ? "Tới lượt đặt" : "Đang trống")));
         public event PropertyChangedEventHandler PropertyChanged;
-        public CalendarDayViewModel(CalendarService service, LoginSession session) : this(service, session, new SystemClock()) { }
-        public CalendarDayViewModel(CalendarService service, LoginSession session, IClock clock)
+        public CalendarDayViewModel(ICalendarService service, LoginSession session) : this(service, session, new SystemClock()) { }
+        public CalendarDayViewModel(ICalendarService service, LoginSession session, IClock clock)
         {
             this.service = service; this.session = session; this.clock = clock;
             date = clock.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;

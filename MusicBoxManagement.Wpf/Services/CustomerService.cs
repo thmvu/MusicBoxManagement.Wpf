@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class CustomerService
+    public sealed class CustomerService : ICustomerService
     {
         private readonly SqliteDatabase database;
         private readonly PermissionService permissions;
@@ -86,5 +86,6 @@ namespace MusicBoxManagement.Wpf.Services
             }
         }
         private static Customer Read(SQLiteDataReader reader) => new Customer { CustomerId = reader.GetInt32(0), FullName = reader.GetString(1), PhoneNumber = reader.GetString(2) };
+        ICustomerHistoryService ICustomerService.ForHistory() => ForHistory();
     }
 }

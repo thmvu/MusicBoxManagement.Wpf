@@ -10,7 +10,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlPermissionManagementService
+    public sealed class MySqlPermissionManagementService : IPermissionManagementService
     {
         private readonly MySqlDatabase database;
         private readonly MySqlPermissionService permissions;

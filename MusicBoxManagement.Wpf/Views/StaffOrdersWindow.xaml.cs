@@ -8,11 +8,11 @@ namespace MusicBoxManagement.Wpf.Views
 {
     public partial class StaffOrdersWindow : Window
     {
-        private readonly OrderService service;
+        private readonly IOrderService service;
         private readonly LoginSession actor;
         private readonly StaffOrdersViewModel viewModel;
         private bool openingCreate;
-        public StaffOrdersWindow(OrderService service, LoginSession actor)
+        public StaffOrdersWindow(IOrderService service, LoginSession actor)
         {
             InitializeComponent(); this.service = service; this.actor = actor;
             viewModel = new StaffOrdersViewModel(service, actor); DataContext = viewModel;

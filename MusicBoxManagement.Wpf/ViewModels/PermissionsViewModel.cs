@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,13 +34,13 @@ namespace MusicBoxManagement.Wpf.ViewModels
     }
     public sealed class PermissionsViewModel : INotifyPropertyChanged
     {
-        private readonly PermissionManagementService service;
+        private readonly IPermissionManagementService service;
         private readonly LoginSession actor;
         private bool busy, access;
         private string role="Staff",status="Chọn vai trò rồi tải ma trận quyền.";
         private RolePermissionMatrix original;
         private IReadOnlyList<string> pending;
-        public PermissionsViewModel(PermissionManagementService service,LoginSession actor)
+        public PermissionsViewModel(IPermissionManagementService service,LoginSession actor)
         { this.service=service;this.actor=actor; }
         public IReadOnlyList<string> Roles { get; } = Array.AsReadOnly(new[] { "Staff","Manager" });
         public string SelectedRole

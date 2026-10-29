@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using MySqlConnector;
@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlRoomService
+    public sealed class MySqlRoomService : IRoomService
     {
         private readonly MySqlDatabase database;
         private readonly MySqlPermissionService permissions;

@@ -7,7 +7,7 @@ using MySqlConnector;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlGuestReservationService
+    public sealed class MySqlGuestReservationService : IGuestReservationService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;
@@ -113,5 +113,8 @@ WHERE b.ReservationId=@id AND c.PhoneNumber=@phone;";
             => new InvalidOperationException("Không tìm thấy booking của SĐT này. Hãy tra cứu lại.");
         private static DateTimeOffset Time(string value) => DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture);
         private static string Utc(DateTimeOffset value) => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+        IGuestSessionService IGuestReservationService.ForSessions() => ForSessions();
+        IOrderService IGuestReservationService.ForOrders() => ForOrders();
+        IBillingService IGuestReservationService.ForBilling() => ForBilling();
     }
 }

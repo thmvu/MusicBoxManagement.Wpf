@@ -6,7 +6,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class StaffSessionService
+    public sealed class StaffSessionService : IStaffSessionService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;
@@ -51,5 +51,6 @@ ORDER BY s.ActualStartTime DESC,s.RoomSessionId DESC;";
         }
         public RoomSession Extend(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes)
             => sessions.ExtendViewedStaff(actor, sessionId, observedEnd, minutes);
+        IBillingService IStaffSessionService.ForBilling() => ForBilling();
     }
 }

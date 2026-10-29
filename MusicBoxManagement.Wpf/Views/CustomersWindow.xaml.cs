@@ -9,10 +9,10 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class CustomersWindow : Window
     {
         private readonly CustomersViewModel viewModel;
-        private readonly CustomerHistoryService historyService;
+        private readonly ICustomerHistoryService historyService;
         private readonly LoginSession session;
         private bool historyOpen;
-        public CustomersWindow(CustomerService service, LoginSession session)
+        public CustomersWindow(ICustomerService service, LoginSession session)
         {
             InitializeComponent(); viewModel = new CustomersViewModel(service, session); DataContext = viewModel;
             historyService = service.ForHistory(); this.session = session;

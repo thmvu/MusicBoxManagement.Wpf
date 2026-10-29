@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class CustomersViewModel : INotifyPropertyChanged
     {
-        private readonly CustomerService service;
+        private readonly ICustomerService service;
         private readonly LoginSession session;
         private Customer original;
         private bool isBusy, canView, canCreate, canEdit;
@@ -31,7 +31,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string EditorTitle => original == null ? "Thêm khách hàng" : "Khách hàng #" + original.CustomerId;
         public string Status => status;
         public event PropertyChangedEventHandler PropertyChanged;
-        public CustomersViewModel(CustomerService service, LoginSession session) { this.service = service; this.session = session; }
+        public CustomersViewModel(ICustomerService service, LoginSession session) { this.service = service; this.session = session; }
         public void Edit(Customer item)
         {
             if (isBusy) return;

@@ -1,0 +1,222 @@
+[
+  {
+    "Suite": "Verify-AuditLog",
+    "ExitCode": 0,
+    "Seconds": 11.7
+  },
+  {
+    "Suite": "Verify-AuditLogUi",
+    "ExitCode": 0,
+    "Seconds": 19.4
+  },
+  {
+    "Suite": "Verify-Accounts",
+    "ExitCode": 0,
+    "Seconds": 25.6
+  },
+  {
+    "Suite": "Verify-Availability",
+    "ExitCode": 0,
+    "Seconds": 1
+  },
+  {
+    "Suite": "Verify-Billing",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-Authentication",
+    "ExitCode": 0,
+    "Seconds": 24.6
+  },
+  {
+    "Suite": "Verify-BookingStatusReport",
+    "ExitCode": 0,
+    "Seconds": 5.6
+  },
+  {
+    "Suite": "Verify-Calendar",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-CheckIn",
+    "ExitCode": 0,
+    "Seconds": 4.5
+  },
+  {
+    "Suite": "Verify-BookingStatusReportUi",
+    "ExitCode": 0,
+    "Seconds": 17.4
+  },
+  {
+    "Suite": "Verify-Checkout",
+    "ExitCode": 0,
+    "Seconds": 8.2
+  },
+  {
+    "Suite": "Verify-CustomerHistory",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-CustomerHistoryUi",
+    "ExitCode": 0,
+    "Seconds": 7.5
+  },
+  {
+    "Suite": "Verify-Customers",
+    "ExitCode": 0,
+    "Seconds": 6
+  },
+  {
+    "Suite": "Verify-Dashboard",
+    "ExitCode": 0,
+    "Seconds": 6.1
+  },
+  {
+    "Suite": "Verify-Extension",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-GuestBooking",
+    "ExitCode": 0,
+    "Seconds": 1
+  },
+  {
+    "Suite": "Verify-Foundation",
+    "ExitCode": 0,
+    "Seconds": 2.6
+  },
+  {
+    "Suite": "Verify-GuestCalendar",
+    "ExitCode": 0,
+    "Seconds": 3.1
+  },
+  {
+    "Suite": "Verify-GuestLookup",
+    "ExitCode": 0,
+    "Seconds": 1.5
+  },
+  {
+    "Suite": "Verify-GuestSessions",
+    "ExitCode": 0,
+    "Seconds": 3.5
+  },
+  {
+    "Suite": "Verify-Invoices",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-InvoicePrinting",
+    "ExitCode": 0,
+    "Seconds": 8.5
+  },
+  {
+    "Suite": "Verify-Orders",
+    "ExitCode": 0,
+    "Seconds": 5.1
+  },
+  {
+    "Suite": "Verify-PermissionMatrix",
+    "ExitCode": 0,
+    "Seconds": 8.7
+  },
+  {
+    "Suite": "Verify-ReportTablesExcel",
+    "ExitCode": 0,
+    "Seconds": 9.1
+  },
+  {
+    "Suite": "Verify-Reservations",
+    "ExitCode": 0,
+    "Seconds": 3.5
+  },
+  {
+    "Suite": "Verify-PermissionMatrixUi",
+    "ExitCode": 0,
+    "Seconds": 19.9
+  },
+  {
+    "Suite": "Verify-RevenueReport",
+    "ExitCode": 0,
+    "Seconds": 6.1
+  },
+  {
+    "Suite": "Verify-RevenueExcel",
+    "ExitCode": 0,
+    "Seconds": 9.2
+  },
+  {
+    "Suite": "Verify-Rooms",
+    "ExitCode": 0,
+    "Seconds": 10.4
+  },
+  {
+    "Suite": "Verify-AuthenticationUi",
+    "ExitCode": 0,
+    "Seconds": 109.4
+  },
+  {
+    "Suite": "Verify-RevenueReportUi",
+    "ExitCode": 0,
+    "Seconds": 18.1
+  },
+  {
+    "Suite": "Verify-RoomTypes",
+    "ExitCode": 0,
+    "Seconds": 6.6
+  },
+  {
+    "Suite": "Verify-RoomUsageReport",
+    "ExitCode": 0,
+    "Seconds": 6.7
+  },
+  {
+    "Suite": "Verify-Services",
+    "ExitCode": 0,
+    "Seconds": 5.7
+  },
+  {
+    "Suite": "Verify-ServiceSalesReport",
+    "ExitCode": 0,
+    "Seconds": 9.2
+  },
+  {
+    "Suite": "Verify-Sessions",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-StaffBooking",
+    "ExitCode": 0,
+    "Seconds": 3.5
+  },
+  {
+    "Suite": "Verify-RoomUsageReportUi",
+    "ExitCode": 0,
+    "Seconds": 19.4
+  },
+  {
+    "Suite": "Verify-StaffReservations",
+    "ExitCode": 0,
+    "Seconds": 4.1
+  },
+  {
+    "Suite": "Verify-WalkIn",
+    "ExitCode": 0,
+    "Seconds": 4.6
+  },
+  {
+    "Suite": "Verify-ServiceSalesReportUi",
+    "ExitCode": 0,
+    "Seconds": 18.9
+  },
+  {
+    "Suite": "Verify-Workflows",
+    "ExitCode": 0,
+    "Seconds": 7.7
+  }
+]

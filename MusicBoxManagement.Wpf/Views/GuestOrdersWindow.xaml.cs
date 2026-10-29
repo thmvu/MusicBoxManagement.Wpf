@@ -6,7 +6,7 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class GuestOrdersWindow : Window
     {
         private readonly GuestOrdersViewModel viewModel;
-        public GuestOrdersWindow(OrderService service,string phone,int sessionId,string roomCode)
+        public GuestOrdersWindow(IOrderService service,string phone,int sessionId,string roomCode)
         {
             InitializeComponent();viewModel=new GuestOrdersViewModel(service,phone,sessionId,roomCode);DataContext=viewModel;
             Loaded+=async (sender,args)=>await viewModel.ReloadAsync();Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};

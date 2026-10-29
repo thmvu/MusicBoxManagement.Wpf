@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class StaffOrdersViewModel : INotifyPropertyChanged
     {
-        private readonly OrderService service;
+        private readonly IOrderService service;
         private readonly LoginSession actor;
         private bool busy, canView, canCreate, canConfirm, canCancel;
         private OrderSessionChoice selectedSession;
@@ -40,7 +40,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             "Gửi lúc: " + selectedOrder.CreatedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss dd/MM/yyyy") + "\n" +
             string.Join("\n", selectedOrder.Items.Select(i => i.ServiceNameSnapshot + " × " + i.Quantity + " · " + i.UnitPrice.ToString("N0") + " đ/món"));
         public event PropertyChangedEventHandler PropertyChanged;
-        public StaffOrdersViewModel(OrderService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public StaffOrdersViewModel(IOrderService service, LoginSession actor) { this.service = service; this.actor = actor; }
         public async Task ReloadAsync()
         {
             if (!CanEdit) return; var id = selectedSession?.SessionId; Busy(true); Clear();

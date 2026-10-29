@@ -1,0 +1,22 @@
+[
+  {
+    "Log": "MusicBoxImportShipDebug_20261029.log",
+    "Result": "PASS",
+    "Scope": "standalone final delta; see cutover report for build and limits"
+  },
+  {
+    "Log": "MusicBoxImportShipRelease_20261029.log",
+    "Result": "PASS",
+    "Scope": "standalone final delta; see cutover report for build and limits"
+  },
+  {
+    "Log": "MusicBoxOperationsFinalDebug_20261029.log",
+    "Result": "PASS",
+    "Scope": "standalone final delta; see cutover report for build and limits"
+  },
+  {
+    "Log": "MusicBoxRemainingFinalDebug_20261029.log",
+    "Result": "PASS",
+    "Scope": "standalone final delta; see cutover report for build and limits"
+  }
+]

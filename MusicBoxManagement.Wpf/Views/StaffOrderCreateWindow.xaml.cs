@@ -8,7 +8,7 @@ namespace MusicBoxManagement.Wpf.Views
     public partial class StaffOrderCreateWindow : Window
     {
         private readonly StaffOrderCreateViewModel viewModel;
-        public StaffOrderCreateWindow(OrderService service, LoginSession actor, OrderSessionChoice session)
+        public StaffOrderCreateWindow(IOrderService service, LoginSession actor, OrderSessionChoice session)
         {
             InitializeComponent(); viewModel = new StaffOrderCreateViewModel(service, actor, session); DataContext = viewModel;
             Loaded += async (sender, args) => await viewModel.ReloadAsync(); Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };

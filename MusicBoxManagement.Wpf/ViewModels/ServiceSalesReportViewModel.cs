@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class ServiceSalesReportViewModel : INotifyPropertyChanged
     {
-        private readonly ServiceSalesReportService service;
+        private readonly IServiceSalesReportService service;
         private readonly LoginSession actor;
         private DateTime? from, to;
         private int? serviceId;
@@ -19,7 +19,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private bool busy;
         private ServiceSalesReport report;
         private string status = "Đang tải báo cáo…";
-        public ServiceSalesReportViewModel(ServiceSalesReportService service, LoginSession actor)
+        public ServiceSalesReportViewModel(IServiceSalesReportService service, LoginSession actor)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service)); this.actor = actor;
             var today = DateTimeOffset.UtcNow.ToOffset(BookingHours.VietnamOffset).Date;

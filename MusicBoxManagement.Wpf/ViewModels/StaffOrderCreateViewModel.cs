@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class StaffOrderCreateViewModel : INotifyPropertyChanged
     {
-        private readonly OrderService service;
+        private readonly IOrderService service;
         private readonly LoginSession actor;
         private readonly int sessionId;
         private bool busy, allowed, confirming;
@@ -40,7 +40,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string Receipt => receipt;
         public decimal CartAmount => Cart.Sum(i => (decimal)i.UnitPrice * i.Quantity);
         public event PropertyChangedEventHandler PropertyChanged;
-        public StaffOrderCreateViewModel(OrderService service, LoginSession actor, OrderSessionChoice session)
+        public StaffOrderCreateViewModel(IOrderService service, LoginSession actor, OrderSessionChoice session)
         { this.service = service; this.actor = actor; sessionId = session.SessionId; Title = "Ghi món đã phục vụ — " + session.RoomCode + " · phiên #" + sessionId; }
         public async Task ReloadAsync()
         {

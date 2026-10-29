@@ -13,7 +13,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class ServicesViewModel : INotifyPropertyChanged
     {
-        private readonly ServiceCatalogService service;
+        private readonly IServiceCatalogService service;
         private readonly LoginSession session;
         private ServiceItem original;
         private bool isBusy;
@@ -33,7 +33,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string EditorTitle => original == null ? "Thêm dịch vụ" : "Sửa dịch vụ #" + original.ServiceId;
         public string Status => status;
         public event PropertyChangedEventHandler PropertyChanged;
-        public ServicesViewModel(ServiceCatalogService service, LoginSession session) { this.service = service; this.session = session; SetForm(null); }
+        public ServicesViewModel(IServiceCatalogService service, LoginSession session) { this.service = service; this.session = session; SetForm(null); }
 
         public void Edit(ServiceItem item) { if (!isBusy) { SetForm(item); SetStatus(item == null ? "Nhập dịch vụ mới; chưa lưu vào dữ liệu." : "Sửa thông tin rồi bấm Lưu. Bỏ thay đổi không lưu."); } }
         private void SetForm(ServiceItem item)

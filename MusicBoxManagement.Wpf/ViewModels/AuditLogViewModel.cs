@@ -18,14 +18,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
     }
     public sealed class AuditLogViewModel : INotifyPropertyChanged
     {
-        private readonly AuditLogService service;
+        private readonly IAuditLogService service;
         private readonly LoginSession actor;
         private bool busy,access,more;
         private int? cursor;
         private DateTime? from,to;
         private string actorType,action,entity,status="Đang tải nhật ký…";
         private AuditLogEntry selected,detail;
-        public AuditLogViewModel(AuditLogService service,LoginSession actor){this.service=service;this.actor=actor;}
+        public AuditLogViewModel(IAuditLogService service,LoginSession actor){this.service=service;this.actor=actor;}
         public IReadOnlyList<AuditActorChoice> ActorTypes { get; }=Array.AsReadOnly(new[]{new AuditActorChoice(null,"Tất cả"),new AuditActorChoice("Staff","Nhân viên"),new AuditActorChoice("Guest","Khách"),new AuditActorChoice("System","Hệ thống")});
         public ObservableCollection<AuditLogEntry> Items { get; }=new ObservableCollection<AuditLogEntry>();
         public DateTime? FromDate {get=>from;set{if(busy||from==value)return;from=value;FilterChanged();}}

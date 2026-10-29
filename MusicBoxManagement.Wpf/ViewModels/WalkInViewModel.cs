@@ -11,7 +11,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class WalkInViewModel : INotifyPropertyChanged
     {
-        private readonly RoomSessionService service;
+        private readonly IRoomSessionService service;
         private readonly LoginSession actor;
         private bool busy, denied, saved, confirming;
         private PublicRoom room;
@@ -34,7 +34,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public bool IsConfirming => confirming;
         public int? CreatedSessionId => createdId;
         public event PropertyChangedEventHandler PropertyChanged;
-        public WalkInViewModel(RoomSessionService service, LoginSession actor) { this.service = service; this.actor = actor; }
+        public WalkInViewModel(IRoomSessionService service, LoginSession actor) { this.service = service; this.actor = actor; }
         private void Change([CallerMemberName] string property = null)
         { Notify(property); Notify(nameof(CanReceive)); }
         public async Task RefreshAsync()

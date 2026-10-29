@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class GuestReservationService
+    public sealed class GuestReservationService : IGuestReservationService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;
@@ -71,5 +71,8 @@ FROM Reservations b JOIN Customers c ON c.CustomerId=b.CustomerId WHERE b.Reserv
         }
         private static DateTimeOffset Parse(string value)=>DateTimeOffset.ParseExact(value,"O",CultureInfo.InvariantCulture);
         private static string Utc(DateTimeOffset value)=>value.ToUniversalTime().ToString("O",CultureInfo.InvariantCulture);
+        IGuestSessionService IGuestReservationService.ForSessions() => ForSessions();
+        IOrderService IGuestReservationService.ForOrders() => ForOrders();
+        IBillingService IGuestReservationService.ForBilling() => ForBilling();
     }
 }

@@ -12,12 +12,12 @@ namespace MusicBoxManagement.Wpf.Views
 {
     public partial class RoomsWindow : Window
     {
-        private readonly RoomService service;
+        private readonly IRoomService service;
         private readonly LoginSession session;
-        private readonly RoomTypeService roomTypes;
+        private readonly IRoomTypeService roomTypes;
         private readonly RoomsViewModel viewModel;
         private bool isOpeningEditor;
-        public RoomsWindow(RoomService service, LoginSession session, RoomTypeService roomTypes)
+        public RoomsWindow(IRoomService service, LoginSession session, IRoomTypeService roomTypes)
         {
             InitializeComponent();
             this.service = service;

@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlReportService
+    public sealed class MySqlReportService : IReportService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;

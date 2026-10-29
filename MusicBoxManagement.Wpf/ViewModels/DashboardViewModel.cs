@@ -20,14 +20,14 @@ namespace MusicBoxManagement.Wpf.ViewModels
     }
     public sealed class DashboardViewModel : INotifyPropertyChanged
     {
-        private readonly Func<LoginSession, DashboardService> create;
+        private readonly Func<LoginSession, IDashboardService> create;
         private static readonly CultureInfo Vietnamese = CultureInfo.GetCultureInfo("vi-VN");
         private LoginSession actor;
         private int version;
         private bool busy;
         private DashboardSnapshot snapshot;
         private string status = "Đăng nhập để xem hoạt động quán.";
-        public DashboardViewModel(Func<LoginSession, DashboardService> create) { this.create = create; }
+        public DashboardViewModel(Func<LoginSession, IDashboardService> create) { this.create = create; }
         public ObservableCollection<DashboardLine> Rooms { get; } = new ObservableCollection<DashboardLine>();
         public ObservableCollection<DashboardLine> Bookings { get; } = new ObservableCollection<DashboardLine>();
         public ObservableCollection<DashboardLine> Sessions { get; } = new ObservableCollection<DashboardLine>();

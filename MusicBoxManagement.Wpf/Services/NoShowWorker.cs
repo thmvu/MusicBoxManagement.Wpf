@@ -8,13 +8,15 @@ namespace MusicBoxManagement.Wpf.Services
 {
     public sealed class NoShowWorker : IDisposable
     {
-        private readonly SqliteDatabase database;
-        private readonly NoShowService service;
+        private readonly Action process;
         private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         private bool running, disposed;
         public NoShowWorker(SqliteDatabase database) : this(database, new SystemClock()) { }
         public NoShowWorker(SqliteDatabase database, IClock clock)
-        { this.database = database; service = new NoShowService(database, clock); timer.Tick += Tick; }
+        { var service = new NoShowService(database, clock); process = () => { database.Initialize(); service.ProcessExpired(); }; timer.Tick += Tick; }
+        public NoShowWorker(MySqlDatabase database) : this(database, new SystemClock()) { }
+        public NoShowWorker(MySqlDatabase database, IClock clock)
+        { var service = new MySqlNoShowService(database, clock); process = () => service.ProcessExpired(); timer.Tick += Tick; }
         // Call from the UI dispatcher. SQLite work runs in the background.
         public async Task StartAsync()
         { if (disposed) return; timer.Start(); await RunAsync(); }
@@ -22,7 +24,7 @@ namespace MusicBoxManagement.Wpf.Services
         private async Task RunAsync()
         {
             if (running || disposed) return; running = true;
-            try { await Task.Run(() => { database.Initialize(); service.ProcessExpired(); }); }
+            try { await Task.Run(process); }
             catch (Exception error) { Trace.TraceError("NoShow chưa xử lý được; sẽ thử lại ở nhịp kế tiếp: {0}", error.Message); }
             finally { running = false; }
         }

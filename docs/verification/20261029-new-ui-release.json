@@ -1,0 +1,14 @@
+[
+  {
+    "Suite": "MySqlRemainingReads",
+    "ExitCode": 0
+  },
+  {
+    "Suite": "MySqlImport",
+    "ExitCode": 0
+  },
+  {
+    "Suite": "MySqlOperationsUi",
+    "ExitCode": 0
+  }
+]

@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class RoomSessionService
+    public sealed class RoomSessionService : IRoomSessionService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;

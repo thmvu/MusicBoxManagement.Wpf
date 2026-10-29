@@ -5,7 +5,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlStaffSessionService
+    public sealed class MySqlStaffSessionService : IStaffSessionService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;
@@ -48,5 +48,6 @@ ORDER BY s.ActualStartTime DESC,s.RoomSessionId DESC;";
         }
         public SessionExtensionCheck Preview(LoginSession actor, int sessionId, int minutes) => sessions.PreviewViewedExtension(actor, sessionId, minutes);
         public RoomSession Extend(LoginSession actor, int sessionId, DateTimeOffset observedEnd, int minutes) => sessions.ExtendViewedStaff(actor, sessionId, observedEnd, minutes);
+        IBillingService IStaffSessionService.ForBilling() => ForBilling();
     }
 }

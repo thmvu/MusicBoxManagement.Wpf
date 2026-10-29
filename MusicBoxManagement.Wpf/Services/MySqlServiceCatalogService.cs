@@ -8,7 +8,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlServiceCatalogService
+    public sealed class MySqlServiceCatalogService : IServiceCatalogService
     {
         private readonly MySqlDatabase database;
         private readonly MySqlPermissionService permissions;

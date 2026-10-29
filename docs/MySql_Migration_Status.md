@@ -1,5 +1,16 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
+## Hoàn tất chuyển MySQL/Aiven — 29/10/2026
+
+Đã port báo cáo phòng/booking/món + Excel và lịch sử khách; nối toàn bộ VM/Views qua service contracts, App và NoShow worker cùng provider. **App.config mặc định MySql / musicbox**, không tự fallback SQLite. Không đổi giao diện/luật/quyền/SSL. [Ports/wiring](MySql_Migration_06b_08_ReportsHistoryWiring.md), [nhập/cutover/khôi phục](MySql_Migration_09_Import_Cutover.md).
+
+Đã nhập nguồn mặc định người dùng xác nhận: SQLite v1 chỉ RoomTypes2, nâng bản sao v8 rồi đối chiếu 15 bảng trên Aiven, SQLite gốc hash không đổi. Roles3/Permission27/RolePermission43 là migration nền tảng; các bảng tài khoản/nghiệp vụ/audit đều0, Content không có ảnh phòng thật. Không tạo tài khoản/doanh thu giả. Mở Release thật thấy Khách/Standard/VIP/**Thiết lập Admin**; người dùng tự tạo Admin lần đầu. Hồ sơ nhập riêng ngoài Git trong AppData Backups, không chạy import lại sau vận hành.
+
+Kiểm tra: runner Debug70/70 (44 local+26 MySQL lúc bắt đầu), Release local44/44; RemainingReads/OperationsUi/Import bản cuối cả Debug/Release đạt riêng, AuthenticationUi Release142 ảnh. Runner hiện72=44+28, không tuyên bố cả72 hai cấu hình. Giữ log/phạm vi trong cutover report; không nới SSL/timeout/assertion. Có [ERD16 bảng/từ điển/SVG/PNG](ERD_Full_And_DataDictionary.md) và [demo/vận hành](MySql_Demo_And_Operations.md).
+
+Còn nghiệm thu người dùng tại quầy/mạng thật và in giấy/driver thật; kiểm tra máy in giả không thay phần này. Ảnh vẫn local, không cloud upload/sync hai chiều; rollback snapshot không chứa dữ liệu MySQL phát sinh sau cutover. Các mốc bên dưới là lịch sử, **không làm lại 01–09 hoặc coi App còn SQLite**. Định dạng csproj có sẵn giữ ngoài commit; cập nhật bàn giao/code/test/README/plan/commit/push cùng thay đổi tiếp theo.
+
+
 Cập nhật 29/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
 
 **Mốc 29/10: 06a doanh thu và Excel doanh thu MySQL đạt online Debug/Release**, hồi quy Debug 11/11 bộ liên quan đạt: PaidAt ngày Việt Nam/decimal/RoomType snapshot, quyền View/Export hiện hành và Staff không tổng hợp. [Kết quả và giới hạn](MySql_Migration_06a_Revenue.md). Tiếp sử dụng phòng; app/worker/UI vẫn SQLite, chưa nhập/cutover.
@@ -49,12 +60,12 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 
 | Mục | Trạng thái |
 |---|---|
-| App.OnStartup, các màn hình và NoShow worker | Vẫn dùng SQLite v8 |
+| App.OnStartup, các màn hình và NoShow worker | **MySql mặc định**, cùng ApplicationServices; SQLite chọn rõ khi phục hồi |
 | Schema đích | MySQL v1; tương ứng nghiệp vụ SQLite v8, 16 bảng gồm bảng phiên bản |
-| Database Aiven `musicbox` | Đã tạo schema và seed nền tảng theo bước 01; chưa coi là bản dữ liệu SQLite đã chuyển |
-| Dữ liệu nghiệp vụ/tài khoản đang dùng | **Chưa nhập từ SQLite sang MySQL** |
-| Ảnh `Content/uploads/rooms` | Vẫn local; **chưa chuyển/đối chiếu ảnh thật** |
-| Đổi provider cho WPF | **Chưa thực hiện**, đợi đủ service/import/đối chiếu/UI |
+| Database Aiven `musicbox` | Đã import/verify15 bảng ngày29/10, hồ sơ riêng AppData Backups |
+| Dữ liệu nghiệp vụ/tài khoản đang dùng | Nguồn v1 chỉ2 loại phòng; không có tài khoản/nghiệp vụ để chuyển, không giả dữ liệu |
+| Ảnh `Content/uploads/rooms` | Đã cài root MySql riêng; Rooms0 nên không có ảnh thật. Fixture có ảnh đã đối chiếu hash |
+| Đổi provider cho WPF | **Đã chuyển** App.config MySql/musicbox; mở Release thật đạt, chưa tạo Admin |
 | Các database `musicbox_test_<GUID>` | Chỉ fixture kiểm tra online, dọn sau test; không phải dữ liệu đã nhập của quán |
 
 ## Phần service đã chuyển — tiếp tục từ hàng chưa hoàn thành
@@ -67,7 +78,7 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 03a | Loại phòng Standard/VIP | Đã đạt online Debug/Release | [03a](MySql_Migration_03a_RoomTypes.md), Verify-MySqlRoomTypes |
 | 03b | Phòng/ảnh local/sửa/khóa-mở | Đã có service và nghiệm thu theo báo cáo; ảnh chưa upload online | [03b](MySql_Migration_03b_Rooms.md), Verify-MySqlRooms |
 | 03c | Danh mục dịch vụ | Đã có service và nghiệm thu theo báo cáo | [03c](MySql_Migration_03c_Services.md), Verify-MySqlServices |
-| 03d | Khách hàng/SĐT/tạo-sửa-tìm | Đã đạt online Debug/Release 18/10; **chưa có lịch sử khách MySQL** | [03d](MySql_Migration_03d_Customers.md), Verify-MySqlCustomers |
+| 03d | Khách hàng/SĐT/tạo-sửa-tìm | Đã đạt online Debug/Release 18/10; history hoàn tất bước07 | [03d](MySql_Migration_03d_Customers.md), Verify-MySqlCustomers |
 | 04a | Availability/ScheduleRules/giờ hoạt động | Đã đạt online Debug/Release; helper phiên không thay service writer | [04a](MySql_Migration_04a_Availability.md), Verify-MySqlAvailability |
 | 04b | Tạo Guest/Staff Reservation, Staff hủy, NoShow | Đã đạt online Debug/Release | [04b](MySql_Migration_04b_Reservations.md), Verify-MySqlReservations |
 | 04c.1 | Guest/Staff catalog/preview/create/lịch trống public | Đã đạt online Debug/Release; DTO public riêng | [04c.1](MySql_Migration_04c1_BookingReads.md), Verify-MySqlBookingReads |
@@ -81,37 +92,32 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04g | MySqlBillingService, ForBilling: tiền tạm tính Guest/Staff và calculator chung cho Checkout | **Đã đạt online Debug/Release bản cuối 28/10**, precision/oracle/Completed-only/live View/current phone/RR snapshot/shared reader-writer/rollback/fresh clock | [04g](MySql_Migration_04g_Billing.md), Verify-MySqlBilling |
 | 04h | MySqlCheckoutService: selector/preview/Confirm thanh toán và tạo Invoice | **Đã đạt online Debug/Release 28/10**, atomic/source-Pending-session-invoice-audit/rollback/replay/14 ordered writer races/fresh clock/decimal/MVCC | [04h](MySql_Migration_04h_Checkout.md), Verify-MySqlCheckout |
 | 04i | MySqlInvoiceService.Search/Read/ReadForPrint, ForInvoices và IInvoiceService cho hai VM xem/in | **Đã đạt online Debug/Release 28/10**, current rights/filters/snapshot/decimal/RR/MVCC; WPF MySQL với máy in giả, 70 dòng/4 trang, revoke/dialog/busy/failure | [04i](MySql_Migration_04i_InvoiceHistoryPrinting.md), Verify-MySqlInvoices/Verify-MySqlInvoicePrinting |
-| 04j | MySqlDashboardService.Read/ReadRevenueToday và ForDashboard | **Đã đạt online Debug/Release bản cuối 28/10**, RR current rights/room/booking/Active/Pending/warnings/decimal revenue/MVCC vs checkout thật; chưa wiring UI | [04j](MySql_Migration_04j_Dashboard.md), Verify-MySqlDashboard |
-| 05a | MySqlPermissionManagementService.Read/Update/ValidateSelection và ForPermissions | **Đã đạt online Debug/Release 28/10**, RR reader/Admin-only/raw revision/cleanup/no-op/Serializable role row lock/current actor/atomic audit/stale concurrent writers/real account lock/clock sau chờ; chưa wiring UI | [05a](MySql_Migration_05a_PermissionMatrix.md), Verify-MySqlPermissionMatrix |
-| 05b | MySqlAuditLogService.Search/Read và ForAudit | Đạt online Debug/Release (Release retry), quyền/metadata RR, filters UTC+7/ticks/keyset/read-only, chưa wiring UI | [05b](MySql_Migration_05b_AuditLog.md), Verify-MySqlAuditLog |
-| 06a | MySqlReportService.ReadRevenue/ExportRevenue, ForReports | Doanh thu PaidAt/group/snapshot/decimal và Excel; kết quả online/hồi quy tại báo cáo, chưa wiring UI | [06a](MySql_Migration_06a_Revenue.md), Verify-MySqlRevenueReport |
+| 04j | MySqlDashboardService.Read/ReadRevenueToday và ForDashboard | **Đã đạt online Debug/Release bản cuối 28/10**, RR current rights/room/booking/Active/Pending/warnings/decimal revenue/MVCC vs checkout thật; đã wiring bước08 | [04j](MySql_Migration_04j_Dashboard.md), Verify-MySqlDashboard |
+| 05a | MySqlPermissionManagementService.Read/Update/ValidateSelection và ForPermissions | **Đã đạt online Debug/Release 28/10**, RR reader/Admin-only/raw revision/cleanup/no-op/Serializable role row lock/current actor/atomic audit/stale concurrent writers/real account lock/clock sau chờ; đã wiring bước08 | [05a](MySql_Migration_05a_PermissionMatrix.md), Verify-MySqlPermissionMatrix |
+| 05b | MySqlAuditLogService.Search/Read và ForAudit | Đạt online Debug/Release (Release retry), quyền/metadata RR, filters UTC+7/ticks/keyset/read-only, đã wiring bước08 | [05b](MySql_Migration_05b_AuditLog.md), Verify-MySqlAuditLog |
+| 06a | MySqlReportService.ReadRevenue/ExportRevenue, ForReports | Doanh thu PaidAt/group/snapshot/decimal và Excel; kết quả online/hồi quy tại báo cáo, đã wiring bước08 | [06a](MySql_Migration_06a_Revenue.md), Verify-MySqlRevenueReport |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
-## Chưa chuyển — danh sách tiếp tục
+## Các bước cuối đã hoàn tất
 
-1. **Tiếp báo cáo sử dụng phòng MySQL**, rồi booking/món/Excel tương ứng/history. 06a đã có doanh thu/Excel doanh thu; giữ snapshot/decimal/quyền/giới hạn Staff. Không làm lại 01–06a đã nghiệm thu; UI/provider vẫn cần tích hợp.
-2. Giữ hồi quy các writer thật và 14 ca hai thứ tự checkout–order/confirm/cancel/gia hạn đã có; bổ sung khi thay luồng/provider/import. Completed/Invoice thật đã được kiểm tra ở 04h, không lấy fixture cũ thay bằng chứng này.
-3. Các báo cáo/Excel và lịch sử Customer 8f.1–8f.2, giữ snapshot/decimal/ngày Việt Nam/quyền riêng.
-4. Worker/provider wiring, kiểm tra UI toàn app trên MySQL và máy in/driver thật, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
+| Bước | Phạm vi | Có code / online | Dữ liệu thật / provider |
+|---|---|---|---|
+| 06b–d | Báo cáo sử dụng phòng/booking/món + Excel/Top10 | Debug/Release RemainingReads đạt | Đã wiring WPF; production chưa có nghiệp vụ |
+| 07 | CustomerHistory theo CustomerId/current phone/quyền Invoice | Debug/Release đạt | Đã wiring WPF |
+| 08 | Service contracts/VM/Views/App/NoShow worker/provider | 70/70 Debug +44/44 Release local, OperationsUi cuối hai build | App.config MySql/musicbox, không fallback |
+| 09 | Backup/prepare/import/verify/Content/restore | Import cuối hai build đạt, rehearsal nguồn thật đạt | Đã nhập/verify thật15bảng, mở app thật đạt |
+| 10 | ERD16 bảng/từ điển/Mermaid/DOT/SVG/PNG/demo | Sinh từ DDL, xem PNG | Không chứa dữ liệu người dùng |
 
-## Nhật ký nhập dữ liệu thật — hiện chưa có lượt nhập
+Bằng chứng chi tiết: [ports/wiring](MySql_Migration_06b_08_ReportsHistoryWiring.md), [import/cutover/khôi phục](MySql_Migration_09_Import_Cutover.md), [demo](MySql_Demo_And_Operations.md). Không còn service migration đang dở. Còn nghiệm thu người dùng tại quầy và máy in/driver/giấy thật; không lấy fixture thay các bước thực địa. Runner hiện72=44+28; runner toàn bộ lượt này70=44+26, hai bộ thêm chạy riêng. Các báo cáo cũ giữ nguyên lịch sử lỗi/kết quả.
 
-**Không có run import đã thực hiện trong repo này.** Không điền “đã chuyển dữ liệu” từ việc seed schema hoặc test GUID.
+## Nhật ký nhập dữ liệu thật
 
-| Nhóm bảng nguồn | Đã nhập/đối chiếu dữ liệu thật? |
-|---|---|
-| AspNetUsers/AspNetRoles/AspNetUserRoles, Permission/RolePermission | Chưa; seed role/quyền không thay tài khoản/quyền đang dùng |
-| RoomTypes/Rooms + Content | Chưa; phải giữ ID/giá sửa/snapshot/đường dẫn ảnh |
-| Customers/Reservations/RoomSessions | Chưa; giữ ID/FK/SĐT/UTC ticks/trạng thái/snapshot |
-| Services/Orders/OrderItems/Invoices | Chưa; giữ snapshot/tiền decimal/trạng thái/immutability |
-| AuditLog | Chưa; giữ actor/ID/thời điểm và liên kết người dùng |
+| Ngày/mã lượt | Nguồn/đích | Dữ liệu và đối chiếu | Điểm tiếp tục |
+|---|---|---|---|
+| 29/10, 370ffa184ef4423cb54e67ad28b6d4ba | SQLite mặc định v1 → raw backup → prepared v8 → Aiven musicbox | RoomTypes2/Roles3/Permission27/RolePermission43;11 bảng0. Hash15bảng đạt, FK/ID/decimal/ticks so đúng; sourceSHA256 giữ nguyên. Không có user/booking/invoice/ảnh thật bị bỏ sót | Mặc định MySql, người dùng thiết lập Admin, tạo phòng/dịch vụ; không import lại lên DB đã vận hành |
 
-Trước import: tạo snapshot sao lưu SQLite + Content, ghi mã lượt/phiên bản source/commit, destination, kiểm tra ràng buộc và chế độ dừng ghi. Mỗi lượt import sau này phải ghi vào bảng dưới: nhóm bảng, số dòng nguồn/đích, đối chiếu ID/FK/giá/thời gian/snapshot/ảnh và kết quả/điểm tiếp tục. Không dùng bản sao bị ghi tiếp trong lúc đếm. File backup/dump chứa dữ liệu thật phải lưu ngoài Git.
-
-| Ngày/mã lượt | Source snapshot & commit | Đích | Nhóm bảng | Đối chiếu và kết quả | Điểm tiếp tục |
-|---|---|---|---|---|---|
-| Chưa có | — | — | — | Chưa thực hiện import | Hoàn tất service và công cụ sao lưu/import/đối chiếu trước cutover |
+Chi tiết đường dẫn/hash theo bảng lưu **ngoài Git** `%LOCALAPPDATA%/MusicBoxManagement.Wpf.Backups/actual-import-20261029.json`; raw/prepared và Content bất biến bên cạnh. Đây là toàn bộ nguồn người dùng xác nhận, không coi số0 là dữ liệu nghiệp vụ đã demo. Ảnh fixture có hash và bước InstallContent; nguồn thật Rooms0 nên Content trống. [Runbook](MySql_Migration_09_Import_Cutover.md) có phương án phục hồi bản sao SQLite, không xóa cloud và không đồng bộ ngược dữ liệu phát sinh mới.
 
 ## Lượt kiểm tra 21/10/2026
 

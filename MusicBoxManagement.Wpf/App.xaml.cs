@@ -17,15 +17,16 @@ namespace MusicBoxManagement.Wpf
             var culture = CultureInfo.GetCultureInfo("vi-VN");
             Thread.CurrentThread.CurrentCulture = culture;
             Thread.CurrentThread.CurrentUICulture = culture;
-            var database = new SqliteDatabase(SqliteDatabase.DefaultPath);
-            var roomTypes = new RoomTypeService(database);
-            MainWindow = new MainWindow(new MainViewModel(roomTypes),
-                new AuthenticationService(database), new PermissionService(database), roomTypes, new RoomService(database), new ServiceCatalogService(database), new CustomerService(database), new GuestBookingService(database), new GuestReservationService(database), new StaffReservationService(database));
+            ApplicationServices runtime;
+            try { runtime = ApplicationServices.FromConfiguration(); }
+            catch (System.Exception error)
+            {
+                MessageBox.Show("Không thể mở nguồn dữ liệu đã cấu hình.\n" + error.Message, "Music Box", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1); return;
+            }
+            MainWindow = runtime.Window;
             MainWindow.Show();
-#if DEBUG
-            _ = TestAivenAsync();
-#endif
-            noShowWorker = new NoShowWorker(database);
+            noShowWorker = runtime.Worker;
             _ = noShowWorker.StartAsync();
         }
 

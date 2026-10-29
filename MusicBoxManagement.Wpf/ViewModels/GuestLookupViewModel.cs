@@ -11,8 +11,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
 {
     public sealed class GuestLookupViewModel:INotifyPropertyChanged
     {
-        private readonly GuestReservationService service;
-        private readonly GuestSessionService sessions;
+        private readonly IGuestReservationService service;
+        private readonly IGuestSessionService sessions;
         private GuestSession activeSession;
         private SessionExtensionCheck extension;
         private int extensionMinutes=30, confirmedMinutes;
@@ -53,7 +53,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public string ExtensionDetails=>extension==null?"":"Gia hạn "+confirmedMinutes+" phút.\nGiờ trả hiện tại: "+TimeLabel(extension.ExpectedEndTime)+
             "\nGiờ trả mới: "+TimeLabel(extension.NewEndTime)+"\nGiới hạn sử dụng: "+TimeLabel(extension.MaximumEndTime)+"\nLịch sẽ được kiểm tra lại khi xác nhận.";
         public event PropertyChangedEventHandler PropertyChanged;
-        public GuestLookupViewModel(GuestReservationService service){this.service=service;this.sessions=service.ForSessions();status="Nhập SĐT đầy đủ để xem booking và phiên đang sử dụng của bạn.";}
+        public GuestLookupViewModel(IGuestReservationService service){this.service=service;this.sessions=service.ForSessions();status="Nhập SĐT đầy đủ để xem booking và phiên đang sử dụng của bạn.";}
         private async Task ReloadAsync(string number)
         {
             var result=await Task.Run(()=>service.Lookup(number));Items.Clear();foreach(var item in result.Items)Items.Add(item);

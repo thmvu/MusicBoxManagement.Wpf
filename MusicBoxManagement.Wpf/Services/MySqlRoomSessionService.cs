@@ -7,7 +7,7 @@ using MySqlConnector;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlRoomSessionService
+    public sealed class MySqlRoomSessionService : IRoomSessionService
     {
         private readonly MySqlDatabase database;
         private readonly IClock clock;

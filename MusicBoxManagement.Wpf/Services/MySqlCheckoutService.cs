@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class MySqlCheckoutService
+    public sealed class MySqlCheckoutService : ICheckoutService
     {
         private readonly MySqlDatabase database;
         private readonly MySqlPermissionService permissions;

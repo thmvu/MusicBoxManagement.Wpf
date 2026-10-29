@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 namespace MusicBoxManagement.Wpf.Services
 {
     // Staff calendar only. A future Guest calendar must project anonymous intervals.
-    public sealed class CalendarService
+    public sealed class CalendarService : ICalendarService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;

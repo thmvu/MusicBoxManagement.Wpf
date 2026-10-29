@@ -9,7 +9,7 @@ using MusicBoxManagement.Wpf.Models;
 
 namespace MusicBoxManagement.Wpf.Services
 {
-    public sealed class DashboardService
+    public sealed class DashboardService : IDashboardService
     {
         private readonly SqliteDatabase database;
         private readonly IClock clock;
