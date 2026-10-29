@@ -1,5 +1,13 @@
 # Music Box WPF
 
+## MySQL 06a — Doanh thu/Excel doanh thu (29/10/2026)
+
+Đã thêm MySqlReportService.ReadRevenue/ExportRevenue và ForReports. Admin hoặc Manager đủ Report.View, Staff không tổng hợp kể cả misgrant; Export cần thêm Report.Export. RR read-only cùng ReadAccess/dữ liệu/một clock, PaidAt ngày Việt Nam exact ticks/GetDecimal/decimal, group ngày/tháng/RoomTypeCodeSnapshot, không cộng Active hoặc tái định giá/phân loại theo catalog hiện tại. Excel Day/Month/RoomType dùng cùng core query/quyền và ReportExcelWriter hiện có. Không đổi SQLite/DTO/VM/UI/provider/schema/import. Xem docs/MySql_Migration_06a_Revenue.md cho build/test/log/phạm vi và giới hạn, không suy rộng sang mọi báo cáo/Excel hoặc mọi suite.
+
+Build và online Debug/Release đạt; hồi quy Debug 11/11 bộ liên quan đạt (3 MySQL + 8 SQLite/WPF), AuthenticationUi 142 ảnh. Log/danh sách/giới hạn trong báo cáo 06a, không mọi suite hoặc fixture tràn tổng decimal. Bài mới tạo Invoice/Completed qua service thật, không SQL giả thanh toán; XLSX ba chế độ giữ đúng tổng lớn và current Export. Chưa wiring UI/provider/import.
+
+Tiếp báo cáo sử dụng phòng MySQL, rồi booking/món/Excel tương ứng/history, worker/provider/UI/import/Content/ERD/từ điển/demo/máy in thật. App vẫn SQLite v8, MySQL v1; chưa nhập dữ liệu thật/cutover. Chỉ Compile entry MySqlReportService, định dạng csproj có sẵn giữ riêng; cập nhật bàn giao cùng code/test/docs/README/plan/commit/push.
+
 ## MySQL 05b — Tra cứu nhật ký (28/10/2026)
 
 Đã có MySqlAuditLogService.Search/Read và ForAudit, Audit.View Admin-only hiện hành, RR read-only cùng quyền/metadata/dữ liệu; lọc ngày Việt Nam/actor/action/entity exact AND, keyset ID giảm dần/pageSize 1–200/pageSize+1/HasMore. DTO giữ nội dung/actor/user nullable/tên hiện hành/ticks; đọc không log/maintenance/ghi dữ liệu. MySQL UTC O cố định so sánh exact tick, không áp dụng julianday hoặc coi chuỗi legacy offset/Z là dữ liệu MySQL hợp lệ; import sau này phải chuẩn hóa UTC. SQLite service/UI không sửa.

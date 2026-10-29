@@ -1,5 +1,7 @@
 # Đối chiếu luồng nghiệp vụ hiện hành — 24/10/2026
 
+**Bổ sung 06a ngày 29/10:** [doanh thu/Excel MySQL](MySql_Migration_06a_Revenue.md) online Debug/Release đạt; PaidAt/group snapshot/decimal/Active exclusion/current View–Export và RR với checkout/revoke thật. Chưa nối UI/provider/import hoặc chuyển các báo cáo phòng/booking/món; tiếp sử dụng phòng. Các mốc dưới giữ theo thời điểm.
+
 **Bổ sung 05b nhật ký 28/10:** [service/bằng chứng](MySql_Migration_05b_AuditLog.md) đạt online Debug/Release retry, 11/11 bộ Debug liên quan đạt. Audit.View Admin-only/current rights/RR snapshot/keyset/UTC ticks/read-only; chưa wiring UI/provider/import. Giữ riêng timeout Release đầu và lượt retry; tiếp báo cáo doanh thu MySQL. Các mốc dưới là lịch sử.
 
 **Bổ sung 05a ma trận quyền 28/10:** [service và bằng chứng](MySql_Migration_05a_PermissionMatrix.md) đã đạt online Debug/Release, giữ Admin-only/quyền bất biến/dependency/raw Revision/no-op và atomic audit, khóa target role rồi kiểm tra lại quyền sau chờ. Có ca writer ma trận thật đồng thời và service tài khoản thật khóa Admin trước khi thả role; không dùng precheck thay guard trong transaction. 12 bộ SQLite/WPF liên quan đạt; bằng chứng online cũ tại báo cáo. Chưa có Audit viewer MySQL hoặc wiring UI/provider; tiếp 05b. Các mục cũ bên dưới giữ theo thời điểm.

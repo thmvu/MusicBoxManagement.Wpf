@@ -1,6 +1,14 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
-Ngày lập: 02/10/2026. Cập nhật tiến độ: 28/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+Ngày lập: 02/10/2026. Cập nhật tiến độ: 29/10/2026. Nền tảng giữ **project riêng, WPF, .NET Framework 4.7.2; chế độ Khách tại máy demo/quầy**. Database vận hành hiện tại: SQLite v8. Database đích theo yêu cầu mới: MySQL trên Aiven, đang chuyển từng bước.
+
+## MySQL 06a — Doanh thu/Excel doanh thu (29/10/2026)
+
+Đã thêm MySqlReportService.ReadRevenue/ExportRevenue và ForReports. Admin hoặc Manager đủ Report.View, Staff không tổng hợp kể cả misgrant; Export cần thêm Report.Export. RR read-only cùng ReadAccess/dữ liệu/một clock, PaidAt ngày Việt Nam exact ticks/GetDecimal/decimal, group ngày/tháng/RoomTypeCodeSnapshot, không cộng Active hoặc tái định giá/phân loại theo catalog hiện tại. Excel Day/Month/RoomType dùng cùng core query/quyền và ReportExcelWriter hiện có. Không đổi SQLite/DTO/VM/UI/provider/schema/import. Xem docs/MySql_Migration_06a_Revenue.md cho build/test/log/phạm vi và giới hạn, không suy rộng sang mọi báo cáo/Excel hoặc mọi suite.
+
+Build và online Debug/Release đạt; hồi quy Debug 11/11 bộ liên quan đạt (3 MySQL + 8 SQLite/WPF), AuthenticationUi 142 ảnh. Log/danh sách/giới hạn trong báo cáo 06a, không mọi suite hoặc fixture tràn tổng decimal. Bài mới tạo Invoice/Completed qua service thật, không SQL giả thanh toán; XLSX ba chế độ giữ đúng tổng lớn và current Export. Chưa wiring UI/provider/import.
+
+Tiếp báo cáo sử dụng phòng MySQL, rồi booking/món/Excel tương ứng/history, worker/provider/UI/import/Content/ERD/từ điển/demo/máy in thật. App vẫn SQLite v8, MySQL v1; chưa nhập dữ liệu thật/cutover. Chỉ Compile entry MySqlReportService, định dạng csproj có sẵn giữ riêng; cập nhật bàn giao cùng code/test/docs/README/plan/commit/push.
 
 ## MySQL 05b — Tra cứu nhật ký (28/10/2026)
 
@@ -87,7 +95,7 @@ Người dùng yêu cầu vừa hoàn thiện chức năng WPF vừa chuyển Ai
 | Nhánh | Đã làm trong lượt này | Tiếp theo |
 |---|---|---|
 | WPF đang chạy SQLite | **8f.2 UI lịch sử khách**: chọn khách → Xem lịch sử, summary và ba tab booking/phiên/hóa đơn qua service 8f.1; View-only/quyền hóa đơn riêng/revoke/compact. Giữ Excel 8e.5a–b | Kiểm thử tổng thể; tài liệu/ERD/demo và port các tính năng sang MySQL |
-| MySQL Aiven | **Đến 05b nhật ký đạt online Debug/Release 28/10**, kết quả và phạm vi tại báo cáo 05b/bảng bàn giao | Báo cáo doanh thu và các nhóm còn lại; chưa đổi provider/import hoặc nghiệm thu máy in thật |
+| MySQL Aiven | **Đã thêm 06a doanh thu/Excel doanh thu**, bằng chứng/phạm vi tại báo cáo 06a/bảng bàn giao | Báo cáo sử dụng phòng và các nhóm còn lại; chưa đổi provider/import hoặc nghiệm thu máy in thật |
 
 Xem [8e.5b](docs/Step8e5b_ReportTablesExcel.md), [8e.5a](docs/Step8e5a_RevenueExcel.md) và [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md). Excel mục 31.4 đã bao phủ các báo cáo hiện có trên WPF/SQLite; chưa hoàn tất triển khai MySQL cho các tính năng đó. Ngày 21/10 đã nối [8f.2 giao diện lịch sử khách](docs/Step8f2_CustomerHistoryUi.md) với service 8f.1; tiến độ MySQL hiện hành xem [bảng bàn giao](docs/MySql_Migration_Status.md), không làm lại service đã nghiệm thu. App vẫn dùng SQLite, ảnh local; ma trận quyền mới và các tính năng WPF bổ sung cũng cần service MySQL trước đổi provider. Không bỏ sao lưu/nhập/đối chiếu dữ liệu + Content và kiểm tra UI trên DB riêng. Không tạo Lookup Guest giả ActiveSession null; chờ port đường phiên để tích hợp đầy đủ. ERD tổng thể/theo nhóm và từ điển dữ liệu vẫn bắt buộc cho báo cáo.
 

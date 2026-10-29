@@ -1,5 +1,7 @@
 # Music Box Management — WPF
 
+MySQL 06a (29/10/2026): thêm báo cáo doanh thu PaidAt theo ngày/tháng/loại phòng snapshot và Excel ba cách nhóm, Report.View/Export hiện hành và Staff bị chặn. [Bằng chứng/phạm vi](docs/MySql_Migration_06a_Revenue.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo sử dụng phòng; App/UI vẫn SQLite, chưa import/cutover.
+
 MySQL 05b: thêm tra cứu/chi tiết nhật ký Admin-only, lọc ngày Việt Nam/actor/action/entity và phân trang keyset, đọc RR read-only không ghi log. Online Debug/Release đạt (Release chạy lại sau timeout). Xem [05b](docs/MySql_Migration_05b_AuditLog.md) và [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.
 
 MySQL 05a (28/10/2026): thêm `MySqlPermissionManagementService` để Admin đọc/lưu quyền Staff và Manager riêng, giữ giới hạn quyền/dependency, Revision chống form cũ và audit cùng transaction. Khóa đúng vai trò rồi kiểm tra lại quyền sau chờ; đã kiểm tra online Debug/Release với hai writer và service khóa tài khoản thật. Xem [05a và bằng chứng](docs/MySql_Migration_05a_PermissionMatrix.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp 05b đọc nhật ký MySQL; App/worker/UI vẫn SQLite, chưa import/cutover. Các mục dưới là lịch sử.

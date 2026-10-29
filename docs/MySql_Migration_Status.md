@@ -1,8 +1,10 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
-Cập nhật 28/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
+Cập nhật 29/10/2026. **Đọc file này trước khi nhận việc migration.** Đây là bảng hiện trạng để người pull repo không làm lại phần đã chuyển; các báo cáo bước cũ là bằng chứng theo thời điểm, không phải danh sách việc còn thiếu mới nhất.
 
-**Mốc mới nhất 28/10: 05b tra cứu nhật ký MySQL đạt online Debug/Release** (Release retry sau Connect Timeout). Audit.View Admin-only/RR read-only/filters exact/keyset/ticks/current metadata, không ghi khi đọc. [Bằng chứng và giới hạn](MySql_Migration_05b_AuditLog.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.
+**Mốc 29/10: 06a doanh thu và Excel doanh thu MySQL đạt online Debug/Release**, hồi quy Debug 11/11 bộ liên quan đạt: PaidAt ngày Việt Nam/decimal/RoomType snapshot, quyền View/Export hiện hành và Staff không tổng hợp. [Kết quả và giới hạn](MySql_Migration_06a_Revenue.md). Tiếp sử dụng phòng; app/worker/UI vẫn SQLite, chưa nhập/cutover.
+
+Trước đó 28/10: 05b tra cứu nhật ký MySQL đạt online Debug/Release (Release retry sau Connect Timeout). Audit.View Admin-only/RR read-only/filters exact/keyset/ticks/current metadata, không ghi khi đọc. [Bằng chứng và giới hạn](MySql_Migration_05b_AuditLog.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.
 
 Trước đó 28/10: 05a ma trận quyền MySQL đạt online Debug/Release**, Admin chỉnh Staff/Manager riêng, giữ giới hạn/dependency/raw Revision/cleanup/no-op, khóa role row rồi kiểm tra lại actor/stale/ghi quyền + audit cùng Serializable. Hồi quy Debug mới nhất 17/17 bộ liên quan đạt (5 MySQL + 12 SQLite/WPF), gồm các lượt chạy lại do timeout; log/phạm vi tại [05a](MySql_Migration_05a_PermissionMatrix.md). Tiếp 05b Audit viewer MySQL; App/worker/UI vẫn SQLite, chưa import DB/Content thật hoặc cutover.
 
@@ -20,7 +22,7 @@ Hồi quy lượt 04f: 32/32 bộ Debug liên quan đạt (8 MySQL online + 24 S
 
 Trước đó 28/10: 04e.4 Guest đã đạt online Debug/Release, tra cứu Confirmed + Active thật/SĐT hiện hành/hủy/gia hạn/public DTO/audit Guest. Hồi quy lượt đó 26/26 bộ Debug liên quan đạt (8 MySQL online + 18 SQLite/WPF, UI 142 ảnh). Xem [báo cáo 04e.4 và log](MySql_Migration_04e4_GuestSessions.md). Các mục cũ bên dưới là lịch sử, không phải yêu cầu làm lại phần đã nghiệm thu.
 
-Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 24 bộ MySQL (thêm MySqlAuditLog); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 68 bộ trong lượt 05b.
+Runner Verify-All hiện phát hiện 44 bộ SQLite/WPF và 25 bộ MySQL (thêm MySqlRevenueReport); đây là số bộ có sẵn, không phải tuyên bố đã chạy cả 69 bộ trong lượt 06a.
 
 Ngày 24/10: theo yêu cầu người dùng, rà soát UI/nhập liệu và chạy hồi quy toàn bộ; xem [báo cáo](Ui_Validation_Navigation_Review.md). Không port service mới ở lượt này; MySQL vẫn hoàn tất đến 04e.3, tiếp 04e.4 Guest. App/worker vẫn SQLite v8, đích MySQL v1; không nhập database hoặc Content thật và không cutover.
 
@@ -82,12 +84,13 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | 04j | MySqlDashboardService.Read/ReadRevenueToday và ForDashboard | **Đã đạt online Debug/Release bản cuối 28/10**, RR current rights/room/booking/Active/Pending/warnings/decimal revenue/MVCC vs checkout thật; chưa wiring UI | [04j](MySql_Migration_04j_Dashboard.md), Verify-MySqlDashboard |
 | 05a | MySqlPermissionManagementService.Read/Update/ValidateSelection và ForPermissions | **Đã đạt online Debug/Release 28/10**, RR reader/Admin-only/raw revision/cleanup/no-op/Serializable role row lock/current actor/atomic audit/stale concurrent writers/real account lock/clock sau chờ; chưa wiring UI | [05a](MySql_Migration_05a_PermissionMatrix.md), Verify-MySqlPermissionMatrix |
 | 05b | MySqlAuditLogService.Search/Read và ForAudit | Đạt online Debug/Release (Release retry), quyền/metadata RR, filters UTC+7/ticks/keyset/read-only, chưa wiring UI | [05b](MySql_Migration_05b_AuditLog.md), Verify-MySqlAuditLog |
+| 06a | MySqlReportService.ReadRevenue/ExportRevenue, ForReports | Doanh thu PaidAt/group/snapshot/decimal và Excel; kết quả online/hồi quy tại báo cáo, chưa wiring UI | [06a](MySql_Migration_06a_Revenue.md), Verify-MySqlRevenueReport |
 
 Các hàng đã nghiệm thu không cần viết lại service. Khi phần mới đụng luồng đó, chạy hồi quy theo báo cáo và bổ sung test cạnh tranh bằng service thật; fixture không phải nghiệm thu các service còn thiếu.
 
 ## Chưa chuyển — danh sách tiếp tục
 
-1. **Tiếp báo cáo doanh thu MySQL**, rồi báo cáo phòng/booking/món/Excel/history; giữ snapshot/decimal/quyền Report.View và Staff không tổng hợp. Không làm lại 01–05b đã nghiệm thu. Audit UI/provider vẫn cần bước tích hợp.
+1. **Tiếp báo cáo sử dụng phòng MySQL**, rồi booking/món/Excel tương ứng/history. 06a đã có doanh thu/Excel doanh thu; giữ snapshot/decimal/quyền/giới hạn Staff. Không làm lại 01–06a đã nghiệm thu; UI/provider vẫn cần tích hợp.
 2. Giữ hồi quy các writer thật và 14 ca hai thứ tự checkout–order/confirm/cancel/gia hạn đã có; bổ sung khi thay luồng/provider/import. Completed/Invoice thật đã được kiểm tra ở 04h, không lấy fixture cũ thay bằng chứng này.
 3. Các báo cáo/Excel và lịch sử Customer 8f.1–8f.2, giữ snapshot/decimal/ngày Việt Nam/quyền riêng.
 4. Worker/provider wiring, kiểm tra UI toàn app trên MySQL và máy in/driver thật, import/đối chiếu/ảnh, cutover và phục hồi. Giữ ERD tổng thể/các nhóm còn lại, từ điển dữ liệu/bản xuất/demo.
@@ -157,3 +160,6 @@ Hồi quy MySQL cũ đầu 2/4 (Authentication/Accounts đạt, StaffReservation
 ## Lượt kiểm tra 28/10/2026 — 05b
 
 Build VerifyAuditMySqlDebug/Release và Verify-MySqlAuditLog online Debug/Release retry đạt. 11/11 bộ Debug liên quan đạt (3 MySQL gồm bài mới + 8 SQLite/WPF), UI 142 ảnh. Summary hồi quy 10 bộ: %TEMP%/MusicBoxAuditRegression_9f0648aa3ae945b496809c6bc1e3469c/results.json. Release đầu Connect Timeout khi mở TCP writer phụ, log đầu/retry giữ riêng tại báo cáo 05b; không đổi assertion/config. Read RR read-only/filters ngày Việt Nam/keyset/ticks/current rights/current metadata được kiểm tra, không wiring UI/provider/import. Tiếp báo cáo doanh thu MySQL; không làm lại 01–05b.
+
+## Lượt kiểm tra 29/10/2026 — 06a
+Nghiệm thu 29/10: build VerifyRevenueMySqlDebug/Release và bài MySqlRevenueReport online hai build đều đạt exit 0, log %TEMP%/MusicBoxRevenueMySqlDebug_20261029.log và %TEMP%/MusicBoxRevenueMySqlRelease_20261029.log. Hồi quy Debug 11/11 bộ liên quan đạt: 3 MySQL (bài mới + Authentication/Foundation) và 8 SQLite/WPF (RevenueReport/RevenueExcel/RevenueReportUi/Dashboard/Invoices/Authentication/Foundation/AuthenticationUi). Summary 10 bộ hồi quy %TEMP%/MusicBoxRevenueRegression_e1753feb19464ea0804e8267c9eeaab5/results.json; AuthenticationUi 142 ảnh tại %TEMP%/MusicBoxUi_469ed58f01e946de8a6d193e4ebe8a21. Không sửa assertion cũ/UI/provider/import; không tuyên bố chạy cả 69 bộ có sẵn hoặc đã chuyển các báo cáo/Excel khác.

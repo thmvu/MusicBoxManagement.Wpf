@@ -78,6 +78,7 @@
     <Compile Include="Services\MySqlDashboardService.cs" />
     <Compile Include="Services\MySqlPermissionManagementService.cs" />
     <Compile Include="Services\MySqlAuditLogService.cs" />
+    <Compile Include="Services\MySqlReportService.cs" />
     <Compile Include="Services\ServiceSalesReportService.cs" />
     <Compile Include="ViewModels\ServiceSalesReportViewModel.cs" />
     <Compile Include="ViewModels\ReportExportWorkflow.cs" />
