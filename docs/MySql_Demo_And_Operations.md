@@ -1,5 +1,7 @@
 # Demo và vận hành Music Box trên Aiven
 
+30/10: theo yêu cầu mới, đã seed5 phòng/6 khách Demo trên musicbox sau khi người dùng tự tạo Admin. Xem [lượt seed](MySql_Demo_Seed_20261030.md); không còn coi production Rooms/Customers trống. Các bước dưới là kịch bản thao tác, chưa tự tạo booking/thanh toán mẫu.
+
 Thực hiện trong database demo riêng nếu cần diễn tập, không bơm fixture vào `musicbox`. Đọc [cutover/backup/khôi phục](MySql_Migration_09_Import_Cutover.md) và [quy tắc nghiệp vụ](Reference_Web_ProjectPlan_v1.3.md). Fixture kiểm tra tạo GUID và tự dọn; không phải bộ dữ liệu quán sẵn có.
 
 ## Kịch bản trình bày

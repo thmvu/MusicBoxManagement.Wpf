@@ -1,5 +1,10 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
+## Seed phòng và khách hàng mẫu — 30/10/2026
+
+Người dùng đã thiết lập Admin và yêu cầu seed. Đã thêm vào Aiven musicbox **5 phòng active (3 Standard/2 VIP, có ảnh từ assets) và 6 Khách Demo**, số giả lập0000000101–0000000106. Script quản trị `Tools/Seed-MySqlDemo.ps1` dry-run mặc định, Apply ghi cùng transaction với11 System audit, chạy lại bỏ qua mã/SĐT cũ; không giả phiên Admin hoặc sửa account/quyền/giá. Guest service thật đọc đủ5 phòng/ảnh; lặp Apply không trùng. Hiện Users1/Rooms5/Customers6/AuditLog12, nghiệp vụ và Services vẫn0. Không chạy lại import snapshot29/10 vì sẽ mất dữ liệu mới; ảnh vẫn local. [Chi tiết và kiểm tra](MySql_Demo_Seed_20261030.md). Không đổi code WPF/service/schema hoặc định dạng csproj có sẵn.
+
+
 ## Hoàn tất chuyển MySQL/Aiven — 29/10/2026
 
 Đã port báo cáo phòng/booking/món + Excel và lịch sử khách; nối toàn bộ VM/Views qua service contracts, App và NoShow worker cùng provider. **App.config mặc định MySql / musicbox**, không tự fallback SQLite. Không đổi giao diện/luật/quyền/SSL. [Ports/wiring](MySql_Migration_06b_08_ReportsHistoryWiring.md), [nhập/cutover/khôi phục](MySql_Migration_09_Import_Cutover.md).
@@ -63,9 +68,9 @@ Commit bàn giao gần nhất: chạy `git log -1 -- docs/MySql_Migration_Status
 | App.OnStartup, các màn hình và NoShow worker | **MySql mặc định**, cùng ApplicationServices; SQLite chọn rõ khi phục hồi |
 | Schema đích | MySQL v1; tương ứng nghiệp vụ SQLite v8, 16 bảng gồm bảng phiên bản |
 | Database Aiven `musicbox` | Đã import/verify15 bảng ngày29/10, hồ sơ riêng AppData Backups |
-| Dữ liệu nghiệp vụ/tài khoản đang dùng | Nguồn v1 chỉ2 loại phòng; không có tài khoản/nghiệp vụ để chuyển, không giả dữ liệu |
-| Ảnh `Content/uploads/rooms` | Đã cài root MySql riêng; Rooms0 nên không có ảnh thật. Fixture có ảnh đã đối chiếu hash |
-| Đổi provider cho WPF | **Đã chuyển** App.config MySql/musicbox; mở Release thật đạt, chưa tạo Admin |
+| Dữ liệu nghiệp vụ/tài khoản đang dùng | Nguồn import v1 chỉ2 loại phòng; sau cutover người dùng tạo1 Admin, theo yêu cầu seed5 phòng/6 khách Demo; chưa có booking/thanh toán |
+| Ảnh `Content/uploads/rooms` | Root MySql riêng có5 ảnh demo từ assets, đã kiểm qua guest helper; ảnh vẫn local |
+| Đổi provider cho WPF | **Đã chuyển** App.config MySql/musicbox; Admin đã thiết lập, seed30/10:5 phòng/6 khách Demo |
 | Các database `musicbox_test_<GUID>` | Chỉ fixture kiểm tra online, dọn sau test; không phải dữ liệu đã nhập của quán |
 
 ## Phần service đã chuyển — tiếp tục từ hàng chưa hoàn thành
