@@ -1,5 +1,10 @@
 # Bàn giao migration SQLite → MySQL Aiven
 
+## Seed món/dịch vụ — 31/10/2026
+
+Theo yêu cầu người dùng, đã thêm8 món/dịch vụ Demo đang bán trên Aiven musicbox (4 Đồ uống/3 Đồ ăn/1 Khác,5.000–60.000đ). `Tools/Seed-MySqlServices.ps1` dry-run mặc định, Apply thêm dữ liệu+8 System audit trong cùng transaction; chạy lại bỏ qua tên hiện có, không sửa giá/trạng thái. Đã kiểm đúng8 bản ghi, lặp không trùng. Hiện Services8/AuditLog24; Users1/Rooms5/Customers7/Reservations1, phiên/đơn/hóa đơn vẫn0. Giữ dữ liệu người dùng, không tạo đơn/phiên giả hoặc đổi UI/service/schema/csproj. Nhận phòng thành phiên Active rồi thử gọi món. [Bằng chứng và cách chạy](MySql_Service_Seed_20261031.md).
+
+
 ## Seed phòng và khách hàng mẫu — 30/10/2026
 
 Người dùng đã thiết lập Admin và yêu cầu seed. Đã thêm vào Aiven musicbox **5 phòng active (3 Standard/2 VIP, có ảnh từ assets) và 6 Khách Demo**, số giả lập0000000101–0000000106. Script quản trị `Tools/Seed-MySqlDemo.ps1` dry-run mặc định, Apply ghi cùng transaction với11 System audit, chạy lại bỏ qua mã/SĐT cũ; không giả phiên Admin hoặc sửa account/quyền/giá. Guest service thật đọc đủ5 phòng/ảnh; lặp Apply không trùng. Hiện Users1/Rooms5/Customers6/AuditLog12, nghiệp vụ và Services vẫn0. Không chạy lại import snapshot29/10 vì sẽ mất dữ liệu mới; ảnh vẫn local. [Chi tiết và kiểm tra](MySql_Demo_Seed_20261030.md). Không đổi code WPF/service/schema hoặc định dạng csproj có sẵn.
