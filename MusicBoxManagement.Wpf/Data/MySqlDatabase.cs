@@ -8,7 +8,6 @@ using MySqlConnector;
 namespace MusicBoxManagement.Wpf.Data
 {
     // MySQL version 1 mirrors the business schema of SQLite v8.
-    // This foundation is not yet wired to the application's business services.
     public sealed class MySqlDatabase
     {
         public const int CurrentSchemaVersion = 1;
@@ -55,6 +54,23 @@ namespace MusicBoxManagement.Wpf.Data
 
         public void Initialize()
         {
+            // Recheck the live version each time; an already-ready database needs no DDL or schema lock.
+            try
+            {
+                using (var connection = OpenConnection())
+                {
+                    var value = Scalar(connection, "SELECT Version FROM _MusicBoxSchemaVersion WHERE Id=1;");
+                    if (value != null && value != DBNull.Value)
+                    {
+                        var version = Convert.ToInt32(value);
+                        if (version > CurrentSchemaVersion)
+                            throw new InvalidOperationException("Database MySQL thuộc phiên bản ứng dụng mới hơn.");
+                        if (version == CurrentSchemaVersion) return;
+                    }
+                }
+            }
+            catch (MySqlException error) when (error.Number == 1049 || error.Number == 1146)
+            { /* Missing database/version table follows the locked initialization path below. */ }
             using (var connection = AivenDatabase.CreateConnection("defaultdb"))
             {
                 connection.Open();

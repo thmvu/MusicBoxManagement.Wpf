@@ -1,5 +1,10 @@
 # Music Box WPF
 
+## Tối ưu khởi tạo MySQL — 02/11/2026
+
+Theo yêu cầu tự động sửa độ chậm bằng Superpowers/Ponytail, MySqlDatabase.Initialize nay kiểm version hiện hành rồi return khi schema sẵn sàng; thiếu DB/marker/lower version vẫn dùng khóa/DDL/seed cũ, newer vẫn bị chặn mỗi lần. Không cache quyền hoặc bỏ SSL/transaction/session SET, không sửa UI hay dữ liệu. Mẫu đo Initialize ấm trước1,06–1,09s, sau0,61–0,68s (khác thời điểm, không SLA toàn app). Xem [phạm vi, phần giữ/bỏ và bằng chứng](docs/MySql_Performance_Review_20261102.md). Kết quả test/timeout/retry phải đọc trong báo cáo; không tuyên bố mọi thao tác đã nhanh hoặc mọi suite đã chạy. Diff csproj có sẵn giữ ngoài commit.
+
+
 ## Seed món/dịch vụ — 31/10/2026
 
 Theo yêu cầu người dùng, đã thêm8 món/dịch vụ Demo đang bán trên Aiven musicbox (4 Đồ uống/3 Đồ ăn/1 Khác,5.000–60.000đ). `Tools/Seed-MySqlServices.ps1` dry-run mặc định, Apply thêm dữ liệu+8 System audit trong cùng transaction; chạy lại bỏ qua tên hiện có, không sửa giá/trạng thái. Đã kiểm đúng8 bản ghi, lặp không trùng. Hiện Services8/AuditLog24; Users1/Rooms5/Customers7/Reservations1, phiên/đơn/hóa đơn vẫn0. Giữ dữ liệu người dùng, không tạo đơn/phiên giả hoặc đổi UI/service/schema/csproj. Nhận phòng thành phiên Active rồi thử gọi món. [Bằng chứng và cách chạy](docs/MySql_Service_Seed_20261031.md).

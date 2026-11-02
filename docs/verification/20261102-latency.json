@@ -1,0 +1,56 @@
+[
+  {
+    "Suite": "Initialize",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxInitializeGreenDebug_20261102.log"
+  },
+  {
+    "Suite": "Initialize",
+    "Build": "Release",
+    "Result": "PASS",
+    "Log": "MusicBoxInitializeGreenRelease_20261102.log"
+  },
+  {
+    "Suite": "Foundation",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyFoundationDebug_20261102.log"
+  },
+  {
+    "Suite": "Foundation",
+    "Build": "Release",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyFoundationRelease_20261102.log"
+  },
+  {
+    "Suite": "Authentication",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyAuthDebug_20261102.log"
+  },
+  {
+    "Suite": "Authentication",
+    "Build": "Release",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyAuthRelease_20261102.log"
+  },
+  {
+    "Suite": "Accounts",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyAccountsResumeDebug_20261102.log"
+  },
+  {
+    "Suite": "OperationsUi",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyOperationsFinalDebug_20261102.log"
+  },
+  {
+    "Suite": "AuthenticationUi SQLite",
+    "Build": "Debug",
+    "Result": "PASS",
+    "Log": "MusicBoxLatencyLocalUiDebug_20261102.log"
+  }
+]
