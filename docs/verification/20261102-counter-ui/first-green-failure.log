@@ -1,0 +1,8 @@
+Counter UI fixture: musicbox_test_3041cdf96b744502a9de126b119c2982
+Exception calling "Run" with "2" argument(s): "A TwoWay or OneWayToSource binding cannot work on the read-only
+property 'OccupiedRoomCount' of type 'MusicBoxManagement.Wpf.ViewModels.DashboardViewModel'."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlCounterUi.ps1:13 char:1
++ [MusicBoxMySqlCounterUiChecks]::Run((Join-Path $PSScriptRoot '..\Musi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidOperationException

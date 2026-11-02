@@ -135,8 +135,9 @@ namespace MusicBoxManagement.Wpf.Views
                 RoomsButton.Visibility = access.Permissions.ContainsKey("Room.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 ServicesButton.Visibility = access.Permissions.ContainsKey("Service.Manage") ? Visibility.Visible : Visibility.Collapsed;
                 CustomersButton.Visibility = access.Permissions.ContainsKey("Customer.View") ? Visibility.Visible : Visibility.Collapsed;
-                ReservationsButton.Visibility = access.Permissions.ContainsKey("Reservation.View") ? Visibility.Visible : Visibility.Collapsed;
-                StaffBookingButton.Visibility = access.Permissions.ContainsKey("Reservation.Create") ? Visibility.Visible : Visibility.Collapsed;
+                ReservationsButton.Visibility = access.Permissions.ContainsKey("Reservation.View") || access.Permissions.ContainsKey("Reservation.Create") ? Visibility.Visible : Visibility.Collapsed;
+                StaffBookingButton.Visibility = Visibility.Collapsed;
+                QuickBookingButton.Visibility = access.Permissions.ContainsKey("Reservation.Create") ? Visibility.Visible : Visibility.Collapsed;
                 WalkInButton.Visibility = access.Permissions.ContainsKey("Session.WalkIn") ? Visibility.Visible : Visibility.Collapsed;
                 SessionsButton.Visibility = access.Permissions.ContainsKey("Session.View") ? Visibility.Visible : Visibility.Collapsed;
                 CheckoutButton.Visibility = access.Permissions.ContainsKey("Session.CheckOut") ? Visibility.Visible : Visibility.Collapsed;
@@ -367,9 +368,15 @@ namespace MusicBoxManagement.Wpf.Views
             try
             {
                 var currentSession = session;
-                await Task.Run(() => permissions.Demand(currentSession, "Reservation.View"));
+                var canView = await Task.Run(() => permissions.HasPermission(currentSession, "Reservation.View"));
                 if (session != currentSession) return;
-                new ReservationsWindow(reservations, currentSession) { Owner = this }.ShowDialog();
+                if (canView) new ReservationsWindow(reservations, currentSession) { Owner = this }.ShowDialog();
+                else
+                {
+                    var route = await Task.Run(() => reservations.ForBooking(currentSession));
+                    if (session != currentSession) return;
+                    new GuestBookingWindow(route, new GuestBookingViewModel(route, new SystemClock(), true)) { Owner = this }.ShowDialog();
+                }
             }
             catch (UnauthorizedAccessException) { MessageBox.Show(this, "Bạn không có quyền xem booking hoặc phiên đã hết hiệu lực.", "Music Box"); }
             catch (Exception) { MessageBox.Show(this, "Không mở được booking. Hãy thử lại.", "Music Box"); }

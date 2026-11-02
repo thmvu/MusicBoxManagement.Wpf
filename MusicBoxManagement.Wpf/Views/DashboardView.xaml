@@ -2,56 +2,64 @@
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Language="vi-VN">
  <UserControl.Resources>
   <BooleanToVisibilityConverter x:Key="Visible"/>
-  <DataTemplate x:Key="Line"><StackPanel Margin="10,8"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel></DataTemplate>
-  <Style TargetType="ListBox"><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="{StaticResource MusicLineBrush}"/><Setter Property="ItemTemplate" Value="{StaticResource Line}"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
-  <Style x:Key="Metric" TargetType="TextBlock"><Setter Property="FontSize" Value="27"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource MusicInkBrush}"/><Setter Property="Margin" Value="0,3,0,0"/></Style>
+  <DataTemplate x:Key="Line"><StackPanel Margin="12,9"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel></DataTemplate>
+  <Style TargetType="ListBox"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="ItemTemplate" Value="{StaticResource Line}"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
+  <Style x:Key="Metric" TargetType="TextBlock"><Setter Property="FontSize" Value="30"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource MusicInkBrush}"/><Setter Property="Margin" Value="0,5,0,0"/></Style>
+  <Style x:Key="Badge" TargetType="Border"><Setter Property="Background" Value="#ECEDEA"/><Setter Property="CornerRadius" Value="3"/><Setter Property="Padding" Value="7,3"/><Style.Triggers>
+   <DataTrigger Binding="{Binding StatusCode}" Value="Available"><Setter Property="Background" Value="#E6EFE3"/></DataTrigger>
+   <DataTrigger Binding="{Binding StatusCode}" Value="Occupied"><Setter Property="Background" Value="#F4E9D1"/></DataTrigger>
+   <DataTrigger Binding="{Binding StatusCode}" Value="Reserved"><Setter Property="Background" Value="#DFEBE5"/></DataTrigger>
+  </Style.Triggers></Style>
   <DataTemplate x:Key="RoomTile">
-   <Border Width="216" MinHeight="106" Margin="0,0,12,12" Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1">
-    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-     <Border><Border.Style><Style TargetType="Border"><Setter Property="Background" Value="{StaticResource MusicInactiveBrush}"/><Style.Triggers>
-      <DataTrigger Binding="{Binding StatusCode}" Value="Available"><Setter Property="Background" Value="{StaticResource MusicAccentBrush}"/></DataTrigger>
-      <DataTrigger Binding="{Binding StatusCode}" Value="Occupied"><Setter Property="Background" Value="{StaticResource MusicBrassBrush}"/></DataTrigger>
-      <DataTrigger Binding="{Binding StatusCode}" Value="Reserved"><Setter Property="Background" Value="{StaticResource MusicSageBrush}"/></DataTrigger>
-     </Style.Triggers></Style></Border.Style></Border>
-     <StackPanel Grid.Column="1" Margin="14,12"><DockPanel><TextBlock Text="{Binding StatusLabel}" DockPanel.Dock="Right" FontSize="12" Foreground="{StaticResource MusicMutedBrush}" VerticalAlignment="Center"/><TextBlock Text="{Binding Code}" FontSize="21" FontWeight="SemiBold"/></DockPanel>
-      <TextBlock Text="{Binding Detail}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}" Margin="0,8,0,0"/>
-     </StackPanel>
-    </Grid>
+   <Border Width="196" Margin="0,0,12,12" Background="{StaticResource MusicPaperBrush}" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" CornerRadius="5" Padding="12">
+    <StackPanel>
+     <DockPanel><Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="{Binding StatusLabel}" Foreground="{StaticResource MusicInkBrush}" FontSize="11"/></Border><TextBlock Text="{Binding Code}" FontWeight="SemiBold" FontSize="20"/></DockPanel>
+     <Grid Height="60" Margin="0,8,0,5">
+      <Path Data="M 18,49 L 18,12 L 68,12 M 110,12 L 151,12 L 151,49 M 18,49 L 65,49 M 105,49 L 151,49" Stroke="{StaticResource MusicLineBrush}" StrokeThickness="2" Stretch="None" HorizontalAlignment="Center"/>
+      <Canvas Width="150" Height="54" HorizontalAlignment="Center">
+       <Rectangle Canvas.Left="27" Canvas.Top="18" Width="98" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource MusicSageBrush}"/>
+       <Rectangle Canvas.Left="27" Canvas.Top="27" Width="98" Height="15" RadiusX="3" RadiusY="3" Stroke="{StaticResource MusicAccentBrush}" Fill="#E4EBE1"/>
+       <Rectangle Canvas.Left="30" Canvas.Top="41" Width="5" Height="4" Fill="{StaticResource MusicAccentBrush}"/><Rectangle Canvas.Left="117" Canvas.Top="41" Width="5" Height="4" Fill="{StaticResource MusicAccentBrush}"/>
+       <Rectangle Canvas.Left="57" Canvas.Top="47" Width="37" Height="5" RadiusX="2" RadiusY="2" Fill="{StaticResource MusicBrassBrush}"/>
+      </Canvas>
+     </Grid>
+     <TextBlock Text="{Binding Detail}" FontSize="13" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}"/>
+    </StackPanel>
    </Border>
   </DataTemplate>
  </UserControl.Resources>
- <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,5,0">
   <StackPanel>
-   <Border Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" Padding="16,12">
-    <UniformGrid Columns="4">
-     <StackPanel><TextBlock Text="Phòng trống" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding AvailableRoomCount}" Style="{StaticResource Metric}" Foreground="{StaticResource MusicAccentBrush}"/></StackPanel>
-     <StackPanel><TextBlock Text="Đang sử dụng" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding OccupiedRoomCount}" Style="{StaticResource Metric}"/></StackPanel>
-     <StackPanel><TextBlock Text="Booking hôm nay" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding BookingCount}" Style="{StaticResource Metric}"/></StackPanel>
-     <StackPanel><TextBlock Text="Đơn món chờ" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding PendingOrderCount}" Style="{StaticResource Metric}"/></StackPanel>
-    </UniformGrid>
-   </Border>
-   <DockPanel Margin="0,14,0,14">
-    <Button x:Name="RefreshButton" DockPanel.Dock="Right" Content="Cập nhật tổng quan" Click="Refresh_Click" IsEnabled="{Binding CanRefresh}" Margin="12,0,0,0" VerticalAlignment="Center"/>
-    <StackPanel><TextBlock x:Name="RevenueText" Text="{Binding Revenue}" Visibility="{Binding HasRevenue, Converter={StaticResource Visible}}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
-     <TextBlock Text="{Binding Updated}" Foreground="{StaticResource MusicMutedBrush}" Margin="0,5,0,0" TextWrapping="Wrap"/>
-     <TextBlock x:Name="StatsText" Text="{Binding Summary}" FontSize="12" Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap" Margin="0,3,0,0"/>
-    </StackPanel>
-   </DockPanel>
-   <TextBlock Text="{Binding AlertHeading}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-   <Grid Margin="0,0,0,16">
-    <ListBox x:Name="AlertsList" ItemsSource="{Binding Alerts}" MaxHeight="112" MinHeight="36"/>
-    <TextBlock Text="Chưa có cảnh báo tại thời điểm cập nhật." Margin="12,10" Foreground="{StaticResource MusicMutedBrush}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Alerts.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+   <DockPanel Margin="0,0,0,12"><Button x:Name="RefreshButton" DockPanel.Dock="Right" Content="Làm mới" Click="Refresh_Click" IsEnabled="{Binding CanRefresh}" Margin="12,0,0,0"/><StackPanel><TextBlock Text="Hoạt động hôm nay" FontSize="21" FontWeight="SemiBold"/><TextBlock Text="{Binding Updated}" Foreground="{StaticResource MusicMutedBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/></StackPanel></DockPanel>
+   <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <Border BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" Background="White" Padding="18,14" CornerRadius="5">
+     <UniformGrid Columns="4">
+      <StackPanel><TextBlock Text="Phòng trống" FontSize="12" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding AvailableRoomCount}" Style="{StaticResource Metric}" Foreground="{StaticResource MusicAccentBrush}"/></StackPanel>
+      <StackPanel><TextBlock Text="Đang có khách" FontSize="12" Foreground="{StaticResource MusicMutedBrush}"/><TextBlock Text="{Binding OccupiedRoomCount}" Style="{StaticResource Metric}"/></StackPanel>
+      <StackPanel><TextBlock Text="Lượt đặt hôm nay" FontSize="12" Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap"/><TextBlock Text="{Binding BookingCount}" Style="{StaticResource Metric}"/></StackPanel>
+      <StackPanel><TextBlock Text="Đơn chờ xử lý" FontSize="12" Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap"/><TextBlock Text="{Binding PendingOrderCount}" Style="{StaticResource Metric}"/></StackPanel>
+     </UniformGrid>
+    </Border>
    </Grid>
-   <TabControl MinHeight="238" BorderBrush="{StaticResource MusicLineBrush}" Background="White" Padding="12">
-    <TabItem Header="Tình trạng phòng">
-     <Grid><ItemsControl x:Name="RoomBoard" ItemsSource="{Binding Rooms}" ItemTemplate="{StaticResource RoomTile}" Margin="0,12,0,0"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-      <TextBlock Text="Chưa có phòng để hiển thị. Người có quyền quản lý phòng có thể thêm phòng trong Danh mục." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="12,20"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Rooms.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
-     </Grid>
-    </TabItem>
-    <TabItem Header="Booking hôm nay"><ListBox ItemsSource="{Binding Bookings}" MaxHeight="320" BorderThickness="0"/></TabItem>
-    <TabItem Header="Phiên đang dùng"><ListBox ItemsSource="{Binding Sessions}" MaxHeight="320" BorderThickness="0"/></TabItem>
-    <TabItem Header="Đơn món chờ"><ListBox ItemsSource="{Binding Orders}" MaxHeight="320" BorderThickness="0"/></TabItem>
-   </TabControl>
+   <Border Background="{StaticResource MusicInkBrush}" Padding="16,12" CornerRadius="5" Margin="0,0,0,16" Visibility="{Binding HasRevenue, Converter={StaticResource Visible}}"><TextBlock x:Name="RevenueText" Text="{Binding Revenue}" Foreground="White" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+   <Border Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" CornerRadius="5" Padding="18,16">
+    <StackPanel>
+     <DockPanel Margin="0,0,0,8"><TextBlock DockPanel.Dock="Right" Text="{Binding RoomLoadLabel}" Foreground="{StaticResource MusicMutedBrush}" FontSize="12" VerticalAlignment="Center"/><TextBlock Text="Phòng tại quầy" FontSize="18" FontWeight="SemiBold"/></DockPanel>
+     <ProgressBar x:Name="RoomStatusMeter" Value="{Binding OccupiedRoomCount, Mode=OneWay}" Maximum="{Binding RoomMeterMaximum, Mode=OneWay}" Height="5" Foreground="{StaticResource MusicBrassBrush}" Background="{StaticResource MusicPaperBrush}" BorderThickness="0" Margin="0,0,0,16" AutomationProperties.Name="Số phòng đang có khách"/>
+     <ItemsControl x:Name="RoomBoard" ItemsSource="{Binding Rooms}" ItemTemplate="{StaticResource RoomTile}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+     <TextBlock Text="Chưa có phòng để hiển thị. Thêm phòng trong Danh mục nếu tài khoản được phép." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Rooms.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+    </StackPanel>
+   </Border>
+   <Grid Margin="0,16,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+    <Border Background="White" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" CornerRadius="5" Padding="12">
+     <TabControl BorderThickness="0" Background="White" MinHeight="170">
+      <TabItem Header="Đặt phòng hôm nay"><Grid><ListBox ItemsSource="{Binding Bookings}" MaxHeight="240"/><TextBlock Text="Chưa có lượt đặt trong ngày." Margin="12,18" Foreground="{StaticResource MusicMutedBrush}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Bookings.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></Grid></TabItem>
+      <TabItem Header="Đang phục vụ"><ListBox ItemsSource="{Binding Sessions}" MaxHeight="240"/></TabItem>
+      <TabItem Header="Đơn món"><ListBox ItemsSource="{Binding Orders}" MaxHeight="240"/></TabItem>
+     </TabControl>
+    </Border>
+    <Border Grid.Column="2" Background="#F3F0E7" BorderBrush="{StaticResource MusicLineBrush}" BorderThickness="1" CornerRadius="5" Padding="14"><StackPanel><TextBlock Text="{Binding AlertHeading}" FontWeight="SemiBold" TextWrapping="Wrap"/><ListBox x:Name="AlertsList" ItemsSource="{Binding Alerts}" MaxHeight="230" Margin="0,8,0,0"/><TextBlock Text="Không có việc cần lưu ý tại thời điểm cập nhật." Foreground="{StaticResource MusicMutedBrush}" TextWrapping="Wrap" Margin="0,10,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Alerts.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></StackPanel></Border>
+   </Grid>
    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="0,12,0,0" FontSize="12"/>
   </StackPanel>
  </ScrollViewer>

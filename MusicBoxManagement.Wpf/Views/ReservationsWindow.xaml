@@ -1,11 +1,11 @@
-<Window x:Class="MusicBoxManagement.Wpf.Views.ReservationsWindow"
+﻿<Window x:Class="MusicBoxManagement.Wpf.Views.ReservationsWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="Music Box — Booking nội bộ" Width="1240" Height="760" MinWidth="1100" MinHeight="660"
+ Title="Music Box — Đặt phòng" Width="1240" Height="760" MinWidth="1100" MinHeight="660"
  WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="14" Language="vi-VN" Background="{StaticResource MusicPaperBrush}">
  <Window.Resources><BooleanToVisibilityConverter x:Key="BoolVisibility"/></Window.Resources>
  <Grid Margin="28">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <DockPanel><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="CreateButton" Content="Đặt hộ" Click="Create_Click" IsEnabled="{Binding CanCreate}" Margin="0,0,8,0"/><Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/></StackPanel><TextBlock Text="Booking nội bộ" FontSize="28" FontWeight="SemiBold"/></DockPanel>
+  <DockPanel><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="CreateButton" Content="Tạo đặt phòng" Click="Create_Click" IsEnabled="{Binding CanCreate}" Margin="0,0,8,0"/><Button Content="Đóng" IsCancel="True" IsEnabled="{Binding CanClose}"/></StackPanel><TextBlock Text="Đặt phòng" FontSize="28" FontWeight="SemiBold"/></DockPanel>
   <StackPanel Grid.Row="1" Margin="0,16,0,20" IsEnabled="{Binding CanSearch}">
    <TextBlock Text="Chọn booking còn hạn để nhận phòng hoặc hủy theo quyền. Nhận phòng giữ đủ thời lượng; hủy cần lý do." TextWrapping="Wrap" Foreground="{StaticResource MusicMutedBrush}" Margin="0,0,0,12"/>
    <WrapPanel>
@@ -38,7 +38,7 @@
     <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel>
-     <TextBlock Text="Chi tiết booking" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
+     <TextBlock Text="Chi tiết đặt phòng" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
      <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
      <TextBlock x:Name="CheckInResultText" Text="{Binding CheckInResult}" TextWrapping="Wrap" Margin="0,16,0,0" FontWeight="SemiBold"/>
     </StackPanel>

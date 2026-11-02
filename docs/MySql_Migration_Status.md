@@ -1,4 +1,9 @@
-# Bàn giao migration SQLite → MySQL Aiven
+﻿# Bàn giao migration SQLite → MySQL Aiven
+
+## Lịch phòng và dashboard WPF — 02/11/2026
+
+Theo thiết kế người dùng đã chốt: lịch Ngày/tất cả phòng, Tuần ưu tiên một phòng, trục giờ/header cố định khi cuộn và lịch tháng. Dashboard có bảng phòng vector WPF 2D, trạng thái/chỉ số/cảnh báo từ snapshot hiện hành; giữ doanh thu theo quyền. Menu gom một mục Đặt phòng, vẫn hỗ trợ View-only hoặc Create-only; walk-in giữ riêng nghiệp vụ. Không thêm thư viện hoặc sửa service/schema/dữ liệu quán. Xem [cách dùng, kiểm tra và ảnh](Ui_Calendar_Dashboard_20261102.md) và [plan](superpowers/plans/2026-11-02-counter-ui.md). Build dùng thật Debug/Release và runner UI MySQL cuối đều đạt, 8 ảnh/bản; đã kiểm View-only/Create-only/Staff không doanh thu, chọn ngày/phòng đúng một Read, resize/scroll không Read và revoke xóa chi tiết. Diff csproj có sẵn vẫn giữ ngoài commit.
+
 
 ## Chỉ làm việc với MySQL/Aiven — chỉ đạo người dùng 02/11/2026
 

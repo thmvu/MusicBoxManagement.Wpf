@@ -42,6 +42,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
             + "    Đang sử dụng: " + snapshot.ActiveSessions.Count + "    Đơn chờ: " + snapshot.PendingOrders.Count;
         public int AvailableRoomCount => snapshot?.Rooms.Count(r => r.Status == "Available") ?? 0;
         public int OccupiedRoomCount => snapshot?.Rooms.Count(r => r.Status == "Occupied") ?? 0;
+        public int RoomMeterMaximum => Math.Max(1, snapshot?.Rooms.Count ?? 0);
+        public string RoomLoadLabel => OccupiedRoomCount + " / " + (snapshot?.Rooms.Count ?? 0) + " phòng đang có khách";
         public int BookingCount => snapshot?.BookingsToday.Count ?? 0;
         public int PendingOrderCount => snapshot?.PendingOrders.Count ?? 0;
         public string Updated => snapshot == null ? "" : "Cập nhật lúc " + Local(snapshot.CheckedAt) + " · Giờ Việt Nam";
@@ -94,7 +96,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         private static string AlertName(string kind)
         { switch (kind) { case "NearNoShow": return "Sắp hết hạn nhận phòng"; case "Overdue": return "Khách quá giờ"; case "NextBooking": return "Cần trả trước lượt kế tiếp"; case "OutsideHours": return "Còn khách ngoài giờ mở cửa"; default: return kind; } }
         private void Changed()
-        { foreach (var name in new[] { nameof(Snapshot), nameof(IsBusy), nameof(CanRefresh), nameof(HasRevenue), nameof(Revenue), nameof(Summary), nameof(AvailableRoomCount), nameof(OccupiedRoomCount), nameof(BookingCount), nameof(PendingOrderCount), nameof(Updated), nameof(AlertHeading), nameof(Status) }) Notify(name); }
+        { foreach (var name in new[] { nameof(Snapshot), nameof(IsBusy), nameof(CanRefresh), nameof(HasRevenue), nameof(Revenue), nameof(Summary), nameof(AvailableRoomCount), nameof(OccupiedRoomCount), nameof(BookingCount), nameof(PendingOrderCount), nameof(RoomMeterMaximum), nameof(RoomLoadLabel), nameof(Updated), nameof(AlertHeading), nameof(Status) }) Notify(name); }
         private void Notify([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

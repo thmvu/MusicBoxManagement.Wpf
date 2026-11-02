@@ -1,0 +1,6 @@
+Exception calling "Run" with "2" argument(s): "Missing timetable month picker MonthCalendar."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlCounterUi.ps1:13 char:1
++ [MusicBoxMySqlCounterUiChecks]::Run((Join-Path $PSScriptRoot '..\Musi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

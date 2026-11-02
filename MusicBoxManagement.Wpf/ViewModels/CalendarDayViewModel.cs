@@ -80,6 +80,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         {
             if (busy || week == isWeek) return;
             week = isWeek;
+            if (week && room?.RoomId == null) { room = RoomChoices.FirstOrDefault(r => r.RoomId.HasValue); Notify(nameof(SelectedRoom)); }
             foreach (var property in new[] { nameof(IsWeek), nameof(IsDay), nameof(Heading), nameof(PreviousLabel), nameof(NextLabel) }) Notify(property);
             Clear(); await LoadAsync();
         }
