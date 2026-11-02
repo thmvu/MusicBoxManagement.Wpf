@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MusicBoxManagement.Wpf.Data;
 using MusicBoxManagement.Wpf.Models;
 
@@ -40,9 +41,10 @@ ORDER BY s.ActualStartTime DESC,s.RoomSessionId DESC;";
                     using (var reader = command.ExecuteReader()) while (reader.Read())
                         items.Add(new StaffSession { Session = MySqlRoomSessionService.ReadSessionRecord(reader), CustomerName = reader.GetString(12), PhoneNumber = reader.GetString(13), CheckedAt = now });
                 }
+                var returnBy = MySqlScheduleRules.WalkInReturnByMany(connection, transaction,
+                    items.Where(i => i.Session.Status == "Active" && !i.Session.ReservationId.HasValue).Select(i => i.Session.RoomSessionId), now);
                 foreach (var item in items)
-                    if (item.Session.Status == "Active") item.ReturnBy = item.Session.ExpectedEndTime ?? MySqlScheduleRules.WalkInReturnBy(connection, transaction,
-                        item.Session.RoomId, item.Session.CustomerId, item.Session.ActualStartTime, now);
+                    if (item.Session.Status == "Active") item.ReturnBy = item.Session.ExpectedEndTime ?? returnBy[item.Session.RoomSessionId];
                 return new StaffSessionSearch { Items = items, CanExtend = access.Permissions.ContainsKey("Session.Extend") };
             }
         }

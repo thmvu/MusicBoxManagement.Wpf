@@ -1,5 +1,12 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
+## Tối ưu truy vấn MySQL theo luồng — 02/11/2026
+
+Đã rà các luồng đọc và thay N+1 bằng batch trong cùng snapshot: lịch Khách 28 ô đọc2 SELECT thay50; trạng thái21 phòng1 thay43; dữ liệu lịch nhân viên3 thay63; ReturnBy5walk-in1 thay5; đơn món1 SELECT thay1+2N; danh sách5tài khoản2 thay7 gồm kiểm quyền. Mẫu ReadDay trên musicbox8219→718ms, không SLA toàn app. Không đổi writer locks/clock/tiền/quyền/SSL/schema/UI/seed. Xem [phạm vi, kiểm tra và giới hạn](docs/MySql_Read_Performance_20261102.md), [plan/ledger](docs/superpowers/plans/2026-11-02-mysql-read-batching.md). Giữ các validation/refresh hiện hành cần thiết, không xóa SQLite/tools/test vì chúng không gây round-trip UI. Diff csproj có sẵn vẫn giữ ngoài commit. Kết quả online/những lượt fail và retry phải đọc ở report, không nhận toàn76suite đã chạy từ sốsuite có sẵn.
+
+Kiểm chứng cuối: 44/44 local Debug và 15 nhóm MySQL liên quan đạt kết quả cuối, 3 bộ tối ưu mới thêm Release đạt; Billing giữ lượt đầu fail8s và isolatedretryđạt với assertion cũ. Build Debug/Release dùng thật đạt. Máy in giả đã kiểm, chưa in giấy thật.
+
+
 ## Tối ưu khởi tạo MySQL — 02/11/2026
 
 Theo yêu cầu tự động sửa độ chậm bằng Superpowers/Ponytail, MySqlDatabase.Initialize nay kiểm version hiện hành rồi return khi schema sẵn sàng; thiếu DB/marker/lower version vẫn dùng khóa/DDL/seed cũ, newer vẫn bị chặn mỗi lần. Không cache quyền hoặc bỏ SSL/transaction/session SET, không sửa UI hay dữ liệu. Mẫu đo Initialize ấm trước1,06–1,09s, sau0,61–0,68s (khác thời điểm, không SLA toàn app). Xem [phạm vi, phần giữ/bỏ và bằng chứng](docs/MySql_Performance_Review_20261102.md). Kết quả test/timeout/retry phải đọc trong báo cáo; không tuyên bố mọi thao tác đã nhanh hoặc mọi suite đã chạy. Diff csproj có sẵn giữ ngoài commit.

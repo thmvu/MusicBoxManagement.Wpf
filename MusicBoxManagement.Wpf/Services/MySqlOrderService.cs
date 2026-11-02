@@ -244,15 +244,35 @@ WHERE o.OrderId=@id" + (phone == null ? "" : " AND c.PhoneNumber=@phone") + ";";
         }
         internal static List<ServiceOrder> ReadOrders(MySqlConnection connection, MySqlTransaction transaction, int sessionId)
         {
-            var ids = new List<int>();
+            var result = new List<ServiceOrder>();
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                command.CommandText = "SELECT OrderId FROM Orders WHERE RoomSessionId=@session ORDER BY OrderId;";
+                command.CommandText = @"SELECT o.OrderId,o.Status,o.CreatedAt,i.OrderItemId,i.ServiceId,i.ServiceNameSnapshot,i.Quantity,i.UnitPrice
+FROM Orders o LEFT JOIN OrderItems i ON i.OrderId=o.OrderId
+WHERE o.RoomSessionId=@session ORDER BY o.OrderId,i.OrderItemId;";
                 command.Parameters.AddWithValue("@session", sessionId);
-                using (var reader = command.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetInt32(0));
+                using (var reader = command.ExecuteReader())
+                {
+                    ServiceOrder current = null;
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        if (current == null || current.OrderId != id)
+                        {
+                            current = new ServiceOrder { OrderId = id, Status = reader.GetString(1),
+                                CreatedAt = DateTimeOffset.ParseExact(reader.GetString(2), "O", CultureInfo.InvariantCulture),
+                                Items = new List<ServiceOrderItem>() };
+                            result.Add(current);
+                        }
+                        // Preserve headers even if an order has no item rows.
+                        if (!reader.IsDBNull(3))
+                            current.Items.Add(new ServiceOrderItem { ServiceId = reader.GetInt32(4), ServiceNameSnapshot = reader.GetString(5),
+                                Quantity = reader.GetInt32(6), UnitPrice = reader.GetInt64(7) });
+                    }
+                }
             }
-            return ids.Select(id => ReadOrder(connection, transaction, id)).ToList();
+            return result;
         }
         private void DemandRead(LoginSession actor, string permission, MySqlConnection connection, MySqlTransaction transaction)
         {

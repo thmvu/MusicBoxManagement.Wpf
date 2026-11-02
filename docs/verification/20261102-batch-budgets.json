@@ -1,0 +1,22 @@
+[
+  {
+    "Suite": "MySqlReadBatch",
+    "Build": "Debug",
+    "ExitCode": 0
+  },
+  {
+    "Suite": "MySqlReadBatch",
+    "Build": "Release",
+    "ExitCode": 0
+  },
+  {
+    "Suite": "MySqlOrderBatch",
+    "Build": "Release",
+    "ExitCode": 0
+  },
+  {
+    "Suite": "MySqlAccountBatch",
+    "Build": "Release",
+    "ExitCode": 0
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "Suite": "Calendar",
+    "ExitCode": 0,
+    "Seconds": 53.44
+  },
+  {
+    "Suite": "Dashboard",
+    "ExitCode": 0,
+    "Seconds": 195.42
+  },
+  {
+    "Suite": "Sessions",
+    "ExitCode": 0,
+    "Seconds": 172.9
+  },
+  {
+    "Suite": "BookingReads",
+    "ExitCode": 0,
+    "Seconds": 95.79
+  },
+  {
+    "Suite": "Availability",
+    "ExitCode": 0,
+    "Seconds": 62.24
+  },
+  {
+    "Suite": "OperationsUi",
+    "ExitCode": 0,
+    "Seconds": 56.78
+  },
+  {
+    "Suite": "Invoices",
+    "ExitCode": 0,
+    "Seconds": 136.22
+  },
+  {
+    "Suite": "InvoicePrinting",
+    "ExitCode": 0,
+    "Seconds": 107.88
+  }
+]

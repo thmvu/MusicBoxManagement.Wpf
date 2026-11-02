@@ -80,11 +80,12 @@ namespace MusicBoxManagement.Wpf.Services
             var result = new List<DashboardRoom>();
             using (var command = connection.CreateCommand())
             {
-                command.Transaction = transaction; command.CommandText = "SELECT RoomId,RoomCode,Name,IsActive FROM Rooms ORDER BY RoomCode;";
+                command.Transaction = transaction; command.CommandText = "SELECT RoomId,RoomCode,Name," + MySqlScheduleRules.RoomStatusSql + " FROM Rooms r ORDER BY RoomCode;";
+                command.Parameters.AddWithValue("@now", Utc(now));
+                command.Parameters.AddWithValue("@cutoff", Utc(now.AddMinutes(-15)));
                 using (var reader = command.ExecuteReader()) while (reader.Read()) result.Add(new DashboardRoom { RoomId = reader.GetInt32(0),
-                    RoomCode = reader.GetString(1), RoomName = reader.GetString(2), Status = reader.GetInt32(3) == 1 ? "Available" : "Inactive" });
+                    RoomCode = reader.GetString(1), RoomName = reader.GetString(2), Status = reader.GetString(3) });
             }
-            foreach (var room in result) room.Status = MySqlScheduleRules.CurrentRoomStatus(connection, transaction, room.RoomId, room.Status != "Inactive", now);
             return result;
         }
         private sealed class BookingRecord { public DashboardBooking Item; public int CustomerId; }
@@ -119,10 +120,11 @@ WHERE (b.StartTime>=@from AND b.StartTime<@to) OR (b.Status='Confirmed' AND b.St
                     ReservationId = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5), Item = new DashboardSession { SessionId = reader.GetInt32(0), RoomId = reader.GetInt32(1),
                         RoomCode = reader.GetString(2), ActualStart = Parse(reader.GetString(3)), ExpectedEnd = reader.IsDBNull(4) ? (DateTimeOffset?)null : Parse(reader.GetString(4)), IsWalkIn = reader.IsDBNull(5) } });
             }
+            var returnBy = MySqlScheduleRules.WalkInReturnByMany(connection, transaction, result.Where(r => r.Item.IsWalkIn).Select(r => r.Item.SessionId), now);
             foreach (var record in result)
             {
                 var session = record.Item;
-                if (session.IsWalkIn) session.ReturnBy = MySqlScheduleRules.WalkInReturnBy(connection, transaction, session.RoomId, record.CustomerId, session.ActualStart, now);
+                if (session.IsWalkIn) session.ReturnBy = returnBy[session.SessionId];
                 session.IsOverdue = now > (session.ExpectedEnd ?? session.ReturnBy.Value);
             }
             return result;

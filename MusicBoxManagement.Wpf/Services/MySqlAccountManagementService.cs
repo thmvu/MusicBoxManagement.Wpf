@@ -25,16 +25,28 @@ namespace MusicBoxManagement.Wpf.Services
         {
             using (var connection = database.OpenConnection())
             using (var transaction = MySqlDatabase.BeginReadTransaction(connection))
-            using (var store = new MySqlIdentityStore(connection) { Transaction = transaction })
+                return ListAt(actor, connection, transaction);
+        }
+        internal IReadOnlyList<UserAccount> ListAt(LoginSession actor, MySqlConnection connection, MySqlTransaction transaction)
+        {
+            if (!permissions.ReadAccess(actor, connection, transaction).Permissions.ContainsKey("User.Manage"))
+                throw new UnauthorizedAccessException("Bạn không có quyền quản trị tài khoản.");
+            var items = new List<UserAccount>();
+            using (var command = connection.CreateCommand())
             {
-                if (!permissions.ReadAccess(actor, connection, transaction).Permissions.ContainsKey("User.Manage"))
-                    throw new UnauthorizedAccessException("Bạn không có quyền quản trị tài khoản.");
-                var ids = new List<string>();
-                using (var command = connection.CreateCommand())
-                { command.Transaction = transaction; command.CommandText = "SELECT Id FROM AspNetUsers ORDER BY NormalizedUserName;";
-                    using (var reader = command.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetString(0)); }
-                return ids.Select(id => Project(store.FindByIdAsync(id).GetAwaiter().GetResult())).ToList().AsReadOnly();
+                command.Transaction = transaction;
+                command.CommandText = @"SELECT u.Id,u.UserName,u.PasswordHash,u.SecurityStamp,u.FullName,u.IsActive,ur.RoleId
+FROM AspNetUsers u LEFT JOIN AspNetUserRoles ur ON ur.UserId=u.Id ORDER BY u.NormalizedUserName;";
+                using (var reader = command.ExecuteReader()) while (reader.Read())
+                {
+                    // Match the Identity store mapping, including private revision inputs and a missing-role failure.
+                    var user = new ApplicationUser { Id = reader.GetString(0), UserName = reader.GetString(1),
+                        PasswordHash = reader.GetString(2), SecurityStamp = reader.GetString(3), FullName = reader.GetString(4), IsActive = reader.GetInt32(5) == 1 };
+                    if (!reader.IsDBNull(6)) user.Roles.Add(new Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole { UserId = user.Id, RoleId = reader.GetString(6) });
+                    items.Add(Project(user));
+                }
             }
+            return items.AsReadOnly();
         }
         public async Task<UserAccount> CreateAsync(LoginSession actor, AccountEdit input, string password)
         {

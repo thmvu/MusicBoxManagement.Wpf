@@ -1,0 +1,38 @@
+[
+  {
+    "Suite": "MySqlOrderBatch",
+    "Build": "VerifyOrderBatchDebug",
+    "Result": "PASS",
+    "Log": "MusicBox_OrderBatch_GREEN_20261102.log"
+  },
+  {
+    "Suite": "MySqlAccountBatch",
+    "Build": "VerifyAccountBatchDebug",
+    "Result": "PASS",
+    "Log": "musicbox-accountbatch-green.log"
+  },
+  {
+    "Suite": "MySqlAccounts",
+    "Build": "VerifyAccountBatchDebug",
+    "Result": "PASS",
+    "Log": "musicbox-accountbatch-regression.log"
+  },
+  {
+    "Suite": "MySqlOrders",
+    "Build": "VerifyOrderBatchDebug",
+    "Result": "PASS",
+    "Log": "MusicBox_OrderBatch_MySqlOrders_20261102.log"
+  },
+  {
+    "Suite": "MySqlCheckout",
+    "Build": "VerifyOrderBatchDebug",
+    "Result": "PASS",
+    "Log": "MusicBox_OrderBatch_MySqlCheckout_20261102.log"
+  },
+  {
+    "Suite": "MySqlBilling",
+    "Build": "VerifyBatchCompleteDebug",
+    "Result": "PASS",
+    "Log": "MusicBox_OrderBatch_MySqlBilling_ISOLATED_RETRY_20261102.log"
+  }
+]
