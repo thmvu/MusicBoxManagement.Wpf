@@ -1,5 +1,10 @@
 # Music Box WPF — kế hoạch nền tảng v0.1
 
+## Chỉ làm việc với MySQL/Aiven — chỉ đạo người dùng 02/11/2026
+
+Người dùng yêu cầu: **không bao giờ động đến SQLite nữa** để tránh tốn thời gian/token. Từ nay không đọc/sửa code hoặc dữ liệu SQLite, không chạy test/runner SQLite, không seed/import/backup/restore/cutover hay kiểm tra provider SQLite. Không chạy Verify-All mặc định hoặc IncludeMySql vì cả hai vẫn bao gồm các suite SQLite; chọn rõ từng suite MySQL/UI MySQL liên quan. Nếu công cụ MySQL thực tế phụ thuộc SQLite thì không tự chạy hoặc sửa phần đó để lách yêu cầu. Không tự xóa provider/file/package/test cũ; để nguyên và không sử dụng. Chỉ đạo này thay mọi hướng dẫn lịch sử bên dưới yêu cầu hồi quy hoặc bảo trì SQLite. Phạm vi công việc và kiểm tra tiếp theo chỉ MySQL/Aiven; không mở rộng bộ test không liên quan.
+
+
 ## Tối ưu truy vấn MySQL theo luồng — 02/11/2026
 
 Đã rà các luồng đọc và thay N+1 bằng batch trong cùng snapshot: lịch Khách 28 ô đọc2 SELECT thay50; trạng thái21 phòng1 thay43; dữ liệu lịch nhân viên3 thay63; ReturnBy5walk-in1 thay5; đơn món1 SELECT thay1+2N; danh sách5tài khoản2 thay7 gồm kiểm quyền. Mẫu ReadDay trên musicbox8219→718ms, không SLA toàn app. Không đổi writer locks/clock/tiền/quyền/SSL/schema/UI/seed. Xem [phạm vi, kiểm tra và giới hạn](docs/MySql_Read_Performance_20261102.md), [plan/ledger](docs/superpowers/plans/2026-11-02-mysql-read-batching.md). Giữ các validation/refresh hiện hành cần thiết, không xóa SQLite/tools/test vì chúng không gây round-trip UI. Diff csproj có sẵn vẫn giữ ngoài commit. Kết quả online/những lượt fail và retry phải đọc ở report, không nhận toàn76suite đã chạy từ sốsuite có sẵn.
