@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using MusicBoxManagement.Wpf.Services;
 using MusicBoxManagement.Wpf.ViewModels;
 
@@ -25,12 +25,12 @@ namespace MusicBoxManagement.Wpf.Views
    new GuestOrdersWindow(orders,viewModel.CurrentPhone,active.SessionId,active.RoomCode){Owner=this}.ShowDialog();
    await viewModel.SearchAsync();
   }
-  private async void Search_Click(object sender,RoutedEventArgs args)=>await viewModel.SearchAsync();
-  private void Cancel_Click(object sender,RoutedEventArgs args)=>viewModel.RequestCancel();
-  private void Keep_Click(object sender,RoutedEventArgs args)=>viewModel.KeepBooking();
-  private async void Confirm_Click(object sender,RoutedEventArgs args)=>await viewModel.ConfirmCancelAsync();
-  private async void PreviewExtension_Click(object sender,RoutedEventArgs args)=>await viewModel.PreviewExtensionAsync();
-  private async void ConfirmExtension_Click(object sender,RoutedEventArgs args)=>await viewModel.ConfirmExtensionAsync();
-  private void KeepSession_Click(object sender,RoutedEventArgs args)=>viewModel.KeepSession();
+  private async void Search_Click(object sender,RoutedEventArgs args)=>await UserFeedback.RunAsync(this, () => viewModel.SearchAsync(), () => viewModel.Status);
+  private async void Cancel_Click(object sender,RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.RequestCancel(), () => viewModel.Status);
+  private async void Keep_Click(object sender,RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.KeepBooking(), () => viewModel.Status);
+  private async void Confirm_Click(object sender,RoutedEventArgs args)=>await UserFeedback.RunAsync(this, () => viewModel.ConfirmCancelAsync(), () => viewModel.Status);
+  private async void PreviewExtension_Click(object sender,RoutedEventArgs args)=>await UserFeedback.RunAsync(this, () => viewModel.PreviewExtensionAsync(), () => viewModel.Status);
+  private async void ConfirmExtension_Click(object sender,RoutedEventArgs args)=>await UserFeedback.RunAsync(this, () => viewModel.ConfirmExtensionAsync(), () => viewModel.Status);
+  private async void KeepSession_Click(object sender,RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.KeepSession(), () => viewModel.Status);
  }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,7 +29,7 @@ namespace MusicBoxManagement.Wpf.Views
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) => await viewModel.RefreshAsync();
-        private async void Refresh_Click(object sender, RoutedEventArgs e) => await viewModel.RefreshAsync();
+        private async void Refresh_Click(object sender, RoutedEventArgs e) => await UserFeedback.RunAsync(this, () => viewModel.RefreshAsync(), () => viewModel.Status);
 
         private async void AddRoom_Click(object sender, RoutedEventArgs e)
         {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -27,7 +27,7 @@ namespace MusicBoxManagement.Wpf.Views
         }
         private void Rooms_Changed(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => Draw();
         private async void Loaded_Window(object sender, RoutedEventArgs e) => await viewModel.LoadAsync();
-        private async void Load_Click(object sender, RoutedEventArgs e) => await viewModel.LoadAsync();
+        private async void Load_Click(object sender, RoutedEventArgs e) => await UserFeedback.RunAsync(this, () => viewModel.LoadAsync(), () => viewModel.Status);
         private async void Previous_Click(object sender, RoutedEventArgs e) => await Navigate(() => viewModel.MoveAsync(-1));
         private async void Next_Click(object sender, RoutedEventArgs e) => await Navigate(() => viewModel.MoveAsync(1));
         private async void Today_Click(object sender, RoutedEventArgs e) => await Navigate(() => viewModel.TodayAsync());

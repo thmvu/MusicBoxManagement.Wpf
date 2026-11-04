@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Win32;
 using MusicBoxManagement.Wpf.ViewModels;
 
@@ -23,7 +23,9 @@ namespace MusicBoxManagement.Wpf.Views
         private void KeepImage_Click(object sender, RoutedEventArgs e) => viewModel.ReplacementImageFilePath = null;
         private async void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (await viewModel.SaveAsync()) DialogResult = true;
+            var saved = false;
+            await UserFeedback.RunAsync(this, async () => { saved = await viewModel.SaveAsync(); }, () => viewModel.Status);
+            if (saved) DialogResult = true;
         }
     }
 }

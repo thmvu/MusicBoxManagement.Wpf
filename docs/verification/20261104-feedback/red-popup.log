@@ -1,0 +1,6 @@
+Exception calling "Run" with "2" argument(s): "RED: 9-digit lookup must show a visible phone validation notice."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlFeedbackUi.ps1:13 char:1
++ [MusicBoxMySqlFeedbackUiChecks]::Run((Join-Path $PSScriptRoot '..\Mus ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

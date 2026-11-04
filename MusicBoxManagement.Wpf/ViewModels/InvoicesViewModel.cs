@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -47,7 +47,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         public async Task SearchAsync()
         {
-            if (busy) return; var code = number; var start = from; var end = to; var query = phone;
+            if (busy) return;
+            if (!string.IsNullOrWhiteSpace(phone) && !PhoneNumberNormalizer.TryNormalize(phone, out _)) { Clear(); status = PhoneNumberNormalizer.ValidationMessage; Changed(); return; }
+            var code = number; var start = from; var end = to; var query = phone;
             busy = true; Clear(); Changed();
             try
             {

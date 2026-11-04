@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using MusicBoxManagement.Wpf.Models;
 using MusicBoxManagement.Wpf.ViewModels;
@@ -18,19 +18,19 @@ namespace MusicBoxManagement.Wpf.Views
             viewModel.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(viewModel.FormIdentity) && formIdentity != viewModel.FormIdentity) { formIdentity = viewModel.FormIdentity; ClearPasswords(); } };
         }
         private void ClearPasswords() { PasswordInput.Clear(); RepeatInput.Clear(); }
-        private async void Reload_Click(object sender, RoutedEventArgs args) { ClearPasswords(); await viewModel.ReloadAsync(); }
+        private async void Reload_Click(object sender, RoutedEventArgs args) { ClearPasswords(); await UserFeedback.RunAsync(this, () => viewModel.ReloadAsync(), () => viewModel.Status); }
         private void New_Click(object sender, RoutedEventArgs args) { ClearPasswords(); viewModel.StartNew(); }
         private void Reset_Click(object sender, RoutedEventArgs args) { ClearPasswords(); viewModel.StartReset(); }
         private void Selection_Changed(object sender, SelectionChangedEventArgs args)
         { if (viewModel == null || !viewModel.CanSelect) return; ClearPasswords(); viewModel.Select(AccountsTable.SelectedItem as UserAccount); }
-        private async void Prepare_Click(object sender, RoutedEventArgs args) => await viewModel.PrepareAsync();
+        private async void Prepare_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.PrepareAsync(), () => viewModel.Status);
         private void Keep_Click(object sender, RoutedEventArgs args) { ClearPasswords(); viewModel.Keep(); }
         private async void Confirm_Click(object sender, RoutedEventArgs args)
         {
             if (!viewModel.CanConfirm) return;
             var password = PasswordInput.Password; var repeat = RepeatInput.Password; ClearPasswords();
-            if (viewModel.NeedsPassword && password != repeat) { viewModel.PasswordError(); return; }
-            await viewModel.ConfirmAsync(password);
+            if (viewModel.NeedsPassword && password != repeat) { viewModel.PasswordError(); UserFeedback.Show(this, viewModel.Status); return; }
+            await UserFeedback.RunAsync(this, () => viewModel.ConfirmAsync(password), () => viewModel.Status);
         }
         private void Close_Click(object sender, RoutedEventArgs args) { if (!viewModel.IsBusy) { ClearPasswords(); Close(); } }
     }

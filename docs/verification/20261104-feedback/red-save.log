@@ -1,0 +1,7 @@
+Feedback fixture: musicbox_test_2d3223203bfc4b939878fcd3c64b1a37
+Exception calling "Run" with "3" argument(s): "RED review: saved customer popup was overwritten by row selection."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlFeedbackUi.ps1:13 char:1
++ [MusicBoxMySqlFeedbackUiChecks]::Run((Join-Path $PSScriptRoot '..\Mus ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

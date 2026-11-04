@@ -1,0 +1,6 @@
+Exception calling "Run" with "3" argument(s): "RED review: removed cart item must not retain previous action status."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlFeedbackUi.ps1:13 char:1
++ [MusicBoxMySqlFeedbackUiChecks]::Run((Join-Path $PSScriptRoot '..\Mus ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

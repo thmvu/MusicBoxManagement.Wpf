@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using MusicBoxManagement.Wpf.ViewModels;
 
@@ -9,10 +9,10 @@ namespace MusicBoxManagement.Wpf.Views
         private readonly RoomUsageReportViewModel model;
         public RoomUsageReportWindow(RoomUsageReportViewModel model) { InitializeComponent(); this.model = model; DataContext = model; }
         private async void Window_Loaded(object sender, RoutedEventArgs args) { await model.SearchAsync(); }
-        private async void Search_Click(object sender, RoutedEventArgs args) { await model.SearchAsync(); }
+        private async void Search_Click(object sender, RoutedEventArgs args) { await UserFeedback.RunAsync(this, () => model.SearchAsync(), () => model.Status); }
         private async void Export_Click(object sender, RoutedEventArgs args)
         {
-            await model.ExportAsync(fileName =>
+            await UserFeedback.RunAsync(this, () => model.ExportAsync(fileName =>
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog {
                     Title = "Lưu báo cáo Excel", FileName = fileName,
@@ -20,7 +20,7 @@ namespace MusicBoxManagement.Wpf.Views
                     AddExtension = true, OverwritePrompt = true, CheckPathExists = true
                 };
                 return dialog.ShowDialog(this) == true ? dialog.FileName : null;
-            });
+            }), () => model.Status);
         }
         private void Close_Click(object sender, RoutedEventArgs args) { if (!model.IsBusy) Close(); }
         protected override void OnClosing(CancelEventArgs args) { if (model.IsBusy) args.Cancel = true; base.OnClosing(args); }

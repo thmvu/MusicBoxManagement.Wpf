@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using MusicBoxManagement.Wpf.ViewModels;
 
 namespace MusicBoxManagement.Wpf.Views
@@ -12,7 +12,7 @@ namespace MusicBoxManagement.Wpf.Views
             Loaded += async (sender, args) => await viewModel.RefreshAsync();
             Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };
         }
-        private async void Refresh_Click(object sender, RoutedEventArgs args) => await viewModel.RefreshAsync();
+        private async void Refresh_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.RefreshAsync(), () => viewModel.Status);
         private void Close_Click(object sender, RoutedEventArgs args) { if (!viewModel.IsBusy) Close(); }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -72,7 +72,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if(old!=null)Cart.Remove(old);
             Cart.Add(new ServiceOrderItem{ServiceId=selectedMenu.ServiceId,ServiceNameSnapshot=selectedMenu.Name,Quantity=count,UnitPrice=selectedMenu.Price});CartChanged();SetStatus("Đã thêm món vào giỏ, chưa gửi đơn.");
         }
-        public void Remove(){if(!CanRemove)return;Cart.Remove(selectedCart);selectedCart=null;Notify(nameof(SelectedCart));CartChanged();}
+        public void Remove(){if(!CanRemove)return;Cart.Remove(selectedCart);selectedCart=null;Notify(nameof(SelectedCart));CartChanged();SetStatus("Đã bỏ món khỏi giỏ; chưa thay đổi đơn đã gửi.");}
         public async Task PreviewAsync()
         {
             if(!CanPreview)return;var input=Cart.Select(i=>new OrderLineRequest{ServiceId=i.ServiceId,Quantity=i.Quantity}).ToArray();SetBusy(true);
@@ -89,7 +89,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public void RequestCancel()
         {
             if(!CanCancel)return;cancelId=selectedOrder.OrderId;confirmation="Cancel";ConfirmationText="Hủy đơn #"+cancelId+" đang chờ phục vụ?";
-            Notify(nameof(ConfirmationText));AccessChanged();
+            Notify(nameof(ConfirmationText));AccessChanged();SetStatus(ConfirmationText);
         }
         public void Keep(){if(busy)return;confirmation=null;draft=null;AccessChanged();SetStatus("Chưa thay đổi đơn món.");}
         public async Task<bool> ConfirmAsync()

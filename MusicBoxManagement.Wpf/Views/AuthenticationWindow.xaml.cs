@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data.SQLite;
 using System.Threading.Tasks;
 using System.Windows;
@@ -34,11 +34,11 @@ namespace MusicBoxManagement.Wpf.Views
             var userName = UserNameBox.Text;
             var fullName = FullNameBox.Text;
             var password = PasswordInput.Password;
-            if (string.IsNullOrWhiteSpace(userName)) { StatusText.Text = "Vui lòng nhập tên đăng nhập."; return; }
-            if (setup && string.IsNullOrWhiteSpace(fullName)) { StatusText.Text = "Vui lòng nhập họ tên Admin."; return; }
-            if (string.IsNullOrEmpty(password)) { StatusText.Text = "Vui lòng nhập mật khẩu."; return; }
+            if (string.IsNullOrWhiteSpace(userName)) { StatusText.Text = "Vui lòng nhập tên đăng nhập."; UserFeedback.Show(this, StatusText.Text); return; }
+            if (setup && string.IsNullOrWhiteSpace(fullName)) { StatusText.Text = "Vui lòng nhập họ tên Admin."; UserFeedback.Show(this, StatusText.Text); return; }
+            if (string.IsNullOrEmpty(password)) { StatusText.Text = "Vui lòng nhập mật khẩu."; UserFeedback.Show(this, StatusText.Text); return; }
             if (setup && password != ConfirmInput.Password)
-            { StatusText.Text = "Hai lần nhập mật khẩu chưa khớp."; return; }
+            { StatusText.Text = "Hai lần nhập mật khẩu chưa khớp."; UserFeedback.Show(this, StatusText.Text); return; }
             isBusy = true;
             Fields.IsEnabled = SubmitButton.IsEnabled = CancelButton.IsEnabled = false;
             StatusText.Text = setup ? "Đang tạo tài khoản…" : "Đang kiểm tra đăng nhập…";
@@ -48,6 +48,7 @@ namespace MusicBoxManagement.Wpf.Views
                     ? service.SetupAdminAsync(userName, fullName, password)
                     : service.LoginAsync(userName, password));
                 isBusy = false;
+                UserFeedback.Show(this, setup ? "Đã thiết lập tài khoản Admin." : "Đăng nhập thành công.");
                 DialogResult = true;
             }
             catch (ArgumentException error) { StatusText.Text = error.Message; }
@@ -67,6 +68,7 @@ namespace MusicBoxManagement.Wpf.Views
                 ConfirmInput.Clear();
                 isBusy = false;
                 Fields.IsEnabled = SubmitButton.IsEnabled = CancelButton.IsEnabled = true;
+                if (Session == null) UserFeedback.Show(this, StatusText.Text);
             }
         }
     }

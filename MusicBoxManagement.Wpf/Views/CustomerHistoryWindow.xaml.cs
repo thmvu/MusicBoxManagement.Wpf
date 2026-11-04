@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -17,7 +17,7 @@ namespace MusicBoxManagement.Wpf.Views
             Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e) => await viewModel.ReloadAsync();
-        private async void Reload_Click(object sender, RoutedEventArgs e) => await viewModel.ReloadAsync();
+        private async void Reload_Click(object sender, RoutedEventArgs e) => await UserFeedback.RunAsync(this, () => viewModel.ReloadAsync(), () => viewModel.Status);
     }
 
     public sealed class HistoryTimeConverter : IValueConverter

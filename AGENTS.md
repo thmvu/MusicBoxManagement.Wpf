@@ -1,5 +1,10 @@
 ﻿# Music Box WPF
 
+## Thông báo thao tác và SĐT — 04/11/2026
+
+Theo yêu cầu bắt buộc của người dùng, các lệnh dữ liệu ở UI có popup WPF tiếng Việt, giữ form khi nhập sai và Status trên form; không thêm global handler nuốt lỗi. TryNormalize chặn SĐT sai ở đặt phòng/tra cứu/walk-in/khách hàng và ba bộ lọc SĐT trước service. Giữ rule chuẩn hóa +84/84, quyền và transaction. Đã sửa popup lưu bị row selection ghi đè, thông điệp bỏ món/hủy/phục vụ bị cũ. Build dùng thật Debug/Release và workflow UI MySQL cuối đạt, 34 popup/3 ảnh mỗi bản; dữ liệu/audit không đổi khi validation sai, có chuỗi gia hạn/món/checkout/Invoice/hủy/revoke. [Phạm vi, lỗi đầu, log và cách thử](docs/Ui_Feedback_Validation_20261104.md). Hồi quy CounterUi Debug lượt đầu timeout, retry riêng đạt; giữ log cả hai. Không tuyên bố mọi màn/đầu vào đều đã chạy; không chạm dữ liệu quán hoặc chạy runner pha provider. Csproj chỉ stage Compile UserFeedback.cs, giữ định dạng cũ ngoài commit.
+
+
 ## Lịch phòng và dashboard WPF — 02/11/2026
 
 Theo thiết kế người dùng đã chốt: lịch Ngày/tất cả phòng, Tuần ưu tiên một phòng, trục giờ/header cố định khi cuộn và lịch tháng. Dashboard có bảng phòng vector WPF 2D, trạng thái/chỉ số/cảnh báo từ snapshot hiện hành; giữ doanh thu theo quyền. Menu gom một mục Đặt phòng, vẫn hỗ trợ View-only hoặc Create-only; walk-in giữ riêng nghiệp vụ. Không thêm thư viện hoặc sửa service/schema/dữ liệu quán. Xem [cách dùng, kiểm tra và ảnh](docs/Ui_Calendar_Dashboard_20261102.md) và [plan](docs/superpowers/plans/2026-11-02-counter-ui.md). Build dùng thật Debug/Release và runner UI MySQL cuối đều đạt, 8 ảnh/bản; đã kiểm View-only/Create-only/Staff không doanh thu, chọn ngày/phòng đúng một Read, resize/scroll không Read và revoke xóa chi tiết. Diff csproj có sẵn vẫn giữ ngoài commit.

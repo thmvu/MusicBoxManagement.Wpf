@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -60,6 +60,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (!CanReceive) return;
             if (string.IsNullOrWhiteSpace(name)) { SetStatus("Vui lòng nhập họ tên khách hàng."); return; }
             if (string.IsNullOrWhiteSpace(phone)) { SetStatus("Vui lòng nhập số điện thoại khách hàng."); return; }
+            if (!PhoneNumberNormalizer.TryNormalize(phone, out _)) { SetStatus(PhoneNumberNormalizer.ValidationMessage); return; }
             SetBusy(true);
             try
             {

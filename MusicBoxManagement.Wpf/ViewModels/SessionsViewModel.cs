@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -56,7 +56,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task SearchAsync()
         {
-            if (!CanSearch) return; Busy(true); Clear();
+            if (!CanSearch) return;
+            if (!string.IsNullOrWhiteSpace(PhoneQuery) && !PhoneNumberNormalizer.TryNormalize(PhoneQuery, out _)) { Clear(); status = PhoneNumberNormalizer.ValidationMessage; Notify(nameof(Status)); return; } Busy(true); Clear();
             try { await ReloadAsync(); SetStatus("Tìm thấy " + Items.Count + " phiên. Thời gian theo giờ Việt Nam; Cập nhật để đọc lịch và quyền hiện hành."); }
             catch (Exception error) { Fail(error); }
             finally { Busy(false); }

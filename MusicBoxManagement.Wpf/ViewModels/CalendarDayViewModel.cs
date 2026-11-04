@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -53,7 +53,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (busy) return; busy = true; Notify(nameof(IsBusy)); Notify(nameof(CanLoad)); Clear();
             try
             {
-                if (!Date.HasValue) throw new ArgumentException("Cần chọn ngày xem lịch.");
+                if (!Date.HasValue) { SetStatus("Cần chọn ngày xem lịch."); return; }
                 var range = week ? CalendarRange.Week(Date.Value) : CalendarRange.Day(Date.Value); var chosen = SelectedRoom?.RoomId;
                 var result = await Task.Run(() => service.Read(session, range));
                 RoomChoices.Clear(); RoomChoices.Add(new CalendarRoomChoice { Label = "Tất cả phòng" });

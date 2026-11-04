@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SQLite;
@@ -52,6 +52,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public async Task SearchAsync()
         {
             if (isBusy) return;
+            if (!string.IsNullOrWhiteSpace(PhoneQuery) && !PhoneNumberNormalizer.TryNormalize(PhoneQuery, out _)) { Items.Clear(); SetForm(null); SetStatus(PhoneNumberNormalizer.ValidationMessage); return; }
             var name = NameQuery; var phone = PhoneQuery; Busy(true);
             try { await ReloadAsync(name, phone); SetForm(null); SetStatus("Tìm thấy " + Items.Count + " khách hàng. SĐT tìm theo số đầy đủ đã chuẩn hóa."); }
             catch (ArgumentException error) { Items.Clear(); SetForm(null); SetStatus(error.Message); }
@@ -66,6 +67,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             { SetStatus("Vui lòng nhập họ tên khách hàng."); return false; }
             if (string.IsNullOrWhiteSpace(PhoneNumber))
             { SetStatus("Vui lòng nhập số điện thoại khách hàng."); return false; }
+            if (!PhoneNumberNormalizer.TryNormalize(PhoneNumber, out _)) { SetStatus(PhoneNumberNormalizer.ValidationMessage); return false; }
             var input = new CustomerEdit { FullName = FullName, PhoneNumber = PhoneNumber }; var snapshot = original;
             Busy(true); SetStatus("Đang lưu khách hàng…");
             try

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -67,7 +67,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             CartChanged(); SetStatus("Đã thêm vào giỏ, chưa ghi đơn.");
         }
         public void Remove()
-        { if (!CanRemove) return; Cart.Remove(selectedCart); selectedCart = null; Notify(nameof(SelectedCart)); CartChanged(); }
+        { if (!CanRemove) return; Cart.Remove(selectedCart); selectedCart = null; Notify(nameof(SelectedCart)); CartChanged(); SetStatus("Đã bỏ món khỏi giỏ; chưa ghi đơn."); }
         public async Task PreviewAsync()
         {
             if (!CanPreview) return;

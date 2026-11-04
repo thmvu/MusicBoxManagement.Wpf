@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using MusicBoxManagement.Wpf.ViewModels;
 
 namespace MusicBoxManagement.Wpf.Views
@@ -17,7 +17,9 @@ namespace MusicBoxManagement.Wpf.Views
 
         private async void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (await viewModel.SaveAsync()) DialogResult = true;
+            var saved = false;
+            await UserFeedback.RunAsync(this, async () => { saved = await viewModel.SaveAsync(); }, () => viewModel.Status);
+            if (saved) DialogResult = true;
         }
     }
 }

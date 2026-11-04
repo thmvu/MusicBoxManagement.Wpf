@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using MusicBoxManagement.Wpf.Models;
 using MusicBoxManagement.Wpf.Services;
 using MusicBoxManagement.Wpf.ViewModels;
@@ -17,18 +17,18 @@ namespace MusicBoxManagement.Wpf.Views
             Loaded += async (sender, args) => await viewModel.SearchAsync();
             Closing += (sender, args) => { if (viewModel.IsBusy) args.Cancel = true; };
         }
-        private async void Search_Click(object sender, RoutedEventArgs args) => await viewModel.SearchAsync();
-        private void Cancel_Click(object sender, RoutedEventArgs args) => viewModel.RequestCancel();
-        private void Keep_Click(object sender, RoutedEventArgs args) => viewModel.KeepBooking();
-        private async void Confirm_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmCancelAsync();
-        private void CheckIn_Click(object sender, RoutedEventArgs args) => viewModel.RequestCheckIn();
-        private async void ConfirmCheckIn_Click(object sender, RoutedEventArgs args) => await viewModel.ConfirmCheckInAsync();
+        private async void Search_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.SearchAsync(), () => viewModel.Status);
+        private async void Cancel_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.RequestCancel(), () => viewModel.Status);
+        private async void Keep_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.KeepBooking(), () => viewModel.Status);
+        private async void Confirm_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.ConfirmCancelAsync(), () => viewModel.Status);
+        private async void CheckIn_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.RequestCheckIn(), () => viewModel.Status);
+        private async void ConfirmCheckIn_Click(object sender, RoutedEventArgs args) => await UserFeedback.RunAsync(this, () => viewModel.ConfirmCheckInAsync(), () => viewModel.Status);
         private async void Create_Click(object sender, RoutedEventArgs args)
         {
             if (openingBooking) return; openingBooking = true;
             try
             {
-                var draft = await viewModel.PrepareBookingAsync(); if (draft == null) return;
+                var draft = await viewModel.PrepareBookingAsync(); if (draft == null) { UserFeedback.Show(this, viewModel.Status); return; }
                 new GuestBookingWindow(draft.Service, draft) { Owner = this }.ShowDialog();
                 await viewModel.AfterBookingAsync(draft.LastCreatedReservationId);
             }

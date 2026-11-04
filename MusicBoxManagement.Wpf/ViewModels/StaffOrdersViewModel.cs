@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -74,7 +74,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public void RequestServe() { if (!CanServe) return; Prepare("Serve", "Xác nhận đơn #" + selectedOrder.OrderId + " đã được phục vụ? Chỉ xác nhận sau khi giao món."); }
         public void RequestCancel() { if (!CanCancel) return; Prepare("Cancel", "Hủy đơn #" + selectedOrder.OrderId + " đang chờ phục vụ?"); }
-        private void Prepare(string kind, string text) { confirmedId = selectedOrder.OrderId; confirmation = kind; notice = text; Notify(nameof(Notice)); AccessChanged(); }
+        private void Prepare(string kind, string text) { confirmedId = selectedOrder.OrderId; confirmation = kind; notice = text; Notify(nameof(Notice)); AccessChanged(); SetStatus(text); }
         public void Keep() { if (busy) return; confirmation = notice = null; Notify(nameof(Notice)); AccessChanged(); SetStatus("Chưa thay đổi đơn món."); }
         public async Task<bool> ConfirmAsync()
         {

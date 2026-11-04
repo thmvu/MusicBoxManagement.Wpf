@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -53,7 +53,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             busy = true; ClearResult(); Changed();
             try
             {
-                if (!start.HasValue || !end.HasValue) throw new ArgumentException("Cần chọn đủ ngày bắt đầu và kết thúc.");
+                if (!start.HasValue || !end.HasValue) { status = "Cần chọn đủ ngày bắt đầu và kết thúc."; return; }
                 var result = await Task.Run(() => service.Read(actor, start.Value, end.Value, selectedRoom));
                 Rooms.Clear(); Rooms.Add(new RoomUsageFilterChoice(null, "Tất cả phòng"));
                 foreach (var choice in result.RoomChoices) Rooms.Add(new RoomUsageFilterChoice(choice.RoomId, choice.Label));

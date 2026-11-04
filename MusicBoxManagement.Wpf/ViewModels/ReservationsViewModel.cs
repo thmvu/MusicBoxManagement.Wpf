@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SQLite;
@@ -65,7 +65,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task SearchAsync()
         {
-            if (!CanSearch) return; Busy(true);
+            if (!CanSearch) return;
+            if (!string.IsNullOrWhiteSpace(PhoneQuery) && !PhoneNumberNormalizer.TryNormalize(PhoneQuery, out _)) { Clear(); SetStatus(PhoneNumberNormalizer.ValidationMessage); return; }
+            Busy(true);
             try { await ReloadAsync(); SetStatus("Tìm thấy " + Items.Count + " booking. Ngày lọc theo giờ Việt Nam; SĐT dùng số đầy đủ."); }
             catch (UnauthorizedAccessException) { Revoke(); }
             catch (ArgumentException error) { Clear(); SetStatus(error.Message); }

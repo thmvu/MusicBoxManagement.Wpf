@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,22 +21,22 @@ namespace MusicBoxManagement.Wpf.Views
             Closing+=(sender,args)=>{if(viewModel.IsBusy)args.Cancel=true;};
         }
         private async void Window_Loaded(object sender,RoutedEventArgs e)=>await viewModel.RefreshAsync();
-        private async void Refresh_Click(object sender,RoutedEventArgs e)=>await viewModel.RefreshAsync();
-        private async void Preview_Click(object sender,RoutedEventArgs e)=>await viewModel.PreviewAsync();
+        private async void Refresh_Click(object sender,RoutedEventArgs e)=>await UserFeedback.RunAsync(this, () => viewModel.RefreshAsync(), () => viewModel.Status);
+        private async void Preview_Click(object sender,RoutedEventArgs e)=>await UserFeedback.RunAsync(this, () => viewModel.PreviewAsync(), () => viewModel.Status);
         private bool openingCalendar;
         private async void Calendar_Click(object sender, RoutedEventArgs e)
         {
             if (openingCalendar) return; openingCalendar = true;
             try
             {
-                var model = await viewModel.PrepareCalendarAsync(); if (model == null) return;
+                var model = await viewModel.PrepareCalendarAsync(); if (model == null) { UserFeedback.Show(this, viewModel.Status); return; }
                 var form = new GuestCalendarWindow(model) { Owner = this }; form.ShowDialog();
                 if (model.AccessDenied) viewModel.RejectAccess();
                 if (form.ChosenTime != null && viewModel.CanInput) viewModel.StartTimeText = form.ChosenTime;
             }
             finally { openingCalendar = false; }
         }
-        private async void Submit_Click(object sender,RoutedEventArgs e)=>await viewModel.SubmitAsync();
+        private async void Submit_Click(object sender,RoutedEventArgs e)=>await UserFeedback.RunAsync(this, () => viewModel.SubmitAsync(), () => viewModel.Status);
         private async void New_Click(object sender,RoutedEventArgs e){viewModel.StartNew();await viewModel.RefreshAsync();}
         private void Room_Changed(object sender,SelectionChangedEventArgs e)
         {

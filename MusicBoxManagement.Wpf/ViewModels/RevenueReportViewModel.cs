@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -59,10 +59,10 @@ namespace MusicBoxManagement.Wpf.ViewModels
             try
             {
                 if (!start.HasValue || !end.HasValue)
-                    throw new ArgumentException("Cần chọn đủ ngày bắt đầu và kết thúc.");
+                    { status = "Cần chọn đủ ngày bắt đầu và kết thúc."; return; }
                 var result = await Task.Run(() => service.ReadRevenue(actor, start.Value, end.Value, type));
                 if (grouping != "Day" && grouping != "Month" && grouping != "RoomType")
-                    throw new ArgumentException("Cách nhóm báo cáo không hợp lệ.");
+                    { status = "Cách nhóm báo cáo không hợp lệ."; return; }
                 report = result;
                 foreach (var row in grouping == "Day" ? result.Days : grouping == "Month" ? result.Months : result.RoomTypes) Rows.Add(row);
                 status = "Đã tải " + Rows.Count + " nhóm; lọc theo ngày thanh toán PaidAt, giờ Việt Nam. Cập nhật lúc "
