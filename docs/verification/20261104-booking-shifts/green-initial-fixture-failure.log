@@ -1,0 +1,7 @@
+Hours fixture: musicbox_test_56eb7542e00e40329f98d7e700aa1220
+Exception calling "Run" with "2" argument(s): "RED: booking must explain lunch12-13 in popup before submitting."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlBookingHoursUi.ps1:13 char:1
++ [MusicBoxMySqlBookingHoursUiChecks]::Run((Join-Path $PSScriptRoot '.. ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

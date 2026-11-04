@@ -15,6 +15,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
     public sealed class GuestBookingViewModel : INotifyPropertyChanged
     {
         private readonly IBookingService service;
+        private readonly IClock clock;
         private readonly bool staffMode;
         private bool accessDenied;
         internal IBookingService Service => service;
@@ -47,7 +48,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         public GuestBookingViewModel(IBookingService service) : this(service,new SystemClock()) { }
         public GuestBookingViewModel(IBookingService service,IClock clock, bool staffMode = false)
         {
-            this.service=service; this.staffMode=staffMode; var now=clock.UtcNow.ToOffset(BookingHours.VietnamOffset); FirstDate=now.Date; date=FirstDate;
+            this.service=service; this.clock=clock; this.staffMode=staffMode; var now=clock.UtcNow.ToOffset(BookingHours.VietnamOffset); FirstDate=now.Date; date=FirstDate;
             time=Slots.FirstOrDefault(slot=> FirstDate.Add(TimeSpan.Parse(slot,CultureInfo.InvariantCulture))>=now.DateTime);
             if(time==null){date=FirstDate.AddDays(1);time="09:00";}
             preview="Nhập SĐT để kiểm tra cả lịch phòng và lịch của bạn.";
@@ -68,6 +69,8 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if (SelectedRoom == null || !SelectedDate.HasValue) { SetStatus("Cần chọn phòng và ngày đặt."); return false; }
             if (!Slots.Contains(StartTimeText)) { SetStatus("Cần chọn giờ bắt đầu trong danh sách."); return false; }
             if (!Durations.Contains(Duration)) { SetStatus("Cần chọn thời lượng trong danh sách."); return false; }
+            var input = Request();
+            if (!BookingHours.TryValidateReservation(input.StartTime, input.DurationMinutes, clock.UtcNow, out _, out var reason)) { SetStatus(reason); return false; }
             return true;
         }
         private bool ValidPhone()
@@ -86,7 +89,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
             if(string.IsNullOrWhiteSpace(PhoneNumber)){SetStatus("Vui lòng nhập số điện thoại để kiểm tra lịch.");return;}
             if (!ValidSelection() || !ValidPhone()) return;
             SetBusy(true);
-            try{var input=Request();var result=await Task.Run(()=>service.Preview(input));preview=result.Reason+" (Kiểm tra lúc "+result.CheckedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss")+").";Notify(nameof(PreviewText));SetStatus(result.CanBook?"Có thể đặt khoảng này tại thời điểm kiểm tra.":"Khoảng đã chọn chưa đặt được.");}
+            try{var input=Request();var result=await Task.Run(()=>service.Preview(input));preview=result.Reason+" (Kiểm tra lúc "+result.CheckedAt.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm:ss")+").";Notify(nameof(PreviewText));SetStatus(result.CanBook?"Có thể đặt khoảng này tại thời điểm kiểm tra. "+(result.EndTime.HasValue?BookingHours.ReservationBoundaryNotice(result.EndTime.Value):""):result.Reason);}
             catch(Exception error){ShowError(error);}
             finally{SetBusy(false);}
         }
@@ -108,8 +111,9 @@ namespace MusicBoxManagement.Wpf.ViewModels
         {
             if(!CanBook || !HasRequiredCustomer() || !ValidSelection() || !ValidPhone())return false; SetBusy(true);
             try{var input=Request();var roomCode=SelectedRoom.RoomCode;var result=await Task.Run(()=>service.Create(input));saved=true;LastCreatedReservationId=result.ReservationId;Notify(nameof(LastCreatedReservationId));
-                preview="Đã xác nhận, không thu cọc. "+(staffMode?"Khách":"Bạn")+" cần đến nhận phòng trước "+result.StartTime.AddMinutes(15).ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+".";Notify(nameof(PreviewText));
-                SetStatus((staffMode?"Đặt hộ":"Đặt phòng")+" thành công — mã #"+result.ReservationId+", "+roomCode+", "+result.StartTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+" đến "+result.EndTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm")+". Trạng thái: Confirmed (đã xác nhận).");return true;}
+                var boundary=BookingHours.ReservationBoundaryNotice(result.EndTime);
+                preview=boundary.Length>0?"Đã xác nhận, không thu cọc. "+boundary:"Đã xác nhận, không thu cọc. "+(staffMode?"Khách":"Bạn")+" cần đến nhận phòng trước "+result.StartTime.AddMinutes(15).ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+".";Notify(nameof(PreviewText));
+                SetStatus((staffMode?"Đặt hộ":"Đặt phòng")+" thành công — mã #"+result.ReservationId+", "+roomCode+", "+result.StartTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm dd/MM/yyyy")+" đến "+result.EndTime.ToOffset(BookingHours.VietnamOffset).ToString("HH:mm")+". Trạng thái: Confirmed (đã xác nhận). "+boundary);return true;}
             catch(Exception error){ShowError(error);return false;}
             finally{SetBusy(false);}
         }

@@ -1,0 +1,8 @@
+Hours fixture: musicbox_test_fd732d0a2bca4ac9bfb4a4165bed1950
+PASS Guest/Staff booking: lunch/closing no service call or writes; exact12/23 accepted with early-arrival warning; direct preview no throw.
+Exception calling "Run" with "2" argument(s): "Server accepted invalid closing check-in or wrote partial data."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlBookingHoursUi.ps1:13 char:1
++ [MusicBoxMySqlBookingHoursUiChecks]::Run((Join-Path $PSScriptRoot '.. ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

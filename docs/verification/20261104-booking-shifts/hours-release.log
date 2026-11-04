@@ -1,0 +1,4 @@
+Hours fixture: musicbox_test_506ae9785c924af280273048c8dea417
+PASS Guest/Staff booking: lunch/closing no service call or writes; exact12/23 accepted with early-arrival warning; direct preview no throw.
+PASS CheckIn: late lunch/closing popup/no-write; changed clock reconfirm guard/no throws; server rollback; exact12/23 accepted. Notices=18
+Images: C:\Users\LAPTOP~1\AppData\Local\Temp\MusicBoxHoursUi_67173c805449415085acba62917b4179

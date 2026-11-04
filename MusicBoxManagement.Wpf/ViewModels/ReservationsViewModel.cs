@@ -80,10 +80,24 @@ namespace MusicBoxManagement.Wpf.ViewModels
             SetStatus("Nhập lý do và xác nhận hủy booking #" + Selected.ReservationId + ".");
         }
         public void KeepBooking() { if (busy) return; confirming = confirmingCheckIn = false; Reason = null; checkInNotice = null; Notify(nameof(CheckInNotice)); AccessChanged(); SetStatus("Đã giữ booking, chưa lưu thay đổi."); }
+        private bool ValidCheckInTime(DateTimeOffset now)
+        {
+            string reason = null;
+            if (now >= Selected.StartTime.AddMinutes(15)) reason = "Booking đã hết hạn nhận phòng 15 phút. Hãy tải lại danh sách.";
+            else
+            {
+                var expected = now.Add(Selected.EndTime - Selected.StartTime);
+                if (!BookingHours.TryValidateSessionInterval(now, expected, out reason))
+                    reason = "Không thể nhận phòng lúc " + Local(now) + ": để giữ đủ " + (Selected.EndTime - Selected.StartTime).TotalMinutes.ToString("0") + " phút, dự kiến trả lúc " + Local(expected) + ". " + reason;
+            }
+            if (reason == null) return true;
+            confirmingCheckIn = false; checkInNotice = null; Notify(nameof(CheckInNotice)); SetStatus(reason); AccessChanged(); return false;
+        }
         public void RequestCheckIn()
         {
             if (!CanCheckIn) return;
             var now = clock.UtcNow;
+            if (!ValidCheckInTime(now)) return;
             confirmingCheckIn = true;
             checkInNotice = "Nhận booking #" + Selected.ReservationId + " cho phòng " + Selected.RoomCode
                 + "?\nNếu nhận tại " + Local(now) + ", dự kiến trả " + Local(now.Add(Selected.EndTime - Selected.StartTime))
@@ -92,7 +106,7 @@ namespace MusicBoxManagement.Wpf.ViewModels
         }
         public async Task<bool> ConfirmCheckInAsync()
         {
-            if (!CanConfirmCheckIn) return false;
+            if (!CanConfirmCheckIn || !ValidCheckInTime(clock.UtcNow)) return false;
             var id = Selected.ReservationId; Busy(true);
             RoomSession saved = null;
             try { saved = await Task.Run(() => service.CheckIn(session, id)); }

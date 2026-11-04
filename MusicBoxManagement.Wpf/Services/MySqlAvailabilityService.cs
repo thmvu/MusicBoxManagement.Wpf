@@ -45,8 +45,8 @@ namespace MusicBoxManagement.Wpf.Services
                 throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
             now = now.ToUniversalTime();
             var result = new ReservationAvailability { CheckedAt = now };
-            try { result.EndTime = BookingHours.ValidateReservation(start, durationMinutes, now); }
-            catch (ArgumentException error) { result.Reason = error.Message; return result; }
+            if (!BookingHours.TryValidateReservation(start, durationMinutes, now, out var reservationEnd, out var reason)) { result.Reason = reason; return result; }
+            result.EndTime = reservationEnd;
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
@@ -78,7 +78,7 @@ ORDER BY (RoomId=@room) DESC LIMIT 1;";
                 if (conflict != null)
                 { result.Reason = Convert.ToInt32(conflict) == roomId ? "Phòng có lịch trùng khoảng đã chọn." : "Khách có lịch trùng khoảng đã chọn."; return result; }
             }
-            result.CanBook = true; result.Reason = "Khoảng giờ hợp lệ; cần kiểm tra lại khi lưu đặt phòng.";
+            result.CanBook = true; result.Reason = "Khoảng giờ hợp lệ; cần kiểm tra lại khi lưu đặt phòng. " + BookingHours.ReservationBoundaryNotice(result.EndTime.Value);
             return result;
         }
         internal ReservationAvailability CheckCheckInAt(MySqlConnection connection, MySqlTransaction transaction,
@@ -87,8 +87,7 @@ ORDER BY (RoomId=@room) DESC LIMIT 1;";
             if (transaction == null || transaction.Connection != connection)
                 throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
             var result = new ReservationAvailability { CheckedAt = now, EndTime = end };
-            try { BookingHours.ValidateSessionInterval(now, end); }
-            catch (ArgumentException error) { result.Reason = error.Message; return result; }
+            if (!BookingHours.TryValidateSessionInterval(now, end, out var reason)) { result.Reason = reason; return result; }
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
@@ -121,8 +120,7 @@ AND (RoomId=@room OR CustomerId=@customer) AND @start<HoldEnd AND @end>HoldStart
             if (transaction == null || transaction.Connection != connection)
                 throw new ArgumentException("Cần cùng kết nối và transaction nghiệp vụ.");
             var result = new ReservationAvailability { CheckedAt = now };
-            try { BookingHours.GetOpenShiftEnd(now); }
-            catch (ArgumentException error) { result.Reason = error.Message; return result; }
+            if (!BookingHours.TryGetOpenShiftEnd(now, out _, out var reason)) { result.Reason = reason; return result; }
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;

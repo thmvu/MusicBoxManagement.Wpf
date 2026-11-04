@@ -1,5 +1,11 @@
 ﻿# Music Box Management — WPF
 
+## Thông báo giờ nghỉ ở đặt và nhận phòng — 04/11/2026
+
+Đã chặn giờ sai trước Preview/Create của cả Khách và nhân viên đặt hộ, trước mở/xác nhận check-in; popup nói rõ nghỉ trưa 12:00–13:00 hoặc đóng cửa 23:00, giữ form và không ghi dữ liệu khi bị chặn. Nhận phòng nêu giờ trả thực tế theo đủ duration; kết thúc đúng12/23 vẫn được phép, lúc đặt có cảnh báo đến sớm. Shared Try-hours/MySQL availability không dùng exception cho validation giờ thường gặp; writer giữ kiểm tra giờ sau khóa, quyền/transaction/audit/rollback và đầy đủ thời lượng. Không đổi luật/SQL/schema/NoShow/SSL/timeout hoặc dữ liệu quán.
+
+Build dùng thật Debug/Release đạt; Hours UI hai bản 18 popup/bản, Reservations/CheckIn Release và Feedback UI Debug 34 popup đạt. Một review cuối, ghi rõ lỗi fixture/RED/capture và giới hạn trong [báo cáo](docs/Booking_Shift_Feedback_20261104.md). Không suy rộng mọi suite/race đều đã chạy. Csproj định dạng171/49 giữ ngoài commit; chỉ MySQL/UI, không runner pha provider.
+
 ## Sửa khóa NoShow — 04/11/2026
 
 User báo timeout tại NoShow. Metadata chỉ đọc thấy transaction giữ PRIMARY X lịch sử hơn 569s dù chỉ có NoShow/không Confirmed; user Stop Debugging, khóa đã thả. Đã thay range FOR UPDATE bằng RR read-only discovery + batch128 exact PK locks, re-read trạng thái và clock sau khóa; ProcessExpiredAt chỉ dùng candidate đã khóa. **Source ReservationId phải ghép/dedupe/sort cùng candidates trước mọi khóa reservation** để tránh stale discovery với source đã CheckedIn gây đảo khóa khi gia hạn/replay/hủy. Giữ writer Serializable/quyền/grace/audit/rollback/SSL/timeout/schema/worker; không KILL hay sửa dữ liệu quán. Build thật Debug/Release và Locks hai bản đạt; Reservations/CheckIn bản cuối Release và Feedback UI Debug 34 popup đạt. Có RED lịch sử + RED source-order, lỗi gate/build-copy được giữ riêng. [Bằng chứng, giới hạn và pool connection phụ](docs/MySql_NoShow_Lock_Fix_20261104.md). Csproj định dạng171/49 vẫn ngoài commit; chỉ MySQL, không runner pha provider.
