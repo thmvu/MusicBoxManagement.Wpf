@@ -1,0 +1,8 @@
+NoShow lock fixture: musicbox_test_e0865234d16741c6ba145a830358ef9e
+Clock reached while terminal row locked: True
+Exception calling "Run" with "0" argument(s): "Extension did not reach gated source lock."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlNoShowLocks.ps1:10 char:106
++ ... ) -ReferencedAssemblies $refs;[MusicBoxMySqlNoShowLockChecks]::Run()}
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

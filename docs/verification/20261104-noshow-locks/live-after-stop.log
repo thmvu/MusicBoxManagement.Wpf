@@ -1,0 +1,5 @@
+{"Probe":"version","Version":"8.4.11","LockWait":5,"SessionIsolation":"REPEATABLE-READ"}
+transactions: no rows
+locks: no rows
+waits: no rows
+{"Probe":"reservations","Status":"NoShow","Records":1}

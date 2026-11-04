@@ -1,0 +1,6 @@
+{"Probe":"version","Version":"8.4.11","LockWait":5,"SessionIsolation":"REPEATABLE-READ"}
+{"Probe":"transactions","trx_id":166743,"trx_state":"RUNNING","trx_started":"\/Date(1793739164000)\/","trx_wait_started":null,"trx_mysql_thread_id":400976,"trx_rows_locked":2,"trx_rows_modified":0,"AgeSeconds":569,"ConnectionState":""}
+{"Probe":"locks","ENGINE_TRANSACTION_ID":166743,"OBJECT_NAME":"Reservations","INDEX_NAME":null,"LOCK_TYPE":"TABLE","LOCK_MODE":"IX","LOCK_STATUS":"GRANTED","LockCount":1}
+{"Probe":"locks","ENGINE_TRANSACTION_ID":166743,"OBJECT_NAME":"Reservations","INDEX_NAME":"PRIMARY","LOCK_TYPE":"RECORD","LOCK_MODE":"X","LOCK_STATUS":"GRANTED","LockCount":2}
+waits: no rows
+{"Probe":"reservations","Status":"NoShow","Records":1}

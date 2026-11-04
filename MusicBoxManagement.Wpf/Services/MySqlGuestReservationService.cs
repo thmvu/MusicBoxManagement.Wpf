@@ -78,7 +78,7 @@ JOIN Customers c ON c.CustomerId=b.CustomerId WHERE b.ReservationId=@id AND c.Ph
                 using (var command = connection.CreateCommand())
                 {
                     MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
-                    MySqlNoShowService.LockCandidates(connection, transaction);
+                    MySqlNoShowService.LockCandidates(database, connection, transaction, reservationId);
                     command.Transaction = transaction;
                     command.CommandText = "SELECT ReservationId FROM Reservations WHERE ReservationId=@id FOR UPDATE;";
                     command.Parameters.AddWithValue("@id", reservationId); command.ExecuteScalar();

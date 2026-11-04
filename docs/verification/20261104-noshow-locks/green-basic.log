@@ -1,0 +1,3 @@
+NoShow lock fixture: musicbox_test_4a23cb898b184c78a524b6e37eda88c9
+Clock reached while terminal row locked: True
+PASS NoShow point locks: terminal history does not block or add audit; real transition and idempotence.

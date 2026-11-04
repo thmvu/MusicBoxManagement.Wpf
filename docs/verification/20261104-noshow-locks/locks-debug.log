@@ -1,0 +1,3 @@
+NoShow lock fixture: musicbox_test_515743a61e4846d4aeac133910904f33
+Clock reached while terminal row locked: True
+PASS NoShow point locks: terminal history does not block; Confirmed still waits/fresh clock; source/candidate lock order; >128 candidates/batch boundary/REC_NOT_GAP; real transition and idempotence.

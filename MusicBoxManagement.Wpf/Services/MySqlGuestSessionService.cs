@@ -69,7 +69,7 @@ WHERE s.RoomSessionId=@id AND c.PhoneNumber=@phone AND s.Status='Active';";
                 using (var command = connection.CreateCommand())
                 {
                     MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
-                    MySqlNoShowService.LockCandidates(connection, transaction);
+                    MySqlNoShowService.LockCandidates(database, connection, transaction, source);
                     command.Transaction = transaction;
                     if (source.HasValue)
                     {

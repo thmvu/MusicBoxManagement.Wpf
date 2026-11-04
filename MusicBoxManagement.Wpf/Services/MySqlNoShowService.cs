@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using MySqlConnector;
@@ -20,55 +20,103 @@ namespace MusicBoxManagement.Wpf.Services
                 using (var connection = database.OpenConnection())
                 using (var transaction = MySqlDatabase.BeginWriteTransaction(connection))
                 {
-                    // No Room/Customer lock follows these locks. Take the clock only after
-                    // any earlier state writer has released the Confirmed rows.
-                    LockCandidates(connection, transaction);
-                    var count = ProcessExpiredAt(connection, transaction, clock.UtcNow.ToUniversalTime());
+                    var candidates = LockCandidates(database, connection, transaction);
+                    var count = ProcessExpiredAt(connection, transaction, clock.UtcNow.ToUniversalTime(), candidates);
                     transaction.Commit(); return count;
                 }
             }
             catch (MySqlException error) when (error.Number == 1213 || error.Number == 1205)
-            { throw new InvalidOperationException("Lịch đang được cập nhật. Hãy chạy lại xử lý NoShow.", error); }
+            { throw new InvalidOperationException("Lịch phòng đang được cập nhật. Vui lòng thử lại sau.", error); }
         }
-        internal static void LockCandidates(MySqlConnection connection, MySqlTransaction transaction)
+
+        internal sealed class Candidate
         {
-            if (transaction == null || transaction.Connection != connection || transaction.IsolationLevel != System.Data.IsolationLevel.Serializable)
-                throw new ArgumentException("Cần cùng kết nối và transaction ghi Serializable.");
-            using (var command = connection.CreateCommand())
+            internal int Id;
+            internal DateTimeOffset Start;
+            internal string Status;
+        }
+
+        internal static IReadOnlyList<Candidate> LockCandidates(MySqlDatabase database, MySqlConnection connection, MySqlTransaction transaction, int? sourceReservationId = null)
+        {
+            DemandWriter(connection, transaction);
+            var ids = new List<int>();
+            // A Serializable range scan locks historical rows and insertion gaps even
+            // when no Confirmed row matches. Discover IDs in a separate nonlocking
+            // RR snapshot, then re-read each current row under its unique PK lock.
+            using (var discovery = database.OpenConnection())
+            using (var snapshot = MySqlDatabase.BeginReadTransaction(discovery))
+            using (var read = discovery.CreateCommand())
             {
-                command.Transaction = transaction;
-                command.CommandText = "SELECT ReservationId FROM Reservations WHERE Status='Confirmed' ORDER BY ReservationId FOR UPDATE;";
-                using (var reader = command.ExecuteReader()) while (reader.Read()) { }
+                read.Transaction = snapshot;
+                read.CommandText = "SELECT ReservationId FROM Reservations WHERE Status='Confirmed' ORDER BY ReservationId;";
+                using (var reader = read.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetInt32(0));
             }
-        }
-        internal static int ProcessExpiredAt(MySqlConnection connection, MySqlTransaction transaction, DateTimeOffset now)
-        {
-            if (transaction == null || transaction.Connection != connection || transaction.IsolationLevel != System.Data.IsolationLevel.Serializable)
-                throw new ArgumentException("Cần cùng kết nối và transaction ghi Serializable.");
+            // A source may have left Confirmed after another check-in committed.
+            // Merge it before acquiring ANY reservation lock, so stale discovery
+            // and extension/replay/cancel share one global PK order.
+            if (sourceReservationId.HasValue && !ids.Contains(sourceReservationId.Value))
+            {
+                ids.Add(sourceReservationId.Value); ids.Sort();
+            }
+            var result = new List<Candidate>();
             using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                command.CommandText = "SELECT ReservationId FROM Reservations WHERE Status='Confirmed' AND StartTime<=@cutoff ORDER BY ReservationId FOR UPDATE;";
-                command.Parameters.AddWithValue("@cutoff", now.AddMinutes(-15).ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
-                var ids = new List<int>();
-                using (var reader = command.ExecuteReader()) while (reader.Read()) ids.Add(reader.GetInt32(0));
+                // One network request per bounded batch; each statement is a unique
+                // equality lookup, never an optimizer-selected IN/range table scan.
+                for (var offset = 0; offset < ids.Count; offset += 128)
+                {
+                    command.Parameters.Clear();
+                    var statements = new List<string>();
+                    for (var i = offset; i < Math.Min(offset + 128, ids.Count); i++)
+                    {
+                        var parameter = "@candidate" + (i - offset).ToString(CultureInfo.InvariantCulture);
+                        command.Parameters.AddWithValue(parameter, ids[i]);
+                        statements.Add("SELECT ReservationId,StartTime,Status FROM Reservations WHERE ReservationId=" + parameter + " FOR UPDATE");
+                    }
+                    command.CommandText = string.Join(";", statements) + ";";
+                    using (var reader = command.ExecuteReader())
+                        do
+                        {
+                            while (reader.Read()) result.Add(new Candidate { Id = reader.GetInt32(0),
+                                Start = DateTimeOffset.ParseExact(reader.GetString(1), "O", CultureInfo.InvariantCulture), Status = reader.GetString(2) });
+                        } while (reader.NextResult());
+                }
+            }
+            return result;
+        }
+
+        internal static int ProcessExpiredAt(MySqlConnection connection, MySqlTransaction transaction, DateTimeOffset now, IReadOnlyList<Candidate> candidates)
+        {
+            DemandWriter(connection, transaction);
+            if (candidates == null) throw new ArgumentNullException(nameof(candidates));
+            var cutoff = now.AddMinutes(-15).ToUniversalTime();
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.Parameters.AddWithValue("@cutoff", cutoff.ToString("O", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("@id", 0);
                 var count = 0;
-                foreach (var id in ids)
+                foreach (var candidate in candidates)
                 {
-                    command.Parameters["@id"].Value = id;
-                    // A source session is checked after the reservation lock. Future check-in
-                    // writers must take that same reservation lock before creating a session.
+                    if (candidate.Status != "Confirmed" || candidate.Start > cutoff) continue;
+                    command.Parameters["@id"].Value = candidate.Id;
                     command.CommandText = "SELECT RoomSessionId FROM RoomSessions WHERE ReservationId=@id LIMIT 1;";
                     if (command.ExecuteScalar() != null) continue;
                     command.CommandText = "UPDATE Reservations SET Status='NoShow' WHERE ReservationId=@id AND Status='Confirmed' AND StartTime<=@cutoff;";
                     if (command.ExecuteNonQuery() != 1) continue;
-                    MySqlAuditService.WriteSystem(connection, transaction, "Reservation.NoShow", "Reservation", id.ToString(CultureInfo.InvariantCulture),
+                    MySqlAuditService.WriteSystem(connection, transaction, "Reservation.NoShow", "Reservation", candidate.Id.ToString(CultureInfo.InvariantCulture),
                         "Khách chưa nhận phòng trước hạn 15 phút.", now);
                     count++;
                 }
                 return count;
             }
+        }
+
+        private static void DemandWriter(MySqlConnection connection, MySqlTransaction transaction)
+        {
+            if (transaction == null || transaction.Connection != connection || transaction.IsolationLevel != System.Data.IsolationLevel.Serializable)
+                throw new ArgumentException("Cần cùng kết nối và transaction ghi Serializable.");
         }
     }
 }

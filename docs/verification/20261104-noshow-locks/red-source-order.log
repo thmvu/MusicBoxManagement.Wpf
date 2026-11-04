@@ -1,0 +1,9 @@
+NoShow lock fixture: musicbox_test_4f0226365aec4fbf8d4f070433d0748e
+Clock reached while terminal row locked: True
+Exception calling "Run" with "0" argument(s): "RED review: extension locked later candidate B before its CheckedIn
+source A; stale worker can deadlock."
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlNoShowLocks.ps1:10 char:106
++ ... ) -ReferencedAssemblies $refs;[MusicBoxMySqlNoShowLockChecks]::Run()}
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : Exception

@@ -53,10 +53,10 @@ namespace MusicBoxManagement.Wpf.Services
                 }
                 // Room -> canonical Customer -> one business clock, shared with availability.
                 MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
-                MySqlNoShowService.LockCandidates(connection, transaction);
+                var candidates = MySqlNoShowService.LockCandidates(database, connection, transaction);
                 var now = clock.UtcNow.ToUniversalTime();
                 BookingHours.ValidateReservation(start, duration, now);
-                MySqlNoShowService.ProcessExpiredAt(connection, transaction, now);
+                MySqlNoShowService.ProcessExpiredAt(connection, transaction, now, candidates);
                 if (newCustomer)
                 {
                     var customerId = customer.ToString(CultureInfo.InvariantCulture);

@@ -49,7 +49,7 @@ namespace MusicBoxManagement.Wpf.Services
                 MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
                 // Match reservation maintenance's ordered candidate locks before querying
                 // shared holds, avoiding a source-row/NoShow candidate lock inversion.
-                MySqlNoShowService.LockCandidates(connection, transaction);
+                MySqlNoShowService.LockCandidates(database, connection, transaction, reservationId);
                 command.Transaction = transaction;
                 command.Parameters.AddWithValue("@source", reservationId);
                 command.CommandText = "SELECT ReservationId FROM Reservations WHERE ReservationId=@source FOR UPDATE;";
@@ -128,7 +128,7 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;
                         }
                     }
                     MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
-                    MySqlNoShowService.LockCandidates(connection, transaction);
+                    MySqlNoShowService.LockCandidates(database, connection, transaction, source);
                     command.Transaction = transaction;
                     if (source.HasValue)
                     {
@@ -220,9 +220,9 @@ FROM Rooms r JOIN RoomTypes t ON t.RoomTypeId=r.RoomTypeId WHERE r.RoomId=@room;
                     command.Parameters.AddWithValue("@name", name); customer = Convert.ToInt32(command.ExecuteScalar()); newCustomer = true;
                 }
                 MySqlAvailabilityService.LockResources(connection, transaction, room, customer);
-                MySqlNoShowService.LockCandidates(connection, transaction);
+                var candidates = MySqlNoShowService.LockCandidates(database, connection, transaction);
                 var now = clock.UtcNow.ToUniversalTime(); BookingHours.GetOpenShiftEnd(now);
-                MySqlNoShowService.ProcessExpiredAt(connection, transaction, now);
+                MySqlNoShowService.ProcessExpiredAt(connection, transaction, now, candidates);
                 if (newCustomer) MySqlAuditService.WriteStaff(connection, transaction, actor.UserId, "Customer.Create", "Customer",
                     customer.ToString(CultureInfo.InvariantCulture), "Tạo khách hàng từ nhận khách trực tiếp.", now);
                 var check = availability.CheckWalkInAt(connection, transaction, room, customer, now);

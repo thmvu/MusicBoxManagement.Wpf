@@ -1,5 +1,10 @@
 ﻿# Music Box Management — WPF
 
+## Sửa khóa NoShow — 04/11/2026
+
+User báo timeout tại NoShow. Metadata chỉ đọc thấy transaction giữ PRIMARY X lịch sử hơn 569s dù chỉ có NoShow/không Confirmed; user Stop Debugging, khóa đã thả. Đã thay range FOR UPDATE bằng RR read-only discovery + batch128 exact PK locks, re-read trạng thái và clock sau khóa; ProcessExpiredAt chỉ dùng candidate đã khóa. **Source ReservationId phải ghép/dedupe/sort cùng candidates trước mọi khóa reservation** để tránh stale discovery với source đã CheckedIn gây đảo khóa khi gia hạn/replay/hủy. Giữ writer Serializable/quyền/grace/audit/rollback/SSL/timeout/schema/worker; không KILL hay sửa dữ liệu quán. Build thật Debug/Release và Locks hai bản đạt; Reservations/CheckIn bản cuối Release và Feedback UI Debug 34 popup đạt. Có RED lịch sử + RED source-order, lỗi gate/build-copy được giữ riêng. [Bằng chứng, giới hạn và pool connection phụ](docs/MySql_NoShow_Lock_Fix_20261104.md). Csproj định dạng171/49 vẫn ngoài commit; chỉ MySQL, không runner pha provider.
+
+
 ## Thông báo thao tác và SĐT — 04/11/2026
 
 Theo yêu cầu bắt buộc của người dùng, các lệnh dữ liệu ở UI có popup WPF tiếng Việt, giữ form khi nhập sai và Status trên form; không thêm global handler nuốt lỗi. TryNormalize chặn SĐT sai ở đặt phòng/tra cứu/walk-in/khách hàng và ba bộ lọc SĐT trước service. Giữ rule chuẩn hóa +84/84, quyền và transaction. Đã sửa popup lưu bị row selection ghi đè, thông điệp bỏ món/hủy/phục vụ bị cũ. Build dùng thật Debug/Release và workflow UI MySQL cuối đạt, 34 popup/3 ảnh mỗi bản; dữ liệu/audit không đổi khi validation sai, có chuỗi gia hạn/món/checkout/Invoice/hủy/revoke. [Phạm vi, lỗi đầu, log và cách thử](docs/Ui_Feedback_Validation_20261104.md). Hồi quy CounterUi Debug lượt đầu timeout, retry riêng đạt; giữ log cả hai. Không tuyên bố mọi màn/đầu vào đều đã chạy; không chạm dữ liệu quán hoặc chạy runner pha provider. Csproj chỉ stage Compile UserFeedback.cs, giữ định dạng cũ ngoài commit.
