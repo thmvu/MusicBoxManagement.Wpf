@@ -1,0 +1,15 @@
+RUN OperationsUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Operations UI test database: musicbox_test_51ad4e67c5584052afa031631344802a
+Operations UI failure before cleanup: System.Exception: Login success popup was missing or repeated.
+   at MusicBoxMySqlOperationsUiChecks.Run(String appXaml, String output)
+powershell.exe : D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlFlows.ps1 : Exception calling "Run" with "2"
+argument(s): "Login
+At C:\Users\laptop asus\AppData\Local\Temp\MusicBoxFlowLane_ui_final.ps1:11 char:2
++  & powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File Tests ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\vu\hoctap\Mu...ent(s): "Login :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+success popup was missing or repeated."
+    + CategoryInfo          : NotSpecified: (:) [Verify-MySqlFlows.ps1], MethodInvocationException
+    + FullyQualifiedErrorId : Exception,Verify-MySqlFlows.ps1

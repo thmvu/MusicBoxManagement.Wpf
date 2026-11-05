@@ -1,0 +1,3 @@
+RUN BookingRead build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL BookingReads: full Guest/Staff IBookingService, public catalog/local images, current Create-only permissions, preview Customer/Room/NoShow, read-only 28-slot calendar, grace/ticks/walk-in/stale writer and revoked access.
+COMPLETE BookingRead

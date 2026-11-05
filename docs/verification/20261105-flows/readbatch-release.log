@@ -1,0 +1,8 @@
+RUN ReadBatch build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Read batch fixture: musicbox_test_c33e1807aba04f0b9f7022bc2954c4ce
+Dashboard room SELECTs: 1 for21rooms.
+Staff calendar SELECTs: 3 for21rooms.
+Walk-in ReturnBy SELECTs: 1 for5sessions.
+Guest day SELECTs: 2 for28slots.
+PASS Guest day constant SELECT budget,24scenario/duration combinations,28slots oracle,exactnow/tick/grace/break/walkin/future/bookingActive; GUID only.
+COMPLETE ReadBatch

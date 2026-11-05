@@ -1,0 +1,5 @@
+RUN AccountBatch build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Account batch fixture: musicbox_test_f8bbe9baff7f45729bd07eee7d6c55b7
+Account List SELECTs: 2 for 5 accounts.
+PASS Account List constant SELECT budget, old-store oracle, exact private revision inputs, ordering, missing-role failure, live Admin-only rights and RR metadata/role snapshot; GUID only.
+COMPLETE AccountBatch

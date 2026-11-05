@@ -1,0 +1,3 @@
+RUN Sessions build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL Sessions/Extension: live View/Extend independent and viewed route, protected read snapshot/current phone/filter/history/ReturnBy, +30/+60/ticks/observedEnd/shift/overlap/overdue, no writes from reads, rollback, duplicate/booking races, fresh clock after lock, revoke/stamp; GUID DB only.
+COMPLETE Sessions

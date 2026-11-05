@@ -1,0 +1,2 @@
+RUN OperationsUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Operations UI test database: musicbox_test_004bbcd29f62450c82d495a5af823cc6

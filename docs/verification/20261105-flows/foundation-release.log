@@ -1,0 +1,2 @@
+Foundation test database: musicbox_test_9d90c312cd164eae8be6112b515b487b
+PASS MySQL Aiven schema/seed/idempotence/UTF-8/RBAC/CHECK/FK/rollback/UTC ticks/Active uniqueness/walk-in/snapshots/decimal/immutable invoice/version guard.

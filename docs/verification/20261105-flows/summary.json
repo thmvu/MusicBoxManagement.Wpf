@@ -1,0 +1,616 @@
+{
+  "ProductCommit": "20788df",
+  "FinalReleaseDistinctSuites": 34,
+  "ReleasePassed": 34,
+  "ExtraDebugSuites": [
+    {
+      "Suite": "BookingHoursUi",
+      "Configuration": "Debug",
+      "ExitCode": 0,
+      "Seconds": 65.6,
+      "Log": "bookinghoursui-debug.log",
+      "Images": "docs/images/20261105-flows/bookinghoursui-debug",
+      "PopupCount": 18
+    },
+    {
+      "Suite": "FeedbackUi",
+      "Configuration": "Debug",
+      "ExitCode": 0,
+      "Seconds": 76.7,
+      "Log": "feedbackui-debug.log",
+      "Images": "docs/images/20261105-flows/feedbackui-debug",
+      "PopupCount": 36
+    }
+  ],
+  "Release": [
+    {
+      "Suite": "Foundation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 28.8,
+      "Log": "foundation-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Initialize",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 37.3,
+      "Log": "initialize-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Account",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 105.2,
+      "Log": "account-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "AccountBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 26.2,
+      "Log": "accountbatch-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "PermissionMatrix",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 105.2,
+      "Log": "permissionmatrix-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "AuditLog",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 69.3,
+      "Log": "auditlog-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "RoomType",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 50,
+      "Log": "roomtype-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Room",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 133.5,
+      "Log": "room-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Service",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 55.3,
+      "Log": "service-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Customer",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 56.8,
+      "Log": "customer-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "RevenueReport",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 75.2,
+      "Log": "revenuereport-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "RemainingReads",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 108.6,
+      "Log": "remainingreads-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "ReadBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 155.2,
+      "Log": "readbatch-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "OrderBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 51.6,
+      "Log": "orderbatch-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Availability",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 64.5,
+      "Log": "availability-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Reservation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 126.9,
+      "Log": "reservation-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "BookingRead",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 70.6,
+      "Log": "bookingread-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "StaffReservation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 74,
+      "Log": "staffreservation-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "CheckIn",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 154.9,
+      "Log": "checkin-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "WalkIn",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 164.5,
+      "Log": "walkin-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Sessions",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 119.5,
+      "Log": "sessions-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "GuestSessions",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 247.5,
+      "Log": "guestsessions-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Order",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 250.5,
+      "Log": "order-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Billing",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 138.7,
+      "Log": "billing-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Checkout",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 338.5,
+      "Log": "checkout-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Invoice",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 101,
+      "Log": "invoice-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Calendar",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 44.3,
+      "Log": "calendar-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "Dashboard",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 151.1,
+      "Log": "dashboard-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "NoShowLock",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 41.2,
+      "Log": "noshowlock-release.log",
+      "PopupCount": null
+    },
+    {
+      "Suite": "BookingHoursUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 68.3,
+      "Log": "bookinghoursui-release-corrected.log",
+      "Images": "docs/images/20261105-flows/bookinghoursui-release-corrected",
+      "PopupCount": 18
+    },
+    {
+      "Suite": "FeedbackUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 91.7,
+      "Log": "feedbackui-release-final.log",
+      "Images": "docs/images/20261105-flows/feedbackui-release-final",
+      "PopupCount": 36
+    },
+    {
+      "Suite": "CounterUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 51,
+      "Log": "counterui-release.log",
+      "Images": "docs/images/20261105-flows/counterui-release",
+      "PopupCount": null
+    },
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 43.6,
+      "Log": "operationsui-release-corrected.log",
+      "Images": "docs/images/20261105-flows/operationsui-release-corrected",
+      "PopupCount": null
+    },
+    {
+      "Suite": "InvoicePrinting",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 100.5,
+      "Log": "invoiceprinting-release.log",
+      "Images": "docs/images/20261105-flows/invoiceprinting-release",
+      "PopupCount": null
+    }
+  ],
+  "RecordedAttempts": [
+    {
+      "Suite": "Foundation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 28.8,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\foundation-release.log"
+    },
+    {
+      "Suite": "Initialize",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 37.3,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\initialize-release.log"
+    },
+    {
+      "Suite": "Account",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 105.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\account-release.log"
+    },
+    {
+      "Suite": "AccountBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 26.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\accountbatch-release.log"
+    },
+    {
+      "Suite": "PermissionMatrix",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 105.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\permissionmatrix-release.log"
+    },
+    {
+      "Suite": "AuditLog",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 69.3,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\auditlog-release.log"
+    },
+    {
+      "Suite": "RoomType",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 50,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\roomtype-release.log"
+    },
+    {
+      "Suite": "Room",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 133.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\room-release.log"
+    },
+    {
+      "Suite": "Service",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 55.3,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\service-release.log"
+    },
+    {
+      "Suite": "Customer",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 56.8,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\customer-release.log"
+    },
+    {
+      "Suite": "RevenueReport",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 75.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\revenuereport-release.log"
+    },
+    {
+      "Suite": "RemainingReads",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 108.6,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\remainingreads-release.log"
+    },
+    {
+      "Suite": "ReadBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 155.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\readbatch-release.log"
+    },
+    {
+      "Suite": "OrderBatch",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 51.6,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\orderbatch-release.log"
+    },
+    {
+      "Suite": "Availability",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 64.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\availability-release.log"
+    },
+    {
+      "Suite": "Reservation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 126.9,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\reservation-release.log"
+    },
+    {
+      "Suite": "BookingRead",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 70.6,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\bookingread-release.log"
+    },
+    {
+      "Suite": "StaffReservation",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 74,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\staffreservation-release.log"
+    },
+    {
+      "Suite": "CheckIn",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 154.9,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\checkin-release.log"
+    },
+    {
+      "Suite": "WalkIn",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 164.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\walkin-release.log"
+    },
+    {
+      "Suite": "Sessions",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 119.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\sessions-release.log"
+    },
+    {
+      "Suite": "GuestSessions",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 247.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\guestsessions-release.log"
+    },
+    {
+      "Suite": "Order",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 250.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\order-release.log"
+    },
+    {
+      "Suite": "Billing",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 138.7,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\billing-release.log"
+    },
+    {
+      "Suite": "Checkout",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 338.5,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\checkout-release.log"
+    },
+    {
+      "Suite": "Invoice",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 101,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\invoice-release.log"
+    },
+    {
+      "Suite": "Calendar",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 44.3,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\calendar-release.log"
+    },
+    {
+      "Suite": "Dashboard",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 151.1,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\dashboard-release.log"
+    },
+    {
+      "Suite": "NoShowLock",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 41.2,
+      "Log": "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\noshowlock-release.log"
+    },
+    {
+      "Suite": "BookingHoursUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Log": "hours-ui-release.log",
+      "Images": "hours-release",
+      "Capture": "initial images have missing background; use Debug images"
+    },
+    {
+      "Suite": "FeedbackUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 81,
+      "Log": "docs/verification/20261105-flows/feedbackui-release.log",
+      "Images": "docs/images/20261105-flows/feedbackui-release"
+    },
+    {
+      "Suite": "CounterUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 51,
+      "Log": "docs/verification/20261105-flows/counterui-release.log",
+      "Images": "docs/images/20261105-flows/counterui-release"
+    },
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": -1,
+      "Seconds": 304.6,
+      "Log": "docs/verification/20261105-flows/operationsui-release.log",
+      "Images": "docs/images/20261105-flows/operationsui-release"
+    },
+    {
+      "Suite": "InvoicePrinting",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 100.5,
+      "Log": "docs/verification/20261105-flows/invoiceprinting-release.log",
+      "Images": "docs/images/20261105-flows/invoiceprinting-release"
+    },
+    {
+      "Suite": "BookingHoursUi",
+      "Configuration": "Debug",
+      "ExitCode": 0,
+      "Seconds": 65.6,
+      "Log": "docs/verification/20261105-flows/bookinghoursui-debug.log",
+      "Images": "docs/images/20261105-flows/bookinghoursui-debug"
+    },
+    {
+      "Suite": "FeedbackUi",
+      "Configuration": "Debug",
+      "ExitCode": 0,
+      "Seconds": 76.7,
+      "Log": "docs/verification/20261105-flows/feedbackui-debug.log",
+      "Images": "docs/images/20261105-flows/feedbackui-debug"
+    },
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": 1,
+      "Seconds": 31.4,
+      "Log": "docs/verification/20261105-flows/operationsui-release-final.log",
+      "Images": "docs/images/20261105-flows/operationsui-release-final"
+    },
+    {
+      "Suite": "FeedbackUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 91.7,
+      "Log": "docs/verification/20261105-flows/feedbackui-release-final.log",
+      "Images": "docs/images/20261105-flows/feedbackui-release-final"
+    },
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 43.6,
+      "Log": "docs/verification/20261105-flows/operationsui-release-corrected.log",
+      "Images": "docs/images/20261105-flows/operationsui-release-corrected"
+    },
+    {
+      "Suite": "BookingHoursUi",
+      "Configuration": "Release",
+      "ExitCode": 0,
+      "Seconds": 68.3,
+      "Log": "docs/verification/20261105-flows/bookinghoursui-release-corrected.log",
+      "Images": "docs/images/20261105-flows/bookinghoursui-release-corrected"
+    }
+  ],
+  "SupersededNonzeroAttempts": [
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": -1,
+      "Seconds": 304.6,
+      "Log": "docs/verification/20261105-flows/operationsui-release.log",
+      "Images": "docs/images/20261105-flows/operationsui-release"
+    },
+    {
+      "Suite": "OperationsUi",
+      "Configuration": "Release",
+      "ExitCode": 1,
+      "Seconds": 31.4,
+      "Log": "docs/verification/20261105-flows/operationsui-release-final.log",
+      "Images": "docs/images/20261105-flows/operationsui-release-final"
+    }
+  ],
+  "Scope": "MySQL-only; no old provider/import; fake printers; test GUID databases"
+}

@@ -1,0 +1,4 @@
+RUN Invoice build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Invoice test database: musicbox_test_2ba9a665ff024e7088e81853acd86418
+PASS Invoices: live independent View/Print/current session, PaidAt UTC+7 date bounds/exact code/current phone/combined filters, immutable Room/Order/cashier snapshots/seconds/decimal beyond Int64, Completed-only/read-only/no schema changes and RR MVCC snapshot vs real MySQL checkout; GUID DB only, no provider/import claims.
+COMPLETE Invoice

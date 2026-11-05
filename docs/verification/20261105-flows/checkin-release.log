@@ -1,0 +1,3 @@
+RUN CheckIn build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL CheckIn: independent live permission, early/ticks/full duration, grace/shift/overlap/Active/locked/cancelled, snapshots/replay, rollback, concurrent replay/Room/Customer, both NoShow writer orders, clock after lock, stamp; GUID DB only.
+COMPLETE CheckIn

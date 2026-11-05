@@ -1,0 +1,6 @@
+RUN Billing build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS Billing exact integer oracle: ticks/half-dong/large rates/durations/UTC/no minimum
+PASS Billing current phone/live View/public DTO/Completed-only/catalog snapshots/read-only/no cap
+PASS Billing RR snapshots vs real writers and shared Serializable calculator/rollback/fresh clock
+PASS MySQL Billing: exact actual ticks/UTC/one clock/decimal/AwayFromZero, immutable price snapshots, Completed-only/status counts, live independent Session.View and current phone, read-only/no cap, RR snapshot vs real Order/Customer writers, shared writer scope/isolation/rollback/fresh lock clock; GUID DB only, no checkout/provider/import claims.
+COMPLETE Billing

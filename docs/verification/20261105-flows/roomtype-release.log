@@ -1,0 +1,3 @@
+RUN RoomType build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL RoomType editing: protected reads/writes, validation, immutable codes, persistence, permission revocation, atomic audit rollback and concurrent stale forms on a GUID database.
+COMPLETE RoomType

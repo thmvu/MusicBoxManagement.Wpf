@@ -1,0 +1,6 @@
+RUN Order build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Order test database: musicbox_test_925f46831fc149bf8f18f678f101f1e4
+PASS Orders menu/cart/current rights/snapshots/states/rollback/history
+PASS Orders confirm/cancel and catalog writer races
+PASS MySQL Orders: independent live rights, current normalized phone/public DTO, Active/Completed boundaries, read snapshots, merged 1-10/server price/decimal, Guest Pending/Staff Completed, terminal guards/outside hours, item/audit rollback, real confirm/cancel/catalog races, fresh clocks after Room/Service waits and phone recheck. GUID DB only; no checkout/provider/import claims.
+COMPLETE Order

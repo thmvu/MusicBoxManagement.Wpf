@@ -1,0 +1,6 @@
+RUN Checkout build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Checkout test database: musicbox_test_6025dcd71f4d4c1fbdb578e081cf3412
+PASS Checkout current CheckOut-only/preview/fresh amount/snapshots/decimal/replay/rollback
+PASS Checkout duplicate requests and 14 ordered races with real Order/Staff-Guest extension writers
+PASS MySQL Checkout/Invoice: live independent CheckOut, RR read-only selector/preview, fresh actual ticks/decimal/snapshots, atomic Pending/source/session/invoice/audit, rollback and idempotent replay, unique immutable invoices, 14 real ordered writer races, MVCC preview, clock/actor after Room waits; GUID DB only, no provider/import/history-print claims.
+COMPLETE Checkout

@@ -1,0 +1,9 @@
+RUN WalkIn build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Contended writer: Phòng còn phiên Active, chưa thể nhận khách.
+Contended writer: Phòng hoặc SĐT vừa được cập nhật. Hãy kiểm tra lại trước khi nhận khách.
+Contended writer: Phòng còn phiên Active, chưa thể nhận khách.
+Contended writer: Phòng có booking đã tới giờ và còn hạn; hãy nhận phòng từ booking hoặc xử lý booking trước.
+Contended writer: Phòng còn phiên đang sử dụng; hãy checkout trước khi đổi loại hoặc khóa.
+Retryable writer conflict: 1213
+PASS MySQL WalkIn: independent permissions/own receipt, read-only preview, canonical customer/snapshot/actual, shift/grace/Active/deadline/no future hold, rollback maintenance, real races Room/Customer/check-in/booking/lock/NoShow, clock after lock and revoke/stamp; GUID DB only.
+COMPLETE WalkIn

@@ -1,0 +1,1522 @@
+[
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/checkin-exact-closing.png",
+    "Bytes": 81730,
+    "SHA256": "c0e997daf7c509611040d9c1f67bfbfb371ceffaa0e069511693536cddf89805"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/lunch-notice.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-01.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-02.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-03.png",
+    "Bytes": 5155,
+    "SHA256": "5fed90ad58897d739fae0ef0851da7f5892c9616eabe7dfbcab48db5ec6b2e32"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-04.png",
+    "Bytes": 11203,
+    "SHA256": "d9a3f4b5a5609d6000be4b9ee733059320d4afc6dd9988d294a3fc0267a67228"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-05.png",
+    "Bytes": 13755,
+    "SHA256": "e2aa6ea08c957c12629064a3a05d589d184ab07e3a2c630ff54b50b7f4c5ac11"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-06.png",
+    "Bytes": 13025,
+    "SHA256": "6893b5f3e27645a027ff76dcf32f1d61d6f2aec30e989b1850745cc7fd43ff9f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-07.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-08.png",
+    "Bytes": 5155,
+    "SHA256": "5fed90ad58897d739fae0ef0851da7f5892c9616eabe7dfbcab48db5ec6b2e32"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-09.png",
+    "Bytes": 13839,
+    "SHA256": "f37a277df97d2462c6ca3797b25a0389edc54a3b914c334a19d8913ac45a799f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-10.png",
+    "Bytes": 13154,
+    "SHA256": "fb98ed0a44524dc2f106bd1d2f77e654c97fd531b5649e811450f892a77ed5b5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-11.png",
+    "Bytes": 11672,
+    "SHA256": "be4146262ce9f8dfdff7474f36cec48e70593c110bcaa196d0b4fadadbea245e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-12.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-13.png",
+    "Bytes": 11695,
+    "SHA256": "5eff903f933c2eca65628976f28c94d3f162bb20c47596bd88574bab7182c191"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-14.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-15.png",
+    "Bytes": 4188,
+    "SHA256": "9f1d6be456fa4183683475fccc29727ff01d561f22c7e6979b2cc5749fe4764b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-16.png",
+    "Bytes": 9325,
+    "SHA256": "9eaf47e495a213c2ef38a163de47738f111fc1ac7cb14f58744ae7b2f0747e13"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-17.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-debug/notice-18.png",
+    "Bytes": 4259,
+    "SHA256": "d1967556c2093ba20c09b7668cd0391b616e83edd4cbb281ff961f1e8bff9fbd"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/checkin-exact-closing.png",
+    "Bytes": 81730,
+    "SHA256": "c0e997daf7c509611040d9c1f67bfbfb371ceffaa0e069511693536cddf89805"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/lunch-notice.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-01.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-02.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-03.png",
+    "Bytes": 5155,
+    "SHA256": "5fed90ad58897d739fae0ef0851da7f5892c9616eabe7dfbcab48db5ec6b2e32"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-04.png",
+    "Bytes": 11203,
+    "SHA256": "d9a3f4b5a5609d6000be4b9ee733059320d4afc6dd9988d294a3fc0267a67228"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-05.png",
+    "Bytes": 13755,
+    "SHA256": "e2aa6ea08c957c12629064a3a05d589d184ab07e3a2c630ff54b50b7f4c5ac11"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-06.png",
+    "Bytes": 13025,
+    "SHA256": "6893b5f3e27645a027ff76dcf32f1d61d6f2aec30e989b1850745cc7fd43ff9f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-07.png",
+    "Bytes": 7775,
+    "SHA256": "92bdcdb35bcef2ae4e739b8d4ccc6aa37905eb9e4e2648ec0daa242fa6caccb0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-08.png",
+    "Bytes": 5155,
+    "SHA256": "5fed90ad58897d739fae0ef0851da7f5892c9616eabe7dfbcab48db5ec6b2e32"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-09.png",
+    "Bytes": 13839,
+    "SHA256": "f37a277df97d2462c6ca3797b25a0389edc54a3b914c334a19d8913ac45a799f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-10.png",
+    "Bytes": 13154,
+    "SHA256": "fb98ed0a44524dc2f106bd1d2f77e654c97fd531b5649e811450f892a77ed5b5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-11.png",
+    "Bytes": 11672,
+    "SHA256": "be4146262ce9f8dfdff7474f36cec48e70593c110bcaa196d0b4fadadbea245e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-12.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-13.png",
+    "Bytes": 11695,
+    "SHA256": "5eff903f933c2eca65628976f28c94d3f162bb20c47596bd88574bab7182c191"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-14.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-15.png",
+    "Bytes": 4188,
+    "SHA256": "9f1d6be456fa4183683475fccc29727ff01d561f22c7e6979b2cc5749fe4764b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-16.png",
+    "Bytes": 9325,
+    "SHA256": "9eaf47e495a213c2ef38a163de47738f111fc1ac7cb14f58744ae7b2f0747e13"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-17.png",
+    "Bytes": 3929,
+    "SHA256": "3d6919096660b050b0e4030570b7b7ed9027fbadc7541891b54ead374dbf9dc6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/bookinghoursui-release-corrected/notice-18.png",
+    "Bytes": 4259,
+    "SHA256": "d1967556c2093ba20c09b7668cd0391b616e83edd4cbb281ff961f1e8bff9fbd"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/calendar-compact.png",
+    "Bytes": 73326,
+    "SHA256": "2034fb7453f10155529c03ccafb9983fc162323a0a295e2e335f3fb875fa46ee"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/calendar-day.png",
+    "Bytes": 85707,
+    "SHA256": "f21fc5b5dfc531e83dec7d619371958495f5c91b5b5bd8428c6c1799ff100bdd"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/calendar-revoked.png",
+    "Bytes": 57636,
+    "SHA256": "09e3ebed6351e96af6f7280324eeac5ec15b96271481bc937d086c32748ba580"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/calendar-scrolled.png",
+    "Bytes": 80570,
+    "SHA256": "254c95cbeace1d00ee691cd53fdf153542af8049ee2f77f5f34873328d15feae"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/calendar-week.png",
+    "Bytes": 62034,
+    "SHA256": "b31f8ab1684472609aef40d1722746aca4e184b5dbffad859ae6dca68dcaf84d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/dashboard-admin.png",
+    "Bytes": 63879,
+    "SHA256": "1b596f05c2daf1d9ca5112f2ba9f91f3f87a02d10ef1708235301dae03100ade"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/dashboard-compact.png",
+    "Bytes": 57018,
+    "SHA256": "8eadc187be6cb65d84c88ea11b71ef934b54ab461550ef5b3d6e5d91a56413b0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/counterui-release/dashboard-staff.png",
+    "Bytes": 68311,
+    "SHA256": "2a31731b2a17fd1e0094e01df7c7e32f7ef54b98aa4e36738e8576f827d56490"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/booking-after-invalid.png",
+    "Bytes": 127473,
+    "SHA256": "d16ef4820825e2b5b716fba99718876a4bd64cad22f6c571b5bf5bac3c5bcd07"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/checkout-after-notice.png",
+    "Bytes": 43138,
+    "SHA256": "edbdb8bbf3435c36bc59ed8267bbf3d6c736fdbbadf183d310ad449df36cc44a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/guest-bill.png",
+    "Bytes": 37124,
+    "SHA256": "60feb220c9e3ff9043bcc870111e0d57f0cf24949e3f1f386d19cb47e1786349"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/lookup-active-session.png",
+    "Bytes": 38853,
+    "SHA256": "7aa884336ea5e175b6e4052ee9368f51d5aeb7eb852f79d50857cf93e48a57a5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-01.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-02.png",
+    "Bytes": 5726,
+    "SHA256": "7036be1c178b9f9e11b23290e58d53debd6773e6586ed96da18ee968b3cce445"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-03.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-04.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-05.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-06.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-07.png",
+    "Bytes": 3699,
+    "SHA256": "5ac757b7e37da5db4ea4ad9fe15fd2286dd2719df8ed27461d444a7327c1291f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-08.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-09.png",
+    "Bytes": 3408,
+    "SHA256": "d35594d364de592755d0938f835408f29b3d8eb3c831f1d9dabb272ecfce430d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-10.png",
+    "Bytes": 3345,
+    "SHA256": "194af9fc50cceee117d33b5fe59a56befcd1267fdaf6e0d270facda032ddf9a0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-11.png",
+    "Bytes": 7112,
+    "SHA256": "8c364574cbfc05b2b913cbdf52ff1d7a41ec6c5c47d2822554142a9a9e2a7022"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-12.png",
+    "Bytes": 3484,
+    "SHA256": "eaf0e367a706b9a90b15a23e063038d2f92342db5b9ec40d29fce15583da63b5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-13.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-14.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-15.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-16.png",
+    "Bytes": 3799,
+    "SHA256": "c3717aa78a8ce6a674b20d33e993b5bf0bab061b92d299f904171d5025d4e15b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-17.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-18.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-19.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-20.png",
+    "Bytes": 6000,
+    "SHA256": "ea9375328b4f7d7db655841c39317e020b073706ea2d8440e419d60cfd30917e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-21.png",
+    "Bytes": 4521,
+    "SHA256": "2a0626da2c80af22403b00703b1abe1b845423826daf1a944fb593cb94d5235e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-22.png",
+    "Bytes": 3574,
+    "SHA256": "78ca32ff6c496059609acf0282ba97489db58a512688aaa6192ef021ca8373e2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-23.png",
+    "Bytes": 2661,
+    "SHA256": "59edf29b91e58d6e22a135549c1d67e256339a3b915ec3324a2635ec85bb503e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-24.png",
+    "Bytes": 3701,
+    "SHA256": "8f0206a24e1206a61267b7744c35051f2bd78e3736d874c1c4e5c73faa83fdc0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-25.png",
+    "Bytes": 4006,
+    "SHA256": "9a8c085583d485e25902ccec88da03ea56d820a4a08477c4aec43013c8754541"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-26.png",
+    "Bytes": 3701,
+    "SHA256": "8f0206a24e1206a61267b7744c35051f2bd78e3736d874c1c4e5c73faa83fdc0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-27.png",
+    "Bytes": 3899,
+    "SHA256": "f730e0cb89a7b1a7c3c8369784a1bd801cb747fa17b5207c357244792f8d6cbe"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-28.png",
+    "Bytes": 3363,
+    "SHA256": "a575db89e2bd4c0061d3736da39c060b419d68a34bc4f2ddeb13c8581e483eba"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-29.png",
+    "Bytes": 5094,
+    "SHA256": "b20cdb025a117ac34dc64f76d936e7e3146df77976faf44e5188fe8235c22584"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-30.png",
+    "Bytes": 5840,
+    "SHA256": "042c569f27f7dd1c74413bf2f6415c749b20f99dd184ceac08bd41b8274e979f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-31.png",
+    "Bytes": 4802,
+    "SHA256": "c855b303a8d7331a1a5ebe162eb52450188f0257e532894999b2794783d0515a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-32.png",
+    "Bytes": 4970,
+    "SHA256": "c6b29e23abb01b2235a587ca613aeca614e773e3ae764287160c7fd61904b825"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-33.png",
+    "Bytes": 4403,
+    "SHA256": "6c7eb4edfd4096b25c8b85ac2882381bda2bfe2f7dd483f84a3d2649aebfa4f2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-34.png",
+    "Bytes": 4583,
+    "SHA256": "b0cc62aa05c34379556505533e25db3332aae47ff430a38638ba550af5438501"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-35.png",
+    "Bytes": 3150,
+    "SHA256": "ffa419a2e9db0fc6768ab68ffb5acead74bd1e3e7db4d807e318d3e5ca5d05e0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/notice-36.png",
+    "Bytes": 6680,
+    "SHA256": "4144f5e0ce6d6b40db46f2803d5fe486aa555daee648f90a4a9b48c0b3a37e14"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/phone-nine-notice.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-03-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129304,
+    "SHA256": "7a86876da9c50ffe0c01f268eb45748aae9b19e5a0cbc396c7d604d0362eede4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-04-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129555,
+    "SHA256": "f3b32be70d6e6d9aa66b764c5a7fd00d4dbed1f98294c8825d487a0bf15c73de"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-05-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129358,
+    "SHA256": "ceda60f04a8dc6d4abcf9d806c76ec9f0ce6ba76d57c5c18583b198e1f05006b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-06-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129399,
+    "SHA256": "9c02933adbe7609a92b847a9ed7036ba9260c4757414db3bde11cebab0c67212"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-07-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126321,
+    "SHA256": "0c2e050b8527fce84cb1f3b53cb1888d44390c0c249f3dff0890c911f8059b44"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-08-GuestBookingWindow-PreviewButton.png",
+    "Bytes": 129304,
+    "SHA256": "7a86876da9c50ffe0c01f268eb45748aae9b19e5a0cbc396c7d604d0362eede4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-09-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126432,
+    "SHA256": "2cbfb16af92970dc93e8cb7e5ec3969f615cba1ea76ec8bd2cc244c15b4cc4d0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-10-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 127381,
+    "SHA256": "0202ddda5c9bb9bf91ab5d68879e987615634d5b9a14f9fdf9977644fb392650"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-11-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 133260,
+    "SHA256": "78f5d63da29082e108b6e49367e913975cfb4d306b04497eb12a9b414d8a3b66"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-12-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126309,
+    "SHA256": "5b7098f3058d4051d575558c7c422634605909a0d112cc5bfa5e511ebddef373"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-13-WalkInWindow-ReceiveButton.png",
+    "Bytes": 38704,
+    "SHA256": "0518447787cf5fd4b56c5d2a14ca728827833740f614243618cd73f83b4cb12b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-14-CustomersWindow-SaveButton.png",
+    "Bytes": 35630,
+    "SHA256": "c94d6dd93083953f4170337840308769b2e01bb6671adfa47adcca4621542dd4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-15-CustomersWindow-SearchButton.png",
+    "Bytes": 33956,
+    "SHA256": "99f275dce00d11d414fbf8eed39a4bdcaeb955aa9e8141b8130c32bac1bf9c4a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-16-CustomersWindow-SaveButton.png",
+    "Bytes": 38901,
+    "SHA256": "c6e2ebee4defdaadb73afc35305ef80882727ea3894465f25478dcbfa7184603"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-17-ReservationsWindow-SearchButton.png",
+    "Bytes": 40324,
+    "SHA256": "f8e94abfef8e4b6379f6ea01313002b73bcf4967bf8d87b76d69e85882a652b0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-18-SessionsWindow-SearchButton.png",
+    "Bytes": 30940,
+    "SHA256": "d633fd9f3a2fce0faab42914ea4a4a123a4b13a1054d0052780e096f9e7c288c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-19-InvoicesWindow-SearchButton.png",
+    "Bytes": 36625,
+    "SHA256": "c8cfda1646b538d4580719779d2ab5686c314a9c5d3f5a3e38fcc694e7b6ce42"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-20-GuestLookupWindow-SearchButton.png",
+    "Bytes": 29461,
+    "SHA256": "65d4dcb29bb658e5dce01def53521cfb743ff16b0128df27c1a7dd294a32a843"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-21-GuestLookupWindow-PreviewExtensionButton.png",
+    "Bytes": 50817,
+    "SHA256": "7123be5b3615538c3a5ac6c06537586fe8c3656bda868a4896ff278051b3517c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-22-GuestLookupWindow-ConfirmExtensionButton.png",
+    "Bytes": 36750,
+    "SHA256": "2cfac712259a7c8c7b877f0093a45a11eff84334a312da346dd51dc80d9d44d8"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-23-ServicesWindow-SaveButton.png",
+    "Bytes": 35670,
+    "SHA256": "83ddaf95a726445d05c3079968c483f92a53170df5ab75b09d3f452d9017dccb"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-24-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45413,
+    "SHA256": "ae083dc59cddbecbb5f93161c4c8674837a2892f20e3aa41f481306088dd038f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-25-GuestOrdersWindow-RemoveButton.png",
+    "Bytes": 44668,
+    "SHA256": "fb3a5dd34917c3a04724acefbebb27155c63251a5bcac6eda77b045ec981ea75"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-26-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45413,
+    "SHA256": "ae083dc59cddbecbb5f93161c4c8674837a2892f20e3aa41f481306088dd038f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-27-GuestOrdersWindow-PreviewButton.png",
+    "Bytes": 57807,
+    "SHA256": "7ba2d79e805ae7cdc68522be69a95bdc0fad1e8bfcab6f72b585a70f0e404e09"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-28-GuestOrdersWindow-ConfirmButton.png",
+    "Bytes": 46002,
+    "SHA256": "3e1920d168d2a7ebbab7a6bd2c73cecc1bf973de6cde1b08571671c770ad491f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-29-CheckoutWindow-PreviewButton.png",
+    "Bytes": 66018,
+    "SHA256": "f0ec020a2379446410db58abec10a0e6ad92ef75a912992d11a9219b8f02f359"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-30-CheckoutWindow-ConfirmButton.png",
+    "Bytes": 43138,
+    "SHA256": "edbdb8bbf3435c36bc59ed8267bbf3d6c736fdbbadf183d310ad449df36cc44a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-31-WalkInWindow-ReceiveButton.png",
+    "Bytes": 50596,
+    "SHA256": "09a953e5e3e747949bfacdb7f948e1adcea8adc97cafead656927aa1003ce14f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-32-WalkInWindow-ConfirmButton.png",
+    "Bytes": 56966,
+    "SHA256": "d493016bf0f4ce39d20ebf61e8b34265436a4309170e67883eb8cb36492e104a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-33-GuestLookupWindow-SearchButton.png",
+    "Bytes": 30933,
+    "SHA256": "e4bcf73bcc1a1931ee9f6b81b37761070fa660d096f35e7d3a8a1ace2859bc04"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-34-GuestLookupWindow-CancelButton.png",
+    "Bytes": 36056,
+    "SHA256": "f6a6419aabba68427e887b91b95e1ec96538254c80936deff118982bd22c02c0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-35-GuestLookupWindow-ConfirmButton.png",
+    "Bytes": 26689,
+    "SHA256": "f88faa567c64f0e87ad6fd084d4c8f8624baa0d0156a41e5c1518f3697d9e935"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/step-36-CustomersWindow-SearchButton.png",
+    "Bytes": 35333,
+    "SHA256": "f7e01246d952057eb27057de18d8d0de28395fdfee7d8072c8026a40a6139b6d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-debug/walkin-received.png",
+    "Bytes": 56966,
+    "SHA256": "d493016bf0f4ce39d20ebf61e8b34265436a4309170e67883eb8cb36492e104a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/booking-after-invalid.png",
+    "Bytes": 127053,
+    "SHA256": "a769922e45f3ff2273908224ed1985de57ac08a22e73ece72da15eda1df4b855"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/checkout-after-notice.png",
+    "Bytes": 42701,
+    "SHA256": "1d39adbc839506565a7de7176d4da100c1423808af9f7c5f4c1213dc66544fb2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-01.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-02.png",
+    "Bytes": 5740,
+    "SHA256": "40a0ad9a8ff9887b1bbe36531568f6e868ad0483ec831098e44ee07c62895528"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-03.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-04.png",
+    "Bytes": 5447,
+    "SHA256": "66853b96cedb9f1dbd4687a036ace1c39b09ae578916b465c4f30632d7dab0cf"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-05.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-06.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-07.png",
+    "Bytes": 3722,
+    "SHA256": "1f5f7bf96e2ca7e830d5509fd853f8031a74e781c8737e58578ecf82a22bcb29"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-08.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-09.png",
+    "Bytes": 3432,
+    "SHA256": "95232d2ea02879a6fdc4b9054e54d56ed5b0ea41fb89248f6fec83fe249b5015"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-10.png",
+    "Bytes": 3362,
+    "SHA256": "cadc47a1ccb07ffedc582f26918572d956ba552b78c38e868a7ecdfbe2d6b501"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-11.png",
+    "Bytes": 7132,
+    "SHA256": "e517765ec9d866ac33d97b2c7f63e384b7e6396f80c9f3f594cc58d76c011e00"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-12.png",
+    "Bytes": 3508,
+    "SHA256": "8734aca9d7b6e12a25d1f40311485402a17b4e08c60e6748fd0c320d482b3222"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-13.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-14.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-15.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-16.png",
+    "Bytes": 3816,
+    "SHA256": "bd0286ecd291adbf7a11cce4da07ff7b26241383538891d1fa322a3be08b11ac"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-17.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-18.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-19.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-20.png",
+    "Bytes": 6005,
+    "SHA256": "d4e4787073e92ddfec8f2c5e114c8a07cb14331cfbc6b7f7190897803367ef47"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-21.png",
+    "Bytes": 4545,
+    "SHA256": "8203f6f25fcec5a975e28df36a0b56b8da3e90f5fa8415b80b706eafaeb81b11"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-22.png",
+    "Bytes": 3602,
+    "SHA256": "e4d51cc8e0924ea68b57e20ab7b8672faa87fc214f8acdfcdaf9c42163e816d2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-23.png",
+    "Bytes": 2688,
+    "SHA256": "5806a84b8b27be60fea86ce1e8e3117b0897c407474998d34a29390d02977c7e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-24.png",
+    "Bytes": 3723,
+    "SHA256": "494d21d6c2cd814f8f45c7181dc54b7349c634dfc8ef0c6e744df8ba5ffa4b77"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-25.png",
+    "Bytes": 4021,
+    "SHA256": "6e3be9d9f80cd18f3b7ddec21daf9551383263f4e8ef8def697d866024ee9357"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-26.png",
+    "Bytes": 3723,
+    "SHA256": "494d21d6c2cd814f8f45c7181dc54b7349c634dfc8ef0c6e744df8ba5ffa4b77"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-27.png",
+    "Bytes": 3948,
+    "SHA256": "2d470cb94f9be9d42ff7cd329574e6fbb65f1e8e387a7eacde1af8f271a64519"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-28.png",
+    "Bytes": 3383,
+    "SHA256": "7957f43432dfa6f5c0c63e625a9660f64c2cc3b79bd92abbefbe7291bd314daf"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-29.png",
+    "Bytes": 5105,
+    "SHA256": "bb103963af46eeb61a99eb12711d1380118446862215a7ed53721d1ea8ffdb31"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-30.png",
+    "Bytes": 5857,
+    "SHA256": "a8616f29984e21659a713fa024374b0253c06bbc58b0798121b187006d9031d0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-31.png",
+    "Bytes": 4429,
+    "SHA256": "4f4b2052ccafc2440dfd3a7ba64df39ccb0542d579d92aa7ec0ac242998da345"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-32.png",
+    "Bytes": 4605,
+    "SHA256": "d6181f704cdd47e2e8c09eaf95c0eb436a055383a1305e220d857b11b817ee49"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-33.png",
+    "Bytes": 3165,
+    "SHA256": "e031e00769d2dfe9f3a4c704e15a5577bcbfc195f6177dbdaafa3da121a12a7e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/notice-34.png",
+    "Bytes": 6687,
+    "SHA256": "420a4b904840cc810491fbf667d9536066aff30ef619f977ac55e9e4533ad52c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/phone-nine-notice.png",
+    "Bytes": 5459,
+    "SHA256": "996f1f9ddcc64d893081ffa6e7f0e11ec54966d4c2cbf1cbd67baebdcfed8c9d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-03-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 128904,
+    "SHA256": "89880bd5b490113f5c1182cf3836551bd5a385c40f1fc27a7d16824c56ecc9e0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-04-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129167,
+    "SHA256": "ee267581875dd71d60a35e7bd009593939a12740adff7132513397a87af132ff"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-05-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 128962,
+    "SHA256": "430bafd8250ef6dc9ac91c01f6da89ca341278714b8fbd03dd985165e28298cc"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-06-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 128963,
+    "SHA256": "6d2f4e5500c28fa2aac2e00343de352b66f0f6a614d5df99e51c548aaac5c6d1"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-07-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 125968,
+    "SHA256": "320243061254bb3d4b28e7015e7a0a493fba91a98a11d8e29a600cc1009d8fa6"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-08-GuestBookingWindow-PreviewButton.png",
+    "Bytes": 128904,
+    "SHA256": "89880bd5b490113f5c1182cf3836551bd5a385c40f1fc27a7d16824c56ecc9e0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-09-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126018,
+    "SHA256": "aad37eee16fe9c8b403f95f1c052330d0d61f684aa6d2926d9ca4aec06886f96"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-10-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126955,
+    "SHA256": "747b6fb5625c4c1832e6f678d89d7e1df86eef47caded4d05d3f36da7f62ef7a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-11-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 133174,
+    "SHA256": "140628ed66d0b5446e39d88a9daf682931b83a13bcac22dffcf26c9920891f0c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-12-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126125,
+    "SHA256": "57a2d02410f5939ea0f7f5578329fa78aaa9dceab7be53d53639be274b5a0fef"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-13-WalkInWindow-ReceiveButton.png",
+    "Bytes": 38811,
+    "SHA256": "ea32a16922979473ae56ed60685ed253dc3bede0c6b9a9e03e1bf5d0b8cffc4c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-14-CustomersWindow-SaveButton.png",
+    "Bytes": 35703,
+    "SHA256": "dc970ac01bf9d1ec7576563ec56a08bd316f0af53a268e24c8505149f35319c1"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-15-CustomersWindow-SearchButton.png",
+    "Bytes": 34029,
+    "SHA256": "eec22dfcb807f94146862c1b7556b6adc62c5ea97e3b90c4a1e4bba5abc11b38"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-16-CustomersWindow-SaveButton.png",
+    "Bytes": 39061,
+    "SHA256": "ee1efd1e1975a86791220f9c85e2c462c5e004c8ccd87d133165eedbc85fba39"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-17-ReservationsWindow-SearchButton.png",
+    "Bytes": 40084,
+    "SHA256": "467a716b0a7e4eaa11a4ef7f1a6adbc6e85d22d691d32b175d0f74ffd35f172b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-18-SessionsWindow-SearchButton.png",
+    "Bytes": 31098,
+    "SHA256": "a3d78040ea6645fbdd1e4373fdb82b4060f2a05b649a42cbdd945f0d1c6542c1"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-19-InvoicesWindow-SearchButton.png",
+    "Bytes": 36474,
+    "SHA256": "bc75a4934c995a0bc20cd5a93fa5d1fdf9043e94bb0d89f391cf147673b3b91c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-20-GuestLookupWindow-SearchButton.png",
+    "Bytes": 29238,
+    "SHA256": "a47dc7ec37177941bb33ed59910b5acee5a48e6429c1621b69dbb91b456e5db5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-21-GuestLookupWindow-PreviewExtensionButton.png",
+    "Bytes": 28528,
+    "SHA256": "cf500c5f1c6ac7536fe619a60aec02876ba2f81c9d7a52fffecb6aba0f94d52b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-22-GuestLookupWindow-ConfirmExtensionButton.png",
+    "Bytes": 27145,
+    "SHA256": "679b97b3a199b113de23c09f6176a9d0671f20818191f1e2774022d7965ef6d8"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-23-ServicesWindow-SaveButton.png",
+    "Bytes": 35499,
+    "SHA256": "d83ae7caacef129f42e5cfd56b4df30662e11c82e058bbd6bfcd5250ccbcd3d8"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-24-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45510,
+    "SHA256": "fa644d6a73cd0e9556363b90a5c32e7b5e99fa5f3665fbcbc9f633faf3596aaf"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-25-GuestOrdersWindow-RemoveButton.png",
+    "Bytes": 44545,
+    "SHA256": "fff8a0d589d3f7d2281f0f0e1ed75d2fe59c4dac91fd3b6be66e00d19d076e14"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-26-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45510,
+    "SHA256": "fa644d6a73cd0e9556363b90a5c32e7b5e99fa5f3665fbcbc9f633faf3596aaf"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-27-GuestOrdersWindow-PreviewButton.png",
+    "Bytes": 57457,
+    "SHA256": "cdec153f26d118cb0970cb1910b525e88d3e6a3a871f002c64f8e58d8223b2dc"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-28-GuestOrdersWindow-ConfirmButton.png",
+    "Bytes": 45708,
+    "SHA256": "c66e549e4bb5b2bd7daf4950909e0b91c4d9642bbf838f73649df349adab9282"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-29-CheckoutWindow-PreviewButton.png",
+    "Bytes": 65576,
+    "SHA256": "9bf573597d1e82ef386a0719f5b0b8bf9433649fc3b9490adb279e4a77c92fda"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-30-CheckoutWindow-ConfirmButton.png",
+    "Bytes": 42701,
+    "SHA256": "1d39adbc839506565a7de7176d4da100c1423808af9f7c5f4c1213dc66544fb2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-31-GuestLookupWindow-SearchButton.png",
+    "Bytes": 30697,
+    "SHA256": "3b15c03da05f9946c8160e49fa45049de25ecc2cf1a29eaf6842ecbf93bc23de"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-32-GuestLookupWindow-CancelButton.png",
+    "Bytes": 35767,
+    "SHA256": "2ce43501d41b6d4f3d1c531cf29cdeac19ab771d82b1facf47c2a839ca66f142"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-33-GuestLookupWindow-ConfirmButton.png",
+    "Bytes": 26680,
+    "SHA256": "4321a03be963b741d99cb40e5e9f2853bb3330060f95ff7355b2c3c6391734b2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release/step-34-CustomersWindow-SearchButton.png",
+    "Bytes": 35273,
+    "SHA256": "4c3afb650e2be771878a220d006dbac4e3624a5ec4b2769fc5387322d12a594d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/booking-after-invalid.png",
+    "Bytes": 127473,
+    "SHA256": "d16ef4820825e2b5b716fba99718876a4bd64cad22f6c571b5bf5bac3c5bcd07"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/checkout-after-notice.png",
+    "Bytes": 43138,
+    "SHA256": "edbdb8bbf3435c36bc59ed8267bbf3d6c736fdbbadf183d310ad449df36cc44a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/guest-bill.png",
+    "Bytes": 37124,
+    "SHA256": "60feb220c9e3ff9043bcc870111e0d57f0cf24949e3f1f386d19cb47e1786349"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/lookup-active-session.png",
+    "Bytes": 38853,
+    "SHA256": "7aa884336ea5e175b6e4052ee9368f51d5aeb7eb852f79d50857cf93e48a57a5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-01.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-02.png",
+    "Bytes": 5726,
+    "SHA256": "7036be1c178b9f9e11b23290e58d53debd6773e6586ed96da18ee968b3cce445"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-03.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-04.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-05.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-06.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-07.png",
+    "Bytes": 3699,
+    "SHA256": "5ac757b7e37da5db4ea4ad9fe15fd2286dd2719df8ed27461d444a7327c1291f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-08.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-09.png",
+    "Bytes": 3408,
+    "SHA256": "d35594d364de592755d0938f835408f29b3d8eb3c831f1d9dabb272ecfce430d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-10.png",
+    "Bytes": 3345,
+    "SHA256": "194af9fc50cceee117d33b5fe59a56befcd1267fdaf6e0d270facda032ddf9a0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-11.png",
+    "Bytes": 7112,
+    "SHA256": "8c364574cbfc05b2b913cbdf52ff1d7a41ec6c5c47d2822554142a9a9e2a7022"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-12.png",
+    "Bytes": 3484,
+    "SHA256": "eaf0e367a706b9a90b15a23e063038d2f92342db5b9ec40d29fce15583da63b5"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-13.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-14.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-15.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-16.png",
+    "Bytes": 3799,
+    "SHA256": "c3717aa78a8ce6a674b20d33e993b5bf0bab061b92d299f904171d5025d4e15b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-17.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-18.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-19.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-20.png",
+    "Bytes": 6000,
+    "SHA256": "ea9375328b4f7d7db655841c39317e020b073706ea2d8440e419d60cfd30917e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-21.png",
+    "Bytes": 4521,
+    "SHA256": "2a0626da2c80af22403b00703b1abe1b845423826daf1a944fb593cb94d5235e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-22.png",
+    "Bytes": 3574,
+    "SHA256": "78ca32ff6c496059609acf0282ba97489db58a512688aaa6192ef021ca8373e2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-23.png",
+    "Bytes": 2661,
+    "SHA256": "59edf29b91e58d6e22a135549c1d67e256339a3b915ec3324a2635ec85bb503e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-24.png",
+    "Bytes": 3701,
+    "SHA256": "8f0206a24e1206a61267b7744c35051f2bd78e3736d874c1c4e5c73faa83fdc0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-25.png",
+    "Bytes": 4006,
+    "SHA256": "9a8c085583d485e25902ccec88da03ea56d820a4a08477c4aec43013c8754541"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-26.png",
+    "Bytes": 3701,
+    "SHA256": "8f0206a24e1206a61267b7744c35051f2bd78e3736d874c1c4e5c73faa83fdc0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-27.png",
+    "Bytes": 3899,
+    "SHA256": "f730e0cb89a7b1a7c3c8369784a1bd801cb747fa17b5207c357244792f8d6cbe"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-28.png",
+    "Bytes": 3363,
+    "SHA256": "a575db89e2bd4c0061d3736da39c060b419d68a34bc4f2ddeb13c8581e483eba"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-29.png",
+    "Bytes": 5094,
+    "SHA256": "b20cdb025a117ac34dc64f76d936e7e3146df77976faf44e5188fe8235c22584"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-30.png",
+    "Bytes": 5840,
+    "SHA256": "042c569f27f7dd1c74413bf2f6415c749b20f99dd184ceac08bd41b8274e979f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-31.png",
+    "Bytes": 4802,
+    "SHA256": "c855b303a8d7331a1a5ebe162eb52450188f0257e532894999b2794783d0515a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-32.png",
+    "Bytes": 4970,
+    "SHA256": "c6b29e23abb01b2235a587ca613aeca614e773e3ae764287160c7fd61904b825"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-33.png",
+    "Bytes": 4403,
+    "SHA256": "6c7eb4edfd4096b25c8b85ac2882381bda2bfe2f7dd483f84a3d2649aebfa4f2"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-34.png",
+    "Bytes": 4583,
+    "SHA256": "b0cc62aa05c34379556505533e25db3332aae47ff430a38638ba550af5438501"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-35.png",
+    "Bytes": 3150,
+    "SHA256": "ffa419a2e9db0fc6768ab68ffb5acead74bd1e3e7db4d807e318d3e5ca5d05e0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/notice-36.png",
+    "Bytes": 6680,
+    "SHA256": "4144f5e0ce6d6b40db46f2803d5fe486aa555daee648f90a4a9b48c0b3a37e14"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/phone-nine-notice.png",
+    "Bytes": 5441,
+    "SHA256": "2a77c7666bdb7f31aceb9bdd7edc896d29b61e5d37a3c6846920d46f763a9730"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-03-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129304,
+    "SHA256": "7a86876da9c50ffe0c01f268eb45748aae9b19e5a0cbc396c7d604d0362eede4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-04-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129555,
+    "SHA256": "f3b32be70d6e6d9aa66b764c5a7fd00d4dbed1f98294c8825d487a0bf15c73de"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-05-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129358,
+    "SHA256": "ceda60f04a8dc6d4abcf9d806c76ec9f0ce6ba76d57c5c18583b198e1f05006b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-06-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 129399,
+    "SHA256": "9c02933adbe7609a92b847a9ed7036ba9260c4757414db3bde11cebab0c67212"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-07-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126321,
+    "SHA256": "0c2e050b8527fce84cb1f3b53cb1888d44390c0c249f3dff0890c911f8059b44"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-08-GuestBookingWindow-PreviewButton.png",
+    "Bytes": 129304,
+    "SHA256": "7a86876da9c50ffe0c01f268eb45748aae9b19e5a0cbc396c7d604d0362eede4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-09-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126432,
+    "SHA256": "2cbfb16af92970dc93e8cb7e5ec3969f615cba1ea76ec8bd2cc244c15b4cc4d0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-10-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 127381,
+    "SHA256": "0202ddda5c9bb9bf91ab5d68879e987615634d5b9a14f9fdf9977644fb392650"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-11-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 133260,
+    "SHA256": "78f5d63da29082e108b6e49367e913975cfb4d306b04497eb12a9b414d8a3b66"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-12-GuestBookingWindow-SubmitButton.png",
+    "Bytes": 126309,
+    "SHA256": "5b7098f3058d4051d575558c7c422634605909a0d112cc5bfa5e511ebddef373"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-13-WalkInWindow-ReceiveButton.png",
+    "Bytes": 38704,
+    "SHA256": "0518447787cf5fd4b56c5d2a14ca728827833740f614243618cd73f83b4cb12b"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-14-CustomersWindow-SaveButton.png",
+    "Bytes": 35630,
+    "SHA256": "c94d6dd93083953f4170337840308769b2e01bb6671adfa47adcca4621542dd4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-15-CustomersWindow-SearchButton.png",
+    "Bytes": 33956,
+    "SHA256": "99f275dce00d11d414fbf8eed39a4bdcaeb955aa9e8141b8130c32bac1bf9c4a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-16-CustomersWindow-SaveButton.png",
+    "Bytes": 38901,
+    "SHA256": "c6e2ebee4defdaadb73afc35305ef80882727ea3894465f25478dcbfa7184603"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-17-ReservationsWindow-SearchButton.png",
+    "Bytes": 40324,
+    "SHA256": "f8e94abfef8e4b6379f6ea01313002b73bcf4967bf8d87b76d69e85882a652b0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-18-SessionsWindow-SearchButton.png",
+    "Bytes": 30940,
+    "SHA256": "d633fd9f3a2fce0faab42914ea4a4a123a4b13a1054d0052780e096f9e7c288c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-19-InvoicesWindow-SearchButton.png",
+    "Bytes": 36625,
+    "SHA256": "c8cfda1646b538d4580719779d2ab5686c314a9c5d3f5a3e38fcc694e7b6ce42"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-20-GuestLookupWindow-SearchButton.png",
+    "Bytes": 29461,
+    "SHA256": "65d4dcb29bb658e5dce01def53521cfb743ff16b0128df27c1a7dd294a32a843"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-21-GuestLookupWindow-PreviewExtensionButton.png",
+    "Bytes": 50817,
+    "SHA256": "7123be5b3615538c3a5ac6c06537586fe8c3656bda868a4896ff278051b3517c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-22-GuestLookupWindow-ConfirmExtensionButton.png",
+    "Bytes": 36750,
+    "SHA256": "2cfac712259a7c8c7b877f0093a45a11eff84334a312da346dd51dc80d9d44d8"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-23-ServicesWindow-SaveButton.png",
+    "Bytes": 35670,
+    "SHA256": "83ddaf95a726445d05c3079968c483f92a53170df5ab75b09d3f452d9017dccb"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-24-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45413,
+    "SHA256": "ae083dc59cddbecbb5f93161c4c8674837a2892f20e3aa41f481306088dd038f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-25-GuestOrdersWindow-RemoveButton.png",
+    "Bytes": 44668,
+    "SHA256": "fb3a5dd34917c3a04724acefbebb27155c63251a5bcac6eda77b045ec981ea75"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-26-GuestOrdersWindow-AddButton.png",
+    "Bytes": 45413,
+    "SHA256": "ae083dc59cddbecbb5f93161c4c8674837a2892f20e3aa41f481306088dd038f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-27-GuestOrdersWindow-PreviewButton.png",
+    "Bytes": 57807,
+    "SHA256": "7ba2d79e805ae7cdc68522be69a95bdc0fad1e8bfcab6f72b585a70f0e404e09"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-28-GuestOrdersWindow-ConfirmButton.png",
+    "Bytes": 46002,
+    "SHA256": "3e1920d168d2a7ebbab7a6bd2c73cecc1bf973de6cde1b08571671c770ad491f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-29-CheckoutWindow-PreviewButton.png",
+    "Bytes": 66018,
+    "SHA256": "f0ec020a2379446410db58abec10a0e6ad92ef75a912992d11a9219b8f02f359"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-30-CheckoutWindow-ConfirmButton.png",
+    "Bytes": 43138,
+    "SHA256": "edbdb8bbf3435c36bc59ed8267bbf3d6c736fdbbadf183d310ad449df36cc44a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-31-WalkInWindow-ReceiveButton.png",
+    "Bytes": 50596,
+    "SHA256": "09a953e5e3e747949bfacdb7f948e1adcea8adc97cafead656927aa1003ce14f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-32-WalkInWindow-ConfirmButton.png",
+    "Bytes": 56966,
+    "SHA256": "d493016bf0f4ce39d20ebf61e8b34265436a4309170e67883eb8cb36492e104a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-33-GuestLookupWindow-SearchButton.png",
+    "Bytes": 30933,
+    "SHA256": "e4bcf73bcc1a1931ee9f6b81b37761070fa660d096f35e7d3a8a1ace2859bc04"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-34-GuestLookupWindow-CancelButton.png",
+    "Bytes": 36056,
+    "SHA256": "f6a6419aabba68427e887b91b95e1ec96538254c80936deff118982bd22c02c0"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-35-GuestLookupWindow-ConfirmButton.png",
+    "Bytes": 26689,
+    "SHA256": "f88faa567c64f0e87ad6fd084d4c8f8624baa0d0156a41e5c1518f3697d9e935"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/step-36-CustomersWindow-SearchButton.png",
+    "Bytes": 35333,
+    "SHA256": "f7e01246d952057eb27057de18d8d0de28395fdfee7d8072c8026a40a6139b6d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/feedbackui-release-final/walkin-received.png",
+    "Bytes": 56966,
+    "SHA256": "d493016bf0f4ce39d20ebf61e8b34265436a4309170e67883eb8cb36492e104a"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/checkin-exact-closing.png",
+    "Bytes": 79856,
+    "SHA256": "7096297c056dc2192800e7dffe74c560decbc399f674091c5f4e44723726077e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/lunch-notice.png",
+    "Bytes": 7223,
+    "SHA256": "1b07d3bf47148fae7953863c0365c0dd1bd0dde96346a7cae671861d29dfb82c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-01.png",
+    "Bytes": 7223,
+    "SHA256": "1b07d3bf47148fae7953863c0365c0dd1bd0dde96346a7cae671861d29dfb82c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-02.png",
+    "Bytes": 7223,
+    "SHA256": "1b07d3bf47148fae7953863c0365c0dd1bd0dde96346a7cae671861d29dfb82c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-03.png",
+    "Bytes": 4710,
+    "SHA256": "b0a8543a3de50346bc1f25eb948797f0e95e173a3058b1d8f9ffe4114ee8cefd"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-04.png",
+    "Bytes": 10472,
+    "SHA256": "3b6d3721087d5ef05701ddcf2d25048b0f99706f1c986ea284c9b9a22cf9b5ae"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-05.png",
+    "Bytes": 13039,
+    "SHA256": "d60e7bf5fbbbe35bb8d9a3d0e8ed8790d68541d92e8b1688670ecd8fb4f8ce89"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-06.png",
+    "Bytes": 12477,
+    "SHA256": "b7eed0dee269183c2d8ee3590937972c563a1b002371e36ceed1cb394dc05c3c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-07.png",
+    "Bytes": 7223,
+    "SHA256": "1b07d3bf47148fae7953863c0365c0dd1bd0dde96346a7cae671861d29dfb82c"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-08.png",
+    "Bytes": 4710,
+    "SHA256": "b0a8543a3de50346bc1f25eb948797f0e95e173a3058b1d8f9ffe4114ee8cefd"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-09.png",
+    "Bytes": 12981,
+    "SHA256": "535291d5b6690e1c3e531d152cec1e2a29461bb8d376cf7b2776f984e5089b43"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-10.png",
+    "Bytes": 12461,
+    "SHA256": "aa34468e5f70442c1a39e566f35ad7b33c9f1006c8403288f94bcbd1dfe9a0d8"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-11.png",
+    "Bytes": 11229,
+    "SHA256": "9c1dbd7b712e8e8486191d7685b19a45cdaa953262275f80f5323c29fe52e353"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-12.png",
+    "Bytes": 3692,
+    "SHA256": "c9482a7054816964f04033445033cc8e3fc2f0fb4f430e09a081174a4096f9b4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-13.png",
+    "Bytes": 11241,
+    "SHA256": "18f6c9c6d84d5120e5370e24ac1a830394ad5ae5146cf780f77b2257b70e5354"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-14.png",
+    "Bytes": 3692,
+    "SHA256": "c9482a7054816964f04033445033cc8e3fc2f0fb4f430e09a081174a4096f9b4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-15.png",
+    "Bytes": 3824,
+    "SHA256": "c16eabedb4e708d984bd3b3096370852f6c8a80e9c1361f638c9ee4831eecf3f"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-16.png",
+    "Bytes": 8934,
+    "SHA256": "fac70321f386698f560fdae321757aa7196e76bef7d169f436b2d2cd172e3d08"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-17.png",
+    "Bytes": 3692,
+    "SHA256": "c9482a7054816964f04033445033cc8e3fc2f0fb4f430e09a081174a4096f9b4"
+  },
+  {
+    "Path": "docs/images/20261105-flows/hours-release/notice-18.png",
+    "Bytes": 3880,
+    "SHA256": "b83453fe96ba4dcf63ce3d58e62cfa153e1e93257467a2fbf5a3f70f322a8ef9"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-compact.png",
+    "Bytes": 35862,
+    "SHA256": "b89a6e86af000fb8ecd6a770de848e0f93553e3eca1e09c6c2a022a6bd1787cc"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-long-1.png",
+    "Bytes": 122341,
+    "SHA256": "abb75cf8428f8b09773950eb7c93e23a8f4fb47e0cc3c5a1214ff291090d8777"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-long-2.png",
+    "Bytes": 132217,
+    "SHA256": "bd79f66217c5d1d64802b1bb3fec9791a9c14efb58f603fdf0b3825e785031a7"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-long-3.png",
+    "Bytes": 122938,
+    "SHA256": "48c4fe47fabcc4437777595bc21802875652fc05cb1bf951b1a7100a17d6e838"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-long-4.png",
+    "Bytes": 19377,
+    "SHA256": "a65c17fb4dc727e1158741125f0d1f46211666bd24d1dafc11af6af34f7f9036"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-long-window.png",
+    "Bytes": 84681,
+    "SHA256": "eb7499568a379eeb7a3ebc6b9d00bc7ae8d496fbbd1d3fc8c6921397b4878b7e"
+  },
+  {
+    "Path": "docs/images/20261105-flows/invoiceprinting-release/invoice-print-preview.png",
+    "Bytes": 50033,
+    "SHA256": "71a208315955e4fd154e27a8618b7c576cf17b03841798cb309b4706f4010353"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release/mysql-guest-main.png",
+    "Bytes": 42516,
+    "SHA256": "ee6eb300e10827d1295884721f5a5f286223e3bf0173b44b05aa2bacd9f0c6ec"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-admin-dashboard.png",
+    "Bytes": 60815,
+    "SHA256": "309423e026480ffdff55de58807c85f2c37b16aa598f45a5a146c707b1faa638"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-customer-history.png",
+    "Bytes": 35592,
+    "SHA256": "1fb3df547e2903fd3b7d4ff30bc8db15c6586c427a1e57dbcdad6376ff35e336"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-guest-main.png",
+    "Bytes": 42516,
+    "SHA256": "ee6eb300e10827d1295884721f5a5f286223e3bf0173b44b05aa2bacd9f0c6ec"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-login-notice.png",
+    "Bytes": 3041,
+    "SHA256": "b4325efc85154ed82e0911757e0c74c9de0da810d90ff15d937642c68e5a67cf"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-revenue.png",
+    "Bytes": 44990,
+    "SHA256": "e3242eca4fc3f362cd48b02c2b6b4609f7e1b2cbf4818ede3ee1e3a6e6efd73d"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-corrected/mysql-room-report.png",
+    "Bytes": 58581,
+    "SHA256": "859152c5c1f185600b102ecb6095931b7fddafb308fc2270bb2b2dd41ebb4ada"
+  },
+  {
+    "Path": "docs/images/20261105-flows/operationsui-release-final/mysql-guest-main.png",
+    "Bytes": 42516,
+    "SHA256": "ee6eb300e10827d1295884721f5a5f286223e3bf0173b44b05aa2bacd9f0c6ec"
+  }
+]

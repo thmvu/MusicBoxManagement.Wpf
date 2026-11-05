@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
@@ -45,7 +45,23 @@ public static class MusicBoxMySqlOperationsUiChecks
             clock.Value=clock.Value.AddHours(1);var sessions=new MySqlRoomSessionService(db,clock);var session=sessions.CreateWalkIn(actor,new WalkInRequest{RoomId=room,FullName="Khách UI",PhoneNumber="0901234567"}).Session;new MySqlOrderService(db,clock).CreateStaff(actor,session.RoomSessionId,new[]{new OrderLineRequest{ServiceId=1,Quantity=2}});clock.Value=clock.Value.AddMinutes(30);var paid=new MySqlCheckoutService(db,clock).ConfirmStaff(actor,session.RoomSessionId,"Cash");
             var yesterday=today.AddDays(-1);
             var expired=new MySqlReservationService(db,new Clock{Value=new DateTimeOffset(yesterday.AddHours(8),BookingHours.VietnamOffset)}).CreateGuest(new ReservationRequest{RoomId=room,FullName="Worker",PhoneNumber="0909990001",StartTime=new DateTimeOffset(yesterday.AddHours(9),BookingHours.VietnamOffset),DurationMinutes=60});runtime=new ApplicationServices("MySql",name,root);Await(runtime.Worker.StartAsync());Check((string)Sql(db,"SELECT Status FROM Reservations WHERE ReservationId="+expired.ReservationId)=="NoShow","Configured MySQL worker did not process expired booking");var main=runtime.Window;main.Show();Pump(()=>Field<Button>(main,"LoginButton").IsEnabled&&Field<MainViewModel>(main,"viewModel").RoomTypes.Count==2);Image(main,output,"mysql-guest-main");
-            var driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(40)};bool submitted=false;driver.Tick+=(s,e)=>{var dialog=app.Windows.OfType<AuthenticationWindow>().FirstOrDefault();if(dialog!=null&&!submitted){Field<TextBox>(dialog,"UserNameBox").Text="admin";Field<PasswordBox>(dialog,"PasswordInput").Password=password;submitted=true;Click(Field<Button>(dialog,"SubmitButton"));}};driver.Start();try{Click(Field<Button>(main,"LoginButton"));Pump(()=>Field<Grid>(main,"StaffPanel").Visibility==Visibility.Visible&&!Field<DashboardViewModel>(main,"dashboard").IsBusy);}finally{driver.Stop();}
+            var driver=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(40)};bool submitted=false;string loginFailure=null;int loginNotices=0;var loginWatch=Stopwatch.StartNew();
+            driver.Tick+=(s,e)=>{
+                var dialog=app.Windows.OfType<AuthenticationWindow>().FirstOrDefault();
+                var notice=app.Windows.Cast<Window>().FirstOrDefault(w=>w.Name=="UserFeedbackDialog"&&w.IsVisible);
+                if(notice!=null){
+                    driver.Stop();try{
+                        var text=((TextBlock)notice.FindName("MessageText")).Text;loginNotices++;
+                        notice.UpdateLayout();notice.Dispatcher.Invoke(DispatcherPriority.ContextIdle,new Action(()=>{}));Image(notice,output,"mysql-login-notice");
+                        if(text!="Đăng nhập thành công.")loginFailure="Unexpected login notice: "+text;
+                        ((Button)notice.FindName("AcceptButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                        if(loginFailure!=null&&dialog!=null)dialog.Close();
+                    }finally{driver.Start();}return;
+                }
+                if(loginWatch.Elapsed.TotalSeconds>90&&dialog!=null){loginFailure="Authentication UI driver timeout";dialog.Close();return;}
+                if(dialog!=null&&!submitted){Field<TextBox>(dialog,"UserNameBox").Text="admin";Field<PasswordBox>(dialog,"PasswordInput").Password=password;submitted=true;Click(Field<Button>(dialog,"SubmitButton"));}
+            };
+            driver.Start();try{Click(Field<Button>(main,"LoginButton"));Pump(()=>loginFailure!=null||(Field<Grid>(main,"StaffPanel").Visibility==Visibility.Visible&&!Field<DashboardViewModel>(main,"dashboard").IsBusy));Check(loginFailure==null,loginFailure);Check(loginNotices==1,"Login success popup was missing or repeated.");}finally{driver.Stop();}
             Check((string)typeof(LoginSession).GetProperty("DatabaseScope",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Field<LoginSession>(main,"session"),null)=="mysql:"+name,"Main authenticated against wrong provider");Check(Field<DashboardViewModel>(main,"dashboard").Snapshot.TodayRevenue==paid.TotalAmount,"Dashboard not bound to MySQL invoice");Image(main,output,"mysql-admin-dashboard");
             var report=new RevenueReportViewModel(new MySqlReportService(db),actor);Await(report.SearchAsync());Check(report.Report!=null&&report.Report.TotalAmount==paid.TotalAmount,"Revenue VM failed");var reportWindow=new RevenueReportWindow(report);reportWindow.Show();Pump(()=>!report.IsBusy);Image(reportWindow,output,"mysql-revenue");reportWindow.Close();
             var roomReport=new RoomUsageReportViewModel(new MySqlRoomUsageReportService(db),actor);Await(roomReport.SearchAsync());var roomWindow=new RoomUsageReportWindow(roomReport);roomWindow.Show();Pump(()=>!roomReport.IsBusy);Check(roomReport.Report.CompletedCount==1,"Room report VM failed");Image(roomWindow,output,"mysql-room-report");roomWindow.Close();

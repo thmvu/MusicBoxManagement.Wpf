@@ -1,0 +1,3 @@
+RUN Availability build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS Availability: Vietnam dates/shifts/slots/durations, room/customer overlap, grace tick boundaries, session/walk-in/overdue rules and transaction writers on GUID MySQL.
+COMPLETE Availability

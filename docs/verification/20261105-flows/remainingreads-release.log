@@ -1,0 +1,6 @@
+RUN RemainingReads build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Revenue test database: musicbox_test_cef70914a6194ef99091564e179a38b7
+PASS remaining reads: real completed/Active/booking state, shifts/CreatedAt/locked room, canonical history/Invoice permissions, sales snapshot/Active exclusion, four Excel exports
+PASS sales 12 real served services/invoice: same-name IDs stay separate, Top10 cutoff/quantity ranking and service filter
+PASS MySQL RevenueReport/Excel: live RBAC, real checkout PaidAt/tick bounds/decimal beyond Int64/snapshot groups, Active exclusion, Excel three modes/current Export, RR vs real checkout/revoke; GUID only, no UI/import
+COMPLETE RemainingReads

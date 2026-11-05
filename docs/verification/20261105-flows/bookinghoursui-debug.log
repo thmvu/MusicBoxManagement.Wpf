@@ -1,0 +1,6 @@
+RUN BookingHoursUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Debug
+Hours fixture: musicbox_test_0d5ec0b8affb4cea94df4ed9847f9b76
+PASS Guest/Staff booking: lunch/closing no service call or writes; exact12/23 accepted with early-arrival warning; direct preview no throw.
+PASS CheckIn: late lunch/closing popup/no-write; changed clock reconfirm guard/no throws; server rollback; exact12/23 accepted. Notices=18
+Images: docs/images/20261105-flows/bookinghoursui-debug
+COMPLETE BookingHoursUi

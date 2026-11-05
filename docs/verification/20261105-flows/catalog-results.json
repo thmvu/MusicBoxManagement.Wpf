@@ -1,0 +1,100 @@
+﻿[
+    {
+        "Suite":  "Foundation",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  28.8,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\foundation-release.log"
+    },
+    {
+        "Suite":  "Initialize",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  37.3,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\initialize-release.log"
+    },
+    {
+        "Suite":  "Account",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  105.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\account-release.log"
+    },
+    {
+        "Suite":  "AccountBatch",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  26.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\accountbatch-release.log"
+    },
+    {
+        "Suite":  "PermissionMatrix",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  105.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\permissionmatrix-release.log"
+    },
+    {
+        "Suite":  "AuditLog",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  69.3,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\auditlog-release.log"
+    },
+    {
+        "Suite":  "RoomType",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  50,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\roomtype-release.log"
+    },
+    {
+        "Suite":  "Room",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  133.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\room-release.log"
+    },
+    {
+        "Suite":  "Service",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  55.3,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\service-release.log"
+    },
+    {
+        "Suite":  "Customer",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  56.8,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\customer-release.log"
+    },
+    {
+        "Suite":  "RevenueReport",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  75.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\revenuereport-release.log"
+    },
+    {
+        "Suite":  "RemainingReads",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  108.6,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\remainingreads-release.log"
+    },
+    {
+        "Suite":  "ReadBatch",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  155.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\readbatch-release.log"
+    },
+    {
+        "Suite":  "OrderBatch",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  51.6,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\orderbatch-release.log"
+    }
+]

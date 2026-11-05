@@ -1,0 +1,5 @@
+RUN PermissionMatrix build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Permission matrix test database: musicbox_test_ce427cea2bdf4910a8c0d487b9a3b119
+PASS Matrix validation/dependencies/current grants/legacy cleanup/no-op/rollback
+PASS MySQL Permission matrix: Admin-only/current rights, independent roles, immutable Admin/Staff limits/dependencies, raw revision/stale/no-op/legacy cleanup, atomic audit rollback, concurrent real matrix writers, fresh clock and real account lock after role wait; GUID only, no provider/UI/import
+COMPLETE PermissionMatrix

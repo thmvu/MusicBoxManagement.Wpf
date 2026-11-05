@@ -1,0 +1,18 @@
+﻿[
+    {
+        "Suite":  "OperationsUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  43.6,
+        "Log":  "docs/verification/20261105-flows/operationsui-release-corrected.log",
+        "Images":  "docs/images/20261105-flows/operationsui-release-corrected"
+    },
+    {
+        "Suite":  "BookingHoursUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  68.3,
+        "Log":  "docs/verification/20261105-flows/bookinghoursui-release-corrected.log",
+        "Images":  "docs/images/20261105-flows/bookinghoursui-release-corrected"
+    }
+]

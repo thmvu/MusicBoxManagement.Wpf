@@ -1,0 +1,4 @@
+RUN StaffReservation build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Staff reservation test database: musicbox_test_c5041436b8b947199aad884bbef277c5
+PASS MySQL StaffReservations: View-only/current flags, PII snapshot/phone/date/status, real CancelStaff/audit/replay, NoShow ticks, revoke during maintenance/read, Cancel-only and stamp guards.
+COMPLETE StaffReservation

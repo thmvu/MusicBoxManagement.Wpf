@@ -1,0 +1,107 @@
+﻿[
+    {
+        "Suite":  "Availability",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  64.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\availability-release.log"
+    },
+    {
+        "Suite":  "Reservation",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  126.9,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\reservation-release.log"
+    },
+    {
+        "Suite":  "BookingRead",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  70.6,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\bookingread-release.log"
+    },
+    {
+        "Suite":  "StaffReservation",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  74,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\staffreservation-release.log"
+    },
+    {
+        "Suite":  "CheckIn",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  154.9,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\checkin-release.log"
+    },
+    {
+        "Suite":  "WalkIn",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  164.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\walkin-release.log"
+    },
+    {
+        "Suite":  "Sessions",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  119.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\sessions-release.log"
+    },
+    {
+        "Suite":  "GuestSessions",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  247.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\guestsessions-release.log"
+    },
+    {
+        "Suite":  "Order",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  250.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\order-release.log"
+    },
+    {
+        "Suite":  "Billing",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  138.7,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\billing-release.log"
+    },
+    {
+        "Suite":  "Checkout",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  338.5,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\checkout-release.log"
+    },
+    {
+        "Suite":  "Invoice",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  101,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\invoice-release.log"
+    },
+    {
+        "Suite":  "Calendar",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  44.3,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\calendar-release.log"
+    },
+    {
+        "Suite":  "Dashboard",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  151.1,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\dashboard-release.log"
+    },
+    {
+        "Suite":  "NoShowLock",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  41.2,
+        "Log":  "D:\\vu\\hoctap\\MusicBoxManagement.Wpf\\docs\\verification\\20261105-flows\\noshowlock-release.log"
+    }
+]

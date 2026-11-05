@@ -1,0 +1,58 @@
+﻿[
+    {
+        "Suite":  "BookingHoursUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Log":  "hours-ui-release.log",
+        "Images":  "hours-release",
+        "Capture":  "initial images have missing background; use Debug images"
+    },
+    {
+        "Suite":  "FeedbackUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  81,
+        "Log":  "docs/verification/20261105-flows/feedbackui-release.log",
+        "Images":  "docs/images/20261105-flows/feedbackui-release"
+    },
+    {
+        "Suite":  "CounterUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  51,
+        "Log":  "docs/verification/20261105-flows/counterui-release.log",
+        "Images":  "docs/images/20261105-flows/counterui-release"
+    },
+    {
+        "Suite":  "OperationsUi",
+        "Configuration":  "Release",
+        "ExitCode":  -1,
+        "Seconds":  304.6,
+        "Log":  "docs/verification/20261105-flows/operationsui-release.log",
+        "Images":  "docs/images/20261105-flows/operationsui-release"
+    },
+    {
+        "Suite":  "InvoicePrinting",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  100.5,
+        "Log":  "docs/verification/20261105-flows/invoiceprinting-release.log",
+        "Images":  "docs/images/20261105-flows/invoiceprinting-release"
+    },
+    {
+        "Suite":  "BookingHoursUi",
+        "Configuration":  "Debug",
+        "ExitCode":  0,
+        "Seconds":  65.6,
+        "Log":  "docs/verification/20261105-flows/bookinghoursui-debug.log",
+        "Images":  "docs/images/20261105-flows/bookinghoursui-debug"
+    },
+    {
+        "Suite":  "FeedbackUi",
+        "Configuration":  "Debug",
+        "ExitCode":  0,
+        "Seconds":  76.7,
+        "Log":  "docs/verification/20261105-flows/feedbackui-debug.log",
+        "Images":  "docs/images/20261105-flows/feedbackui-debug"
+    }
+]

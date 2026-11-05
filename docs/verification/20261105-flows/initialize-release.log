@@ -1,0 +1,5 @@
+RUN Initialize build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Initialize fixture: musicbox_test_7fc050ede66041afac8317a5282d4dea
+Ready initialize under held schema lock: 1634ms
+PASS initialize fast read/current guard/missing database/unmanaged marker/missing row recovery; owned GUID only.
+COMPLETE Initialize

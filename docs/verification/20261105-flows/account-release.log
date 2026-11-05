@@ -1,0 +1,3 @@
+RUN Account build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS Accounts: Identity create/update/reset, current Admin-only RBAC, unique names/one role/private DTO, stale edits, role/password/lock revocation, self/last Admin concurrent protection and atomic audit rollback on a temporary MySQL Aiven database.
+COMPLETE Account

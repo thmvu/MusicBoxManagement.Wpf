@@ -1,0 +1,3 @@
+RUN Reservation build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL Reservations: Guest/Staff Create, current permissions, canonical Customer, availability, clocks after locks, CancelStaff, NoShow/source/idempotence, rollback and real service races on GUID database.
+COMPLETE Reservation

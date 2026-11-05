@@ -1,0 +1,5 @@
+RUN CounterUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Counter UI fixture: musicbox_test_9efc3e19ba65452d95f4af21c486e0de
+PASS Counter UI MySQL: timetable day/week/month/scroll/details/compact,2Ddashboard,currentrights/StaffnoRevenue,unifiedCreateOnly/ViewOnly routes; fakeGUID only.
+Images: docs/images/20261105-flows/counterui-release
+COMPLETE CounterUi

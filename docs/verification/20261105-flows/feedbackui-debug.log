@@ -1,0 +1,10 @@
+RUN FeedbackUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Debug
+Feedback fixture: musicbox_test_667a6e068021408abac0f500c09f13a6
+PASS booking corrections/conflict, walk-in/customer preflight; checking phone filters
+PASS saved customer/service popup text; staff phone filters
+PASS lookup/extension and Guest order popups
+PASS checkout confirmed, one real invoice
+PASS MySQL feedback workflow: invalid booking/preview/walk-in/customer inputs preserve form/data/audit; correction +84; conflict popup; lookup/extension/order/bill/checkout/invoice/positive walk-in/cancel; current rights. Notices=36
+PASS Feedback UI: 9-digit lookup popup/no phone throw/input retained; duplicate command ignored; safe unexpected-error popup. Online=True
+Images: docs/images/20261105-flows/feedbackui-debug
+COMPLETE FeedbackUi

@@ -1,5 +1,11 @@
 ﻿# Bàn giao migration SQLite → MySQL Aiven
 
+## Kiểm thử luồng MySQL có ảnh — 05/11/2026
+
+Theo yêu cầu tổng kiểm tra, đã build lại Debug/Release dùng thật và chạy34/34 nhóm Release đạt kết quả cuối (29 service/nền tảng +5 UI); thêm Hours UI Debug18 popup và Feedback UI Debug36 popup đạt. Release cuối tương ứng18/36 popup; có walk-in qua hai nút và bill Guest khớp checkout. Không nhận34 nhóm đều chạy hai cấu hình hoặc mọi tổ hợp đầu vào/race đã thử. Product20788df không đổi; chỉ bổ sung runner allowlist MySQL-only/assertion/capture/tài liệu, giữ csproj171/49 ngoài commit.
+
+Có [báo cáo/ma trận/giới hạn](Flow_Verification_20261105.md), [gallery117 ảnh lượt cuối](Flow_Test_Gallery_20261105.html), raw304 ảnh, log/exit/manifest/hash build và ảnh. Giữ lỗi loader/reference và hai lượt OperationsUi lỗi driver rồi corrected đạt; review cuối không có Critical/Important. Không chạy authentication cross-provider/Import/backend bị cấm, không sửa dữ liệu quán; đăng nhập MySQL thật được kiểm qua Account/OperationsUi, máy in giả không thay in giấy thật. Không dùng Verify-All hoặc runner pha provider.
+
 ## Thông báo giờ nghỉ ở đặt và nhận phòng — 04/11/2026
 
 Đã chặn giờ sai trước Preview/Create của cả Khách và nhân viên đặt hộ, trước mở/xác nhận check-in; popup nói rõ nghỉ trưa 12:00–13:00 hoặc đóng cửa 23:00, giữ form và không ghi dữ liệu khi bị chặn. Nhận phòng nêu giờ trả thực tế theo đủ duration; kết thúc đúng12/23 vẫn được phép, lúc đặt có cảnh báo đến sớm. Shared Try-hours/MySQL availability không dùng exception cho validation giờ thường gặp; writer giữ kiểm tra giờ sau khóa, quyền/transaction/audit/rollback và đầy đủ thời lượng. Không đổi luật/SQL/schema/NoShow/SSL/timeout hoặc dữ liệu quán.

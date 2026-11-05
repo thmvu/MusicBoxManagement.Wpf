@@ -1,0 +1,4 @@
+RUN AuditLog build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Audit test database: musicbox_test_aae218a9fa3447168662b005c62760c7
+Audit log checks passed (temporary database, read-only/snapshot/date precision/cursor/current authorization).
+COMPLETE AuditLog

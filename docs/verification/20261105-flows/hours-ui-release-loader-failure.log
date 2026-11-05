@@ -1,0 +1,8 @@
+Add-Type : (0) : Metadata file 'MusicBoxManagement.Wpf, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null' could
+not be found
+At D:\vu\hoctap\MusicBoxManagement.Wpf\Tests\Verify-MySqlFlows.ps1:43 char:1
++ Add-Type -Path $source -CompilerParameters $compiler
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (Microsoft.Power...peCompilerError:AddTypeCompilerError) [Add-Type], Except
+   ion
+    + FullyQualifiedErrorId : SOURCE_CODE_ERROR,Microsoft.PowerShell.Commands.AddTypeCommand

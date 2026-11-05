@@ -1,0 +1,5 @@
+RUN OperationsUi build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Operations UI test database: musicbox_test_023781e088814a4bb1d8d8777bba6fad
+PASS MySQL UI: configured MainWindow/Guest/catalog/photo, actual login, dashboard real paid invoice, Revenue/Room/History VM+windows, current rights/PII purge; screenshots, no production DB
+Images: docs/images/20261105-flows/operationsui-release-corrected
+COMPLETE OperationsUi

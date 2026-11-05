@@ -1,0 +1,18 @@
+﻿[
+    {
+        "Suite":  "OperationsUi",
+        "Configuration":  "Release",
+        "ExitCode":  1,
+        "Seconds":  31.4,
+        "Log":  "docs/verification/20261105-flows/operationsui-release-final.log",
+        "Images":  "docs/images/20261105-flows/operationsui-release-final"
+    },
+    {
+        "Suite":  "FeedbackUi",
+        "Configuration":  "Release",
+        "ExitCode":  0,
+        "Seconds":  91.7,
+        "Log":  "docs/verification/20261105-flows/feedbackui-release-final.log",
+        "Images":  "docs/images/20261105-flows/feedbackui-release-final"
+    }
+]

@@ -1,0 +1,4 @@
+RUN RevenueReport build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Revenue test database: musicbox_test_0cfa3fc313b74c059a01778a4f457fe7
+PASS MySQL RevenueReport/Excel: live RBAC, real checkout PaidAt/tick bounds/decimal beyond Int64/snapshot groups, Active exclusion, Excel three modes/current Export, RR vs real checkout/revoke; GUID only, no UI/import
+COMPLETE RevenueReport

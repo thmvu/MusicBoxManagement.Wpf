@@ -1,0 +1,3 @@
+RUN Service build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL Services: protected catalog, validation, stop/resume selling, live permissions, exact BIGINT, stale/concurrent edits and atomic audit on GUID database.
+COMPLETE Service

@@ -1,0 +1,6 @@
+RUN GuestSessions build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS Guest session reads, extension, snapshots, rollback and walk-in guards
+PASS Guest booking lookup, cancellation, exact cutoff/grace and rollback
+PASS Guest/Staff/booking/check-in/NoShow concurrent writers
+PASS MySQL Guest: current normalized phone and public DTOs; Active/bookings one snapshot, separate NoShow; +30/+60/ticks/stale/shift/Room-Customer holds; exact cancel/grace; Guest audit rollback; duplicate/Staff/booking/check-in/NoShow writers; phone edits and fresh clock after waits. GUID DB only; no checkout/provider/import claims.
+COMPLETE GuestSessions

@@ -1,0 +1,3 @@
+RUN Customer build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+PASS MySQL Customers: phone normalization, search, separate live permissions, unique/concurrent phones, stale edits, history IDs, audit rollback and persistence on GUID MySQL database.
+COMPLETE Customer

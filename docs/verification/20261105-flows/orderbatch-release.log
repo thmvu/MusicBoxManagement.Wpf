@@ -1,0 +1,10 @@
+RUN OrderBatch build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Order batching GUID database: musicbox_test_55ab708d1ca847238fe0bf35b41e8feb
+ReadOrders session=1 orders=0 Com_select=1
+ReadOrders session=2 orders=1 Com_select=1
+ReadOrders session=2 orders=4 Com_select=1
+ReadOrders session=3 orders=1 Com_select=1
+ReadOrders session=2 orders=5 Com_select=1
+ReadOrders session=1 orders=1 Com_select=1
+PASS MySQL order batching: 0/1/many, statuses/ticks/Int64 snapshots/order, foreign session isolation, RR concurrent writer, Serializable own-write/empty items; <=1 SELECT per helper call.
+COMPLETE OrderBatch

@@ -1,0 +1,4 @@
+RUN InvoicePrinting build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+MySQL invoice printing checks passed: snapshots, precision, pagination, cancel/reprint, live rights, busy/failure and real UI entry; no printer used.
+Images: docs/images/20261105-flows/invoiceprinting-release
+COMPLETE InvoicePrinting

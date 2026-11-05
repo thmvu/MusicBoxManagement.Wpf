@@ -1,0 +1,5 @@
+RUN Dashboard build=D:\vu\hoctap\MusicBoxManagement.Wpf\MusicBoxManagement.Wpf\bin\Release
+Dashboard test database: musicbox_test_8e8e3c681629491d80a83a447e32fcd5
+PASS Dashboard operational lists, real writers, exact warnings/ticks/grace, dynamic ReturnBy, private DTO and read-only
+PASS MySQL Dashboard: independent live rights/roles/no Staff revenue, real PaidAt invoices/decimal/overflow, RR MVCC permission-data snapshot vs real checkout, no provider/import/UI change
+COMPLETE Dashboard
