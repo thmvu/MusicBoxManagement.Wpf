@@ -1,547 +1,60 @@
 ﻿# Music Box Management — WPF
 
-## Kiểm thử luồng MySQL có ảnh — 05/11/2026
+Ứng dụng quản lý phòng Music Box bằng **WPF .NET Framework 4.7.2 + MySQL/Aiven**. Khách sử dụng tại quầy/demo; nhân viên đăng nhập và được phân quyền theo vai trò Admin/Manager/Staff.
 
-Theo yêu cầu tổng kiểm tra, đã build lại Debug/Release dùng thật và chạy34/34 nhóm Release đạt kết quả cuối (29 service/nền tảng +5 UI); thêm Hours UI Debug18 popup và Feedback UI Debug36 popup đạt. Release cuối tương ứng18/36 popup; có walk-in qua hai nút và bill Guest khớp checkout. Không nhận34 nhóm đều chạy hai cấu hình hoặc mọi tổ hợp đầu vào/race đã thử. Product20788df không đổi; chỉ bổ sung runner allowlist MySQL-only/assertion/capture/tài liệu, giữ csproj171/49 ngoài commit.
+## Chạy project
 
-Có [báo cáo/ma trận/giới hạn](docs/Flow_Verification_20261105.md), [gallery117 ảnh lượt cuối](docs/Flow_Test_Gallery_20261105.html), raw304 ảnh, log/exit/manifest/hash build và ảnh. Giữ lỗi loader/reference và hai lượt OperationsUi lỗi driver rồi corrected đạt; review cuối không có Critical/Important. Không chạy authentication cross-provider/Import/backend bị cấm, không sửa dữ liệu quán; đăng nhập MySQL thật được kiểm qua Account/OperationsUi, máy in giả không thay in giấy thật. Không dùng Verify-All hoặc runner pha provider.
+1. Mở `MusicBoxManagement.Wpf.sln` trong Visual Studio có workload **.NET desktop development** và **.NET Framework 4.7.2 Developer Pack**.
+2. Restore NuGet packages, chọn `MusicBoxManagement.Wpf` làm Startup Project.
+3. Cấu hình biến môi trường **User** của Windows `MUSICBOX_AIVEN_PASSWORD` bằng mật khẩu Aiven. Không ghi mật khẩu vào source hoặc gửi kèm ZIP.
+4. Đặt CA Certificate của Aiven tại `D:\MusicBoxSecrets\ca.pem`. Ứng dụng kiểm tra TLS bằng `VerifyFull`.
+5. Đóng/mở lại Visual Studio nếu vừa đổi biến môi trường, rồi Build và nhấn F5.
 
-## Thông báo giờ nghỉ ở đặt và nhận phòng — 04/11/2026
+`App.config` đang mặc định `DatabaseProvider=MySql`, `MySqlDatabase=musicbox`. Host/port/user và đường dẫn CA hiện được cấu hình trong `MusicBoxManagement.Wpf/Data/AivenDatabase.cs`; máy nhận project cần cấu hình kết nối phù hợp. Chỉ chọn **Thiết lập Admin** khi database chưa có tài khoản; tài khoản của quán không được reset bằng dữ liệu test.
 
-Đã chặn giờ sai trước Preview/Create của cả Khách và nhân viên đặt hộ, trước mở/xác nhận check-in; popup nói rõ nghỉ trưa 12:00–13:00 hoặc đóng cửa 23:00, giữ form và không ghi dữ liệu khi bị chặn. Nhận phòng nêu giờ trả thực tế theo đủ duration; kết thúc đúng12/23 vẫn được phép, lúc đặt có cảnh báo đến sớm. Shared Try-hours/MySQL availability không dùng exception cho validation giờ thường gặp; writer giữ kiểm tra giờ sau khóa, quyền/transaction/audit/rollback và đầy đủ thời lượng. Không đổi luật/SQL/schema/NoShow/SSL/timeout hoặc dữ liệu quán.
+Ảnh phòng lưu local, database cloud không tự đồng bộ ảnh. Khi chuyển máy cần sao chép Content trong thư mục dữ liệu tương ứng; xem [hướng dẫn demo/vận hành](docs/MySql_Demo_And_Operations.md).
 
-Build dùng thật Debug/Release đạt; Hours UI hai bản 18 popup/bản, Reservations/CheckIn Release và Feedback UI Debug 34 popup đạt. Một review cuối, ghi rõ lỗi fixture/RED/capture và giới hạn trong [báo cáo](docs/Booking_Shift_Feedback_20261104.md). Không suy rộng mọi suite/race đều đã chạy. Csproj định dạng171/49 giữ ngoài commit; chỉ MySQL/UI, không runner pha provider.
+## Chức năng
 
-## Sửa khóa NoShow — 04/11/2026
+- Khách xem phòng/ảnh/lịch, đặt phòng, tra cứu theo SĐT, hủy theo điều kiện, xem phiên/gia hạn, gọi món và xem tiền tạm tính.
+- Nhân viên đặt hộ, nhận phòng từ booking hoặc walk-in, quản lý phiên/món, trả phòng và hóa đơn.
+- Lịch ngày/tuần, dashboard phòng/cảnh báo, doanh thu và báo cáo/Excel theo quyền.
+- Admin quản lý tài khoản, vai trò/quyền và nhật ký thao tác.
 
-User báo timeout tại NoShow. Metadata chỉ đọc thấy transaction giữ PRIMARY X lịch sử hơn 569s dù chỉ có NoShow/không Confirmed; user Stop Debugging, khóa đã thả. Đã thay range FOR UPDATE bằng RR read-only discovery + batch128 exact PK locks, re-read trạng thái và clock sau khóa; ProcessExpiredAt chỉ dùng candidate đã khóa. **Source ReservationId phải ghép/dedupe/sort cùng candidates trước mọi khóa reservation** để tránh stale discovery với source đã CheckedIn gây đảo khóa khi gia hạn/replay/hủy. Giữ writer Serializable/quyền/grace/audit/rollback/SSL/timeout/schema/worker; không KILL hay sửa dữ liệu quán. Build thật Debug/Release và Locks hai bản đạt; Reservations/CheckIn bản cuối Release và Feedback UI Debug 34 popup đạt. Có RED lịch sử + RED source-order, lỗi gate/build-copy được giữ riêng. [Bằng chứng, giới hạn và pool connection phụ](docs/MySql_NoShow_Lock_Fix_20261104.md). Csproj định dạng171/49 vẫn ngoài commit; chỉ MySQL, không runner pha provider.
+Giờ phục vụ: **09:00–12:00 và 13:00–23:00**. Booking và khoảng sử dụng dự kiến phải nằm trong một ca. Nhận phòng giữ đủ thời lượng; lượt kết thúc đúng 12:00/23:00 có nhắc đến sớm.
 
+## Tài liệu nên đọc
 
-## Thông báo thao tác và SĐT — 04/11/2026
+Bắt đầu tại [mục lục docs](docs/README.md), gồm:
 
-Theo yêu cầu bắt buộc của người dùng, các lệnh dữ liệu ở UI có popup WPF tiếng Việt, giữ form khi nhập sai và Status trên form; không thêm global handler nuốt lỗi. TryNormalize chặn SĐT sai ở đặt phòng/tra cứu/walk-in/khách hàng và ba bộ lọc SĐT trước service. Giữ rule chuẩn hóa +84/84, quyền và transaction. Đã sửa popup lưu bị row selection ghi đè, thông điệp bỏ món/hủy/phục vụ bị cũ. Build dùng thật Debug/Release và workflow UI MySQL cuối đạt, 34 popup/3 ảnh mỗi bản; dữ liệu/audit không đổi khi validation sai, có chuỗi gia hạn/món/checkout/Invoice/hủy/revoke. [Phạm vi, lỗi đầu, log và cách thử](docs/Ui_Feedback_Validation_20261104.md). Hồi quy CounterUi Debug lượt đầu timeout, retry riêng đạt; giữ log cả hai. Không tuyên bố mọi màn/đầu vào đều đã chạy; không chạm dữ liệu quán hoặc chạy runner pha provider. Csproj chỉ stage Compile UserFeedback.cs, giữ định dạng cũ ngoài commit.
+- [Plan WPF và tiến độ](MusicBoxManagement_Wpf_ProjectPlan_v0.1.md), [nghiệp vụ tham chiếu](docs/Reference_Web_ProjectPlan_v1.3.md).
+- [Use case/luồng hoạt động](docs/UseCases_And_Workflow_Review.md).
+- [ERD đầy đủ và từ điển dữ liệu](docs/ERD_Full_And_DataDictionary.md), [ảnh ERD](docs/schema/MusicBox_Full.png).
+- [Kiến trúc MVC/MVVM/Services](docs/Architecture_MVC_Services_Explanation.md), [luồng code để học](docs/Code_Flow_Full_Guide.md). Hai tài liệu học có ghi rõ mốc phiên bản; wiring MySQL hiện hành được dẫn trong mục lục.
+- [Báo cáo kiểm thử 05/11/2026](docs/Flow_Verification_20261105.md), [gallery 117 ảnh](docs/Flow_Test_Gallery_20261105.html).
 
+## Kiểm tra MySQL
 
-## Lịch phòng và dashboard WPF — 02/11/2026
+Lượt tổng kiểm tra 05/11: **34/34 nhóm Release đạt**, thêm Hours UI Debug18 popup và Feedback UI Debug36 popup đạt. Đây là số nhóm, không phải mọi tổ hợp đầu vào/race; xem phạm vi và các lượt lỗi bộ chạy trong báo cáo. Máy in giả chưa thay nghiệm thu in giấy thật.
 
-Theo thiết kế người dùng đã chốt: lịch Ngày/tất cả phòng, Tuần ưu tiên một phòng, trục giờ/header cố định khi cuộn và lịch tháng. Dashboard có bảng phòng vector WPF 2D, trạng thái/chỉ số/cảnh báo từ snapshot hiện hành; giữ doanh thu theo quyền. Menu gom một mục Đặt phòng, vẫn hỗ trợ View-only hoặc Create-only; walk-in giữ riêng nghiệp vụ. Không thêm thư viện hoặc sửa service/schema/dữ liệu quán. Xem [cách dùng, kiểm tra và ảnh](docs/Ui_Calendar_Dashboard_20261102.md) và [plan](docs/superpowers/plans/2026-11-02-counter-ui.md). Build dùng thật Debug/Release và runner UI MySQL cuối đều đạt, 8 ảnh/bản; đã kiểm View-only/Create-only/Staff không doanh thu, chọn ngày/phòng đúng một Read, resize/scroll không Read và revoke xóa chi tiết. Diff csproj có sẵn vẫn giữ ngoài commit.
-
-
-## Chỉ làm việc với MySQL/Aiven — chỉ đạo người dùng 02/11/2026
-
-Người dùng yêu cầu: **không bao giờ động đến SQLite nữa** để tránh tốn thời gian/token. Từ nay không đọc/sửa code hoặc dữ liệu SQLite, không chạy test/runner SQLite, không seed/import/backup/restore/cutover hay kiểm tra provider SQLite. Không chạy Verify-All mặc định hoặc IncludeMySql vì cả hai vẫn bao gồm các suite SQLite; chọn rõ từng suite MySQL/UI MySQL liên quan. Nếu công cụ MySQL thực tế phụ thuộc SQLite thì không tự chạy hoặc sửa phần đó để lách yêu cầu. Không tự xóa provider/file/package/test cũ; để nguyên và không sử dụng. Chỉ đạo này thay mọi hướng dẫn lịch sử bên dưới yêu cầu hồi quy hoặc bảo trì SQLite. Phạm vi công việc và kiểm tra tiếp theo chỉ MySQL/Aiven; không mở rộng bộ test không liên quan.
-
-
-## Tối ưu truy vấn MySQL theo luồng — 02/11/2026
-
-Đã rà các luồng đọc và thay N+1 bằng batch trong cùng snapshot: lịch Khách 28 ô đọc2 SELECT thay50; trạng thái21 phòng1 thay43; dữ liệu lịch nhân viên3 thay63; ReturnBy5walk-in1 thay5; đơn món1 SELECT thay1+2N; danh sách5tài khoản2 thay7 gồm kiểm quyền. Mẫu ReadDay trên musicbox8219→718ms, không SLA toàn app. Không đổi writer locks/clock/tiền/quyền/SSL/schema/UI/seed. Xem [phạm vi, kiểm tra và giới hạn](docs/MySql_Read_Performance_20261102.md), [plan/ledger](docs/superpowers/plans/2026-11-02-mysql-read-batching.md). Giữ các validation/refresh hiện hành cần thiết, không xóa SQLite/tools/test vì chúng không gây round-trip UI. Diff csproj có sẵn vẫn giữ ngoài commit. Kết quả online/những lượt fail và retry phải đọc ở report, không nhận toàn76suite đã chạy từ sốsuite có sẵn.
-
-Kiểm chứng cuối: 44/44 local Debug và 15 nhóm MySQL liên quan đạt kết quả cuối, 3 bộ tối ưu mới thêm Release đạt; Billing giữ lượt đầu fail8s và isolatedretryđạt với assertion cũ. Build Debug/Release dùng thật đạt. Máy in giả đã kiểm, chưa in giấy thật.
-
-
-## Tối ưu khởi tạo MySQL — 02/11/2026
-
-Theo yêu cầu tự động sửa độ chậm bằng Superpowers/Ponytail, MySqlDatabase.Initialize nay kiểm version hiện hành rồi return khi schema sẵn sàng; thiếu DB/marker/lower version vẫn dùng khóa/DDL/seed cũ, newer vẫn bị chặn mỗi lần. Không cache quyền hoặc bỏ SSL/transaction/session SET, không sửa UI hay dữ liệu. Mẫu đo Initialize ấm trước1,06–1,09s, sau0,61–0,68s (khác thời điểm, không SLA toàn app). Xem [phạm vi, phần giữ/bỏ và bằng chứng](docs/MySql_Performance_Review_20261102.md). Kết quả test/timeout/retry phải đọc trong báo cáo; không tuyên bố mọi thao tác đã nhanh hoặc mọi suite đã chạy. Diff csproj có sẵn giữ ngoài commit.
-
-
-## Seed món/dịch vụ — 31/10/2026
-
-Theo yêu cầu người dùng, đã thêm8 món/dịch vụ Demo đang bán trên Aiven musicbox (4 Đồ uống/3 Đồ ăn/1 Khác,5.000–60.000đ). `Tools/Seed-MySqlServices.ps1` dry-run mặc định, Apply thêm dữ liệu+8 System audit trong cùng transaction; chạy lại bỏ qua tên hiện có, không sửa giá/trạng thái. Đã kiểm đúng8 bản ghi, lặp không trùng. Hiện Services8/AuditLog24; Users1/Rooms5/Customers7/Reservations1, phiên/đơn/hóa đơn vẫn0. Giữ dữ liệu người dùng, không tạo đơn/phiên giả hoặc đổi UI/service/schema/csproj. Nhận phòng thành phiên Active rồi thử gọi món. [Bằng chứng và cách chạy](docs/MySql_Service_Seed_20261031.md).
-
-
-## Seed phòng và khách hàng mẫu — 30/10/2026
-
-Người dùng đã thiết lập Admin và yêu cầu seed. Đã thêm vào Aiven musicbox **5 phòng active (3 Standard/2 VIP, có ảnh từ assets) và 6 Khách Demo**, số giả lập0000000101–0000000106. Script quản trị `Tools/Seed-MySqlDemo.ps1` dry-run mặc định, Apply ghi cùng transaction với11 System audit, chạy lại bỏ qua mã/SĐT cũ; không giả phiên Admin hoặc sửa account/quyền/giá. Guest service thật đọc đủ5 phòng/ảnh; lặp Apply không trùng. Hiện Users1/Rooms5/Customers6/AuditLog12, nghiệp vụ và Services vẫn0. Không chạy lại import snapshot29/10 vì sẽ mất dữ liệu mới; ảnh vẫn local. [Chi tiết và kiểm tra](docs/MySql_Demo_Seed_20261030.md). Không đổi code WPF/service/schema hoặc định dạng csproj có sẵn.
-
-
-## Hoàn tất chuyển MySQL/Aiven — 29/10/2026
-
-Đã port báo cáo phòng/booking/món + Excel và lịch sử khách; nối toàn bộ VM/Views qua service contracts, App và NoShow worker cùng provider. **App.config mặc định MySql / musicbox**, không tự fallback SQLite. Không đổi giao diện/luật/quyền/SSL. [Ports/wiring](docs/MySql_Migration_06b_08_ReportsHistoryWiring.md), [nhập/cutover/khôi phục](docs/MySql_Migration_09_Import_Cutover.md).
-
-Đã nhập nguồn mặc định người dùng xác nhận: SQLite v1 chỉ RoomTypes2, nâng bản sao v8 rồi đối chiếu 15 bảng trên Aiven, SQLite gốc hash không đổi. Roles3/Permission27/RolePermission43 là migration nền tảng; các bảng tài khoản/nghiệp vụ/audit đều0, Content không có ảnh phòng thật. Không tạo tài khoản/doanh thu giả. Mở Release thật thấy Khách/Standard/VIP/**Thiết lập Admin**; người dùng tự tạo Admin lần đầu. Hồ sơ nhập riêng ngoài Git trong AppData Backups, không chạy import lại sau vận hành.
-
-Kiểm tra: runner Debug70/70 (44 local+26 MySQL lúc bắt đầu), Release local44/44; RemainingReads/OperationsUi/Import bản cuối cả Debug/Release đạt riêng, AuthenticationUi Release142 ảnh. Runner hiện72=44+28, không tuyên bố cả72 hai cấu hình. Giữ log/phạm vi trong cutover report; không nới SSL/timeout/assertion. Có [ERD16 bảng/từ điển/SVG/PNG](docs/ERD_Full_And_DataDictionary.md) và [demo/vận hành](docs/MySql_Demo_And_Operations.md).
-
-Còn nghiệm thu người dùng tại quầy/mạng thật và in giấy/driver thật; kiểm tra máy in giả không thay phần này. Ảnh vẫn local, không cloud upload/sync hai chiều; rollback snapshot không chứa dữ liệu MySQL phát sinh sau cutover. Các mốc bên dưới là lịch sử, **không làm lại 01–09 hoặc coi App còn SQLite**. Định dạng csproj có sẵn giữ ngoài commit; cập nhật bàn giao/code/test/docs/README/plan/commit/push cùng thay đổi tiếp theo.
-
-
-MySQL 06a (29/10/2026): thêm báo cáo doanh thu PaidAt theo ngày/tháng/loại phòng snapshot và Excel ba cách nhóm, Report.View/Export hiện hành và Staff bị chặn. [Bằng chứng/phạm vi](docs/MySql_Migration_06a_Revenue.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo sử dụng phòng; App/UI vẫn SQLite, chưa import/cutover.
-
-MySQL 05b: thêm tra cứu/chi tiết nhật ký Admin-only, lọc ngày Việt Nam/actor/action/entity và phân trang keyset, đọc RR read-only không ghi log. Online Debug/Release đạt (Release chạy lại sau timeout). Xem [05b](docs/MySql_Migration_05b_AuditLog.md) và [bàn giao](docs/MySql_Migration_Status.md). Tiếp báo cáo doanh thu; App/UI vẫn SQLite, chưa import/cutover.
-
-MySQL 05a (28/10/2026): thêm `MySqlPermissionManagementService` để Admin đọc/lưu quyền Staff và Manager riêng, giữ giới hạn quyền/dependency, Revision chống form cũ và audit cùng transaction. Khóa đúng vai trò rồi kiểm tra lại quyền sau chờ; đã kiểm tra online Debug/Release với hai writer và service khóa tài khoản thật. Xem [05a và bằng chứng](docs/MySql_Migration_05a_PermissionMatrix.md), [bàn giao](docs/MySql_Migration_Status.md). Tiếp 05b đọc nhật ký MySQL; App/worker/UI vẫn SQLite, chưa import/cutover. Các mục dưới là lịch sử.
-
-MySQL 04j (28/10/2026): thêm `MySqlDashboardService` đọc trạng thái phòng, booking hôm nay, phiên Active, Pending và cảnh báo trong cùng snapshot quyền/dữ liệu. Doanh thu Invoice.PaidAt theo ngày Việt Nam chỉ Admin hoặc Manager đủ Report.View; Staff không nhận tổng. Xem [04j và kết quả kiểm tra](docs/MySql_Migration_04j_Dashboard.md), [bảng bàn giao](docs/MySql_Migration_Status.md). App/worker/UI mặc định vẫn SQLite; tiếp ma trận quyền và audit MySQL, chưa import/cutover. Các mục dưới là lịch sử triển khai.
-
-MySQL 04i (28/10/2026): thêm `MySqlInvoiceService` tìm theo mã/ngày PaidAt Việt Nam/SĐT hiện hành, đọc lịch sử snapshot và kiểm tra Invoice.View/Print. Hai VM xem/in nhận `IInvoiceService` để dùng chung luồng WPF cho SQLite/MySQL; đã kiểm tra dữ liệu MySQL thật với máy in giả, không gửi giấy thật. Xem [04i và kết quả kiểm tra](docs/MySql_Migration_04i_InvoiceHistoryPrinting.md), [bảng bàn giao](docs/MySql_Migration_Status.md). App/worker mặc định vẫn SQLite; tiếp Dashboard MySQL và các nhóm còn lại, chưa import/cutover.
-
-MySQL 04h (28/10/2026): thêm `MySqlCheckoutService` cho chọn phiên/xem trước theo CheckOut-only và xác nhận thu tiền Cash/BankTransfer. Confirm tính lại giờ/tiền, hủy Pending, hoàn tất phiên/booking và tạo Invoice snapshot/audit trong cùng transaction; replay trả hóa đơn cũ. Xem [04h và bằng chứng kiểm tra](docs/MySql_Migration_04h_Checkout.md), [bảng bàn giao](docs/MySql_Migration_Status.md). Tiếp đọc/tìm/in Invoice và các nhóm còn lại; App vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục trước bên dưới là lịch sử triển khai.
-
-MySQL 04g (28/10/2026): thêm `MySqlBillingService` cho tiền tạm tính theo SĐT hiện hành hoặc Session.View, tính từ giờ nhận thực tế/giá snapshot và chỉ cộng món Completed. Giữ ticks/decimal/làm tròn đến đồng, đọc không thu tiền/đóng phiên hoặc giữ giá. Có calculator dùng chung cho Preview/Confirm Checkout sau này. Xem [04g và bằng chứng kiểm tra](docs/MySql_Migration_04g_Billing.md), [bảng bàn giao](docs/MySql_Migration_Status.md). Tiếp Checkout/Invoice; App vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục trước bên dưới giữ làm lịch sử triển khai.
-
-MySQL 04f (28/10/2026): thêm `MySqlOrderService` cho menu/giỏ/preview, Guest tạo Pending và xem/hủy, Staff tạo Completed sau phục vụ, xem lịch sử/phục vụ/hủy theo quyền riêng. Giữ giá snapshot, số lượng gộp 1–10, ca mở cửa, SĐT hiện hành và transaction/audit. Xem [báo cáo 04f](docs/MySql_Migration_04f_Orders.md) và [bảng bàn giao](docs/MySql_Migration_Status.md) để biết kết quả kiểm tra. Tiếp Billing/tiền tạm tính rồi Checkout/Invoice; app vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục trước bên dưới giữ làm lịch sử triển khai.
-
-MySQL 04e.4 (28/10/2026): thêm `MySqlGuestSessionService` và `MySqlGuestReservationService` cho tra cứu Confirmed/Active theo SĐT hiện hành, hủy đúng mốc 2 giờ và gia hạn +30/+60 với audit Guest/transaction/kiểm tra lại sau khóa. Xem [báo cáo và bằng chứng kiểm tra](docs/MySql_Migration_04e4_GuestSessions.md), [bảng bàn giao hiện hành](docs/MySql_Migration_Status.md). Bước tiếp là menu/Order rồi Billing/checkout/invoice cùng các nhóm còn lại; App/worker vẫn SQLite, chưa nhập dữ liệu thật hoặc đổi provider. Các mục ngày 24/10 trở về trước bên dưới là mốc lịch sử.
-
-Palette Music Box 24/10/2026: theo lựa chọn lấy cảm giác chung từ giao diện web tham khảo, đã phối riêng graphite/olive, nền sáng hơi ấm và điểm sage/brass. Màu dùng chung từ brush trong App.xaml; giữ nguyên font thao tác, form và nghiệp vụ. Xem [palette và ảnh kiểm tra](docs/Ui_Operations_Design.md).
-
-Giao diện vận hành mới 24/10/2026: [Tổng quan, bảng phòng và theme chung](docs/Ui_Operations_Design.md). Có nút nhanh nhận khách/đặt hộ/món/trả phòng theo quyền, bảng phòng có nhãn trạng thái, các form cùng kiểu nút/ô nhập/tab; nút chính của form đặt phòng và dịch vụ không bị cuộn khuất. Rebuild/rerun để nhận giao diện mới. App vẫn SQLite, tiếp MySQL 04e.4 sau bước này.
-
-Rà soát nghiệp vụ 24/10/2026: [ma trận luồng hiện hành](docs/Business_Workflow_Audit_20261024.md), đối chiếu reference và chỉ rõ bằng chứng/giới hạn từng nhóm. Có thêm `Tests/Verify-Workflows.ps1` chạy chuỗi service thật từ đặt phòng đến hóa đơn/báo cáo/lịch sử, walk-in đến lượt kế tiếp và hủy/NoShow/RBAC; không giả trạng thái Completed hoặc hóa đơn. `Verify-All` nay gồm 44 bộ SQLite/WPF, thêm 15 bộ MySQL đã port khi chọn IncludeMySql. App vẫn SQLite; chuỗi MySQL đầy đủ chưa hoàn tất.
-
-Cập nhật 24/10/2026: [rà soát nhập liệu và menu](docs/Ui_Validation_Navigation_Review.md). Thông tin bắt buộc được báo ngay trên form; menu gom Vận hành/Danh mục/Báo cáo/Quản trị và Tổng quan ở đầu, mở sau đăng nhập theo quyền. Người dùng xác nhận hiện tượng dừng là debugger Visual Studio tại Exception có Continue/F5; tài liệu có cách phân biệt và cấu hình. Chạy toàn bộ bài kiểm tra bằng `Tests/Verify-All.ps1` (thêm `-IncludeMySql` để kiểm tra các service Aiven đã port). Không đổi provider hoặc nhập dữ liệu thật.
-
-**Bàn giao MySQL:** đọc [bảng trạng thái migration](docs/MySql_Migration_Status.md) trước khi nhận việc. File ghi từng service, bằng chứng kiểm tra, phần chưa port và nhật ký nhập dữ liệu thật; cập nhật/push cùng mỗi bước để người khác không làm lại.
-
-MySQL 4d/04e.1 (21/10/2026): [lịch nội bộ](docs/MySql_Migration_04d_Calendar.md) đã sửa kiểm tra quyền read transaction; [service check-in](docs/MySql_Migration_04e1_CheckIn.md) mới đã có transaction/snapshot/replay/NoShow concurrency. Cả hai đạt online Debug/Release. Bước **04e.2 walk-in** đã có list/preview/create/read/receipt riêng người tạo và đạt online Debug/Release; xem [báo cáo 04e.2](docs/MySql_Migration_04e2_WalkIn.md). Bước **04e.3 đọc phiên/gia hạn Staff** cũng đã đạt online Debug/Release 22/10: quyền View/Extend riêng, stale/transaction/overlap/snapshot và audit. Xem [04e.3](docs/MySql_Migration_04e3_SessionsExtension.md). Tiếp **04e.4 Guest session/gia hạn/lookup/hủy đầy đủ**, không làm lại phần đã nghiệm thu trong bảng bàn giao. App vẫn SQLite; **chưa nhập dữ liệu thật hoặc đổi provider**.
-
-Tài liệu báo cáo mới 20/10/2026: [ERD nhóm khách hàng → booking → phiên → hóa đơn](docs/ERD_CustomerHistory.md), có nguồn Mermaid chỉnh sửa được, từ điển liên kết và phân biệt ràng buộc database/quy tắc service. Chưa phải bộ ERD tổng thể hoàn chỉnh.
-
-Cập nhật 22/10/2026 — làm song song theo yêu cầu người dùng:
-
-- **Lịch sử khách 8f.2 (service + UI)**: Khách hàng → chọn khách → Xem lịch sử, ba tab Booking/Phiên/Hóa đơn và thống kê hoàn tất/lần dùng gần nhất. Liên kết CustomerId, Customer.View và Invoice.View riêng. Xem [cách dùng và kiểm tra](docs/Step8f2_CustomerHistoryUi.md).
-
-- **WPF có Doanh thu và top món 8e.4**: Admin/Manager Report.View, lọc PaidAt và dịch vụ (gồm ngừng bán), giá/tên snapshot, nhóm ServiceId và Top10 theo số lượng. Xem [cách dùng và kiểm tra](docs/Step8e4_ServiceSalesReports.md). Các báo cáo doanh thu/phòng/booking trước đó vẫn giữ.
-- **Excel báo cáo 8e.5a–8e.5b**: doanh thu, sử dụng phòng, booking và món/top món đều có Xuất Excel theo kỳ/bộ lọc/tab đang xem. Cần Report.View + Report.Export, file có bộ lọc/thời điểm/tổng phù hợp và giữ chính xác tiền lớn. Xem [doanh thu](docs/Step8e5a_RevenueExcel.md) và [phòng/booking/món](docs/Step8e5b_ReportTablesExcel.md).
-- **Aiven có booking nội bộ 4c.2a**: danh sách/chi tiết theo View, lọc ngày/SĐT/trạng thái, metadata quyền và hủy qua CancelStaff có audit; kế thừa catalog/preview/lịch trống public 4c.1. Xem [migration 4c.2a](docs/MySql_Migration_04c2a_StaffReservations.md).
-
-**Ứng dụng vẫn đọc/ghi SQLite**, chưa nhập dữ liệu hoặc chuyển UI sang Aiven; ảnh vẫn local. WPF đã có giao diện lịch sử khách; Aiven tiếp Guest hủy/lookup (đầy đủ Active khi có service phiên), calendar/session và các nhóm nghiệp vụ còn lại. Trước đổi App phải đủ service (gồm các báo cáo/Excel/ma trận quyền/nhật ký mới), chuyển/đối chiếu dữ liệu + ảnh và kiểm tra UI riêng. ERD và từ điển dữ liệu vẫn là đầu việc bắt buộc cho báo cáo.
-
-Migration Aiven MySQL bước 1 đã hoàn thành: schema `musicbox` v1 đã tạo trên cloud, 16 bảng/Standard-VIP/27 quyền; kiểm tra nền tảng MySQL Debug/Release đạt. App vẫn vận hành SQLite; nguồn dữ liệu nghiệp vụ chưa chuyển sang cloud. Xem [tiến độ và kiểm tra migration](docs/MySql_Migration_01_Foundation.md).
-
-Ngày 14/10/2026: thêm kiểm tra kết nối MySQL Aiven bằng MySqlConnector 2.6.2; mật khẩu đọc từ biến User Windows `MUSICBOX_AIVEN_PASSWORD`. Debug thử `SELECT VERSION()` sau khi mở cửa sổ; Release không tự thử. Các chức năng vẫn dùng SQLite. Xem [cấu hình và kiểm tra Aiven](docs/Aiven_ConnectionCheck.md).
-
-Project desktop riêng cho đồ án: WPF, .NET Framework 4.7.2, SQLite.
-
-Tài liệu rà soát luồng và use case đến bước 6e.2: [UseCases_And_Workflow_Review.md](docs/UseCases_And_Workflow_Review.md). Có bảng hiện trạng, đặc tả use case, luồng nghiệp vụ, phần còn thiếu và [nguồn sơ đồ UML](docs/MusicBox_UseCases.puml).
-
-## Chạy ứng dụng
-
-1. Mở `MusicBoxManagement.Wpf.sln` trong Visual Studio có workload **.NET desktop development** và .NET Framework 4.7.2 Developer Pack.
-2. Restore NuGet packages (Visual Studio thường tự thực hiện khi build).
-3. Chọn `MusicBoxManagement.Wpf` làm Startup Project rồi nhấn F5.
-
-Ứng dụng tự tạo file `%LOCALAPPDATA%\MusicBoxManagement.Wpf\musicbox.db` khi đọc danh mục lần đầu. Không cần cài SQL Server hay chạy `Update-Database`. Thư viện dùng là [System.Data.SQLite.Core 1.0.119](https://www.nuget.org/packages/System.Data.SQLite.Core/1.0.119).
-
-## Đã làm ở bước nền tảng
-
-- Solution và project WPF truyền thống, target .NET Framework 4.7.2.
-- Khởi tạo SQLite bằng transaction, quản lý phiên bản schema bằng `PRAGMA user_version`.
-- Hai loại phòng Standard/VIP theo plan cũ; giá là số nguyên đồng, sức chứa và giá phải lớn hơn 0.
-- Cửa sổ đọc danh mục thật từ SQLite, nút làm mới; đọc database ở luồng nền để tránh treo giao diện.
-- Khởi tạo lại không chèn trùng hoặc ghi đè giá/tên đã chỉnh.
-
-Ứng dụng đã có nền tảng, đăng nhập, danh mục phòng/dịch vụ/khách hàng, NoShow, giao diện Khách đặt/tra cứu/hủy/lịch trống-bận và nhân viên đặt hộ/xem/chi tiết/hủy booking, lịch Ngày/Tuần nội bộ; chưa phải ứng dụng quản lý hoàn chỉnh. Schema hiện **v8**. Đã có service và UI nhận phòng từ booking và khách trực tiếp (walk-in), gia hạn nội bộ và Guest tra cứu Active/gia hạn theo SĐT. Bước 6d.2c đã có giao diện Khách gọi món/xem-hủy Pending và nhân viên xem/phục vụ/hủy/tạo hộ đơn Completed. Đã có BillingService và giao diện tiền tạm tính cho Khách/nhân viên, tính tiền phòng thực tế + món Completed và cập nhật theo thời điểm; đã có service và giao diện checkout xác nhận thu tiền/tạo hóa đơn cùng transaction; đã có service tìm/đọc hóa đơn lịch sử và kiểm tra quyền chuẩn bị in; đã có màn tìm/xem hóa đơn lịch sử, xem trước và in lại qua WPF; đã có service và UI dashboard hoạt động/cảnh báo/doanh thu theo quyền; đã có service/UI Admin quản trị nhân viên; ma trận quyền/audit và báo cáo còn làm tiếp.
-
-Luồng gọi hàm chi tiết từ UI xuống SQLite và quay lại binding: [Code_Flow_Full_Guide.md](docs/Code_Flow_Full_Guide.md), cập nhật đến dashboard 8a.2.
-
-## Cấu trúc để học
-
-Giao diện chính đã chuyển chức năng sang menu dọc bên trái theo yêu cầu ngày 07/10/2026. Menu hiện theo chế độ/quyền, cuộn được khi cửa sổ thấp; nút đăng nhập/đăng xuất nằm ở cuối thanh. Vùng nội dung bên phải rộng hơn, không còn hàng nút chen nhau. Xem [báo cáo giao diện](docs/Ui_MainSidebar.md). Dashboard nghiệp vụ vẫn thuộc bước 8.
-
-Có 5 ảnh phòng AI minh họa Standard/VIP tại [assets/rooms](assets/rooms/README.md), theo phong cách Canon 50mm f/1.8 và ánh sáng tự nhiên. Ba mẫu thêm gồm Standard sofa thẳng, VIP buổi tối và Standard tông gỗ sáng. Người dùng sẽ chọn/áp dụng sau. Để dùng, đăng nhập → Phòng → thêm/sửa → Chọn ảnh → chọn file trong thư mục này → Lưu. Ảnh chỉ là tài nguyên để nhập qua luồng quản lý phòng; không tự seed phòng hoặc thay dữ liệu đang dùng.
-
-| Thư mục | Vai trò |
-| --- | --- |
-| Models | Loại phòng, ApplicationUser của Identity và phiên đăng nhập |
-| Data | Kết nối, nâng cấp schema và kho lưu Identity trên SQLite |
-| Services | Danh mục, đăng nhập, băm mật khẩu và kiểm tra quyền |
-| ViewModels | Dữ liệu và trạng thái được bind lên màn hình |
-| Views | Giao diện XAML và sự kiện tải/làm mới |
-
-WPF dùng binding theo hướng MVVM đơn giản. Sự kiện cửa sổ gọi ViewModel/service; SQL nằm ở Data/Services. PasswordBox được đọc và xóa trong sự kiện của cửa sổ đăng nhập; không bind mật khẩu lên ViewModel.
-
-## Kiểm tra nền tảng
-
-Sau khi build, chạy Windows PowerShell:
+Chạy suite được chọn trên database GUID thử riêng, cần quyền tạo/dọn database test ở Aiven:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Foundation.ps1
+powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File Tests/Verify-MySqlFlows.ps1 -Suite BookingHoursUi -BuildDirectory MusicBoxManagement.Wpf/bin/Debug
 ```
 
-Bài kiểm tra tạo file SQLite tạm riêng, kiểm tra tiếng Việt, lưu thay đổi qua lần mở lại, seed không ghi đè dữ liệu, giá nguyên đồng và schema version. Nó tự xóa file tạm đã tạo và không chạm database đang dùng.
+Không chạy runner tổng hoặc runner pha provider. Không dùng fixture để ghi đè dữ liệu quán.
 
-## Đã làm ở bước 2
+## Cấu trúc và đóng gói
 
-- Chốt thiết kế Identity Core + kho SQLite, phiên đăng nhập trong bộ nhớ và kiểm tra quyền hiện hành ở service/UI trong [tài liệu triển khai](docs/Wpf_Authentication_Transactions.md).
-- Thêm `SqliteDatabase.BeginWriteTransaction`: lấy quyền ghi trước khi đọc để kiểm tra và cập nhật nghiệp vụ; chưa thay schema v1.
-- Kiểm tra thêm commit, rollback toàn bộ khi lỗi, rollback tường minh và hai kết nối tranh quyền ghi trên SQLite thật. Debug/Release build và Verify-Foundation đạt.
+| Thành phần | Nội dung |
+|---|---|
+| `MusicBoxManagement.Wpf/` | Source WPF, Models, Views/ViewModels, Services, Data và project `.csproj` |
+| `assets/` | Ảnh phòng minh họa để nhập qua form quản lý phòng |
+| `Tests/` | Các bài kiểm tra hiện có; chỉ sử dụng các suite MySQL được phép |
+| `Tools/` | Công cụ quản trị hiện có; chọn đúng công cụ, không tự chạy import/seed lại |
+| `docs/` | Tài liệu học, ERD, nghiệp vụ, vận hành và bằng chứng kiểm thử |
 
-Thiết kế trên đã được triển khai cho đăng nhập ở bước 3. Kiểm tra transaction nền tảng chưa thay thế kiểm tra booking/checkout đồng thời ở các bước sau.
+Nén **folder ngoài** chứa `.sln`, project con, assets và docs. Có thể bỏ `.git`, `.vs`, `bin`, `obj` khỏi bản ZIP; giữ bản Git làm việc và không đóng gói mật khẩu thật.
 
-## Bước 3 — đăng nhập và quyền
-
-1. Mở ứng dụng: mặc định **chế độ Khách**, xem Standard/VIP không cần đăng nhập.
-2. Lần đầu, bấm **Thiết lập Admin** ở góc trái dưới. Nhập tên đăng nhập (3–100 ký tự: chữ không dấu, số, `.`, `_`, `-`), họ tên và mật khẩu 8–128 ký tự, nhập lại mật khẩu rồi bấm **Tạo Admin**. Không có mật khẩu mặc định.
-3. Sau khi tạo, ứng dụng vào khu vực nhân viên và hiển thị quyền hiện hành. Bấm **Đăng xuất về Khách** để kết thúc phiên.
-4. Các lần sau dùng **Đăng nhập nhân viên** với tài khoản đã tạo. **Kiểm tra lại quyền** đọc lại SQLite, không dùng quyền cũ trong phiên.
-
-SQLite tự nâng từ v1 lên v2 trong transaction, giữ các loại phòng/giá đã chỉnh. Tài khoản dùng Identity Core 2.2.4/UserManager và kho SQLite; không chạy ASP.NET/OWIN/SQL Server. Mật khẩu dùng PBKDF2-SHA256, salt ngẫu nhiên, 600.000 vòng. Phiên chỉ ở bộ nhớ, không tự đăng nhập sau khi mở lại.
-
-Ba role và 27 permission đã được seed. Staff/Manager đọc quyền hiện hành; Staff luôn bị chặn báo cáo, quyền quản trị chỉ Admin, Export/Print cần View. Admin toàn quyền cố định. Khi tài khoản bị khóa hoặc SecurityStamp thay đổi, service từ chối phiên cũ ở thao tác kế tiếp.
-
-Hiện UI tài khoản chỉ thiết lập Admin đầu tiên và đăng nhập/đăng xuất. Tạo Staff/Manager, khóa/đổi role/reset mật khẩu, ma trận quyền và màn hình nhật ký đầy đủ sẽ làm ở bước 8. Tài khoản Staff/Manager trong bài kiểm tra là dữ liệu thử ở database tạm, không được seed vào database sử dụng. Chế độ Khách hiện có danh mục; các chức năng đặt/tra cứu/gia hạn/gọi món sẽ làm ở các bước nghiệp vụ.
-
-Chi tiết cách hoạt động và giới hạn kiểm tra: [báo cáo bước 3](docs/Step3_Authentication.md).
-
-Sau khi build, kiểm tra thêm bằng Windows PowerShell:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Authentication.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-Bài kiểm tra UI chạy các cửa sổ WPF với dữ liệu thử riêng, hiện kiểm tra thêm phòng/ảnh/loại/khóa mở/dịch vụ/khách hàng/worker NoShow và Khách đặt phòng, lưu 21 ảnh render trong thư mục tạm. Các bài kiểm tra không mở/xóa database đang dùng.
-
-## Bước 4a — sửa Standard/VIP
-
-1. Đăng nhập Admin (hoặc tài khoản có quyền sửa loại phòng).
-2. Trong khu vực nhân viên, bấm **Loại phòng**, chọn Standard/VIP rồi bấm **Sửa loại phòng**.
-3. Sửa tên, sức chứa, giá mỗi giờ, tiện ích và mô tả. Nhập giá nguyên đồng như `145000`, sức chứa là số nguyên dương; tên và tiện ích bắt buộc.
-4. Bấm **Lưu thay đổi** để cập nhật bảng. **Hủy** không lưu. Đăng xuất trở về danh mục Khách chỉ xem.
-
-Chỉ sửa hai loại đã có; không thêm/xóa hoặc sửa Code. Quyền `RoomType.Edit` được kiểm tra trong service cả khi mở form và khi lưu bằng cùng transaction với cập nhật/nhật ký. Form cũ bị chặn nếu người khác đã sửa dữ liệu; hãy đóng, làm mới rồi mở lại.
-
-Schema hiện là **v3**: nâng từ v2 để sửa ActorType của nhật ký nhân viên từ `User` thành `Staff` đúng plan; giữ nội dung, ID, thời gian và liên kết user của nhật ký cũ. Phần sửa loại phòng dùng bảng RoomTypes hiện có, không seed lại giá/tên.
-
-Kiểm tra phần này:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-RoomTypes.ps1
-```
-
-[Báo cáo bước 4a](docs/Step4a_RoomTypes.md) giải thích validation, transaction, nhật ký và kiểm tra đồng thời. Bước 4 còn danh mục phòng/ảnh/khóa mở, dịch vụ và khách hàng.
-
-## Bước 4b.1 — thêm phòng có ảnh
-
-1. Đăng nhập tài khoản có quyền `Room.Manage` (Admin/Manager mặc định), bấm **Phòng** → **Thêm phòng**.
-2. Nhập mã phòng riêng, tên, chọn Standard/VIP, chọn một ảnh JPEG/PNG/WebP hợp lệ tối đa 5 MB; mô tả tùy chọn.
-3. Bấm **Thêm phòng** rồi chọn dòng vừa tạo để xem ảnh. **Hủy** không lưu. Mã phòng cố định sau khi tạo; phòng mới đang mở.
-
-Schema hiện **v4**, thêm Rooms, giữ dữ liệu loại phòng/tài khoản/quyền/nhật ký cũ. Ảnh bắt buộc, được giải mã rồi lưu PNG với tên do ứng dụng tạo trong `%LOCALAPPDATA%\MusicBoxManagement.Wpf\Content\uploads\rooms`. Khi sao lưu/chuyển máy, giữ cả database và thư mục Content. Không tự seed phòng demo.
-
-Quyền, mã trùng, loại phòng và nhật ký được kiểm tra/ghi trong cùng transaction. Service chặn Guest/phiên hết hiệu lực; hai lần tạo cùng mã chỉ một thành công. Lỗi ghi ảnh/nhật ký rollback dữ liệu. Chi tiết và giới hạn khi process dừng đột ngột: [báo cáo bước 4b.1](docs/Step4b1_RoomCreation.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Rooms.ps1
-```
-
-## Kế hoạch tiếp theo
-
-Bước 4b.2a đã có: **Phòng → chọn dòng → Sửa phòng**, sửa tên/mô tả và chọn ảnh mới nếu cần; không chọn thì giữ ảnh hiện tại. Hủy không lưu. Service kiểm tra Room.Manage khi mở/lưu, chặn form cũ và lưu nhật ký cùng transaction. Schema giữ v4. Ảnh cũ sau thay được giữ trên đĩa; hiện chưa có bộ dọn ảnh cũ. Xem [báo cáo 4b.2a](docs/Step4b2a_RoomEditing.md). Kiểm tra bằng Verify-Rooms.ps1 và Verify-AuthenticationUi.ps1 ở trên.
-
-**4b.2b đã hoàn thành:** trong form sửa, chọn Standard/VIP và bật/tắt **Mở phòng để nhận khách**. Khóa cần lý do; phiên Active chặn đổi loại/khóa, booking Confirmed còn hiệu lực (kể cả tương lai) chặn khóa. Đúng mốc StartTime+15 phút thì booking hết hạn dù worker chưa ghi NoShow. Mở lại xóa lý do. Quyền/kiểm tra dữ liệu/cập nhật/nhật ký cùng transaction; schema hiện **v5**. Xem [báo cáo 4b.2b](docs/Step4b2b_RoomState.md).
-
-V5 thêm nền tảng Customers/Reservations/RoomSessions, giữ dữ liệu cũ; chưa có UI/service đặt hoặc nhận phòng. Không tạo dữ liệu demo trong database đang dùng. Phần danh mục khách hàng 4d.1 ở dưới; tiếp theo các luồng booking/session theo plan. Guest hiện vẫn chỉ xem loại phòng; danh sách phòng và các luồng Guest giữ trong phạm vi.
-
-## Bước 4c — danh mục dịch vụ
-
-1. Đăng nhập Admin/Manager hoặc tài khoản được cấp `Service.Manage`, bấm **Dịch vụ**.
-2. Bấm **Thêm dịch vụ**, nhập tên, chọn **Đồ uống / Đồ ăn / Khác**, nhập giá nguyên đồng dương như `15000`, mô tả tùy chọn, rồi **Lưu**.
-3. Chọn một dòng để sửa. Bỏ chọn **Đang bán** rồi lưu để ngừng bán; chọn lại để bán tiếp. Dịch vụ vẫn nằm trong danh mục, không xóa vật lý.
-4. **Bỏ thay đổi** trả form về dữ liệu của dòng đang chọn; với form thêm mới, xóa nội dung chưa lưu. **Làm mới** tải lại danh sách và trở về form thêm.
-
-Schema v6 bổ sung Services trong transaction, giữ dữ liệu cũ và không seed món demo. Quyền hiện hành, validation, kiểm tra form cũ, cập nhật và nhật ký cùng transaction ghi. Form cũ bị chặn nếu có người sửa trước; làm mới rồi chọn lại. Staff mặc định chưa có quyền này, Guest không mở danh mục quản trị.
-
-Gọi món chưa triển khai. Khi làm OrderItem phải dùng snapshot tên/giá, chỉ nhận dịch vụ đang bán cho món mới và giữ món cũ theo mục 23 của plan tham chiếu. Xem [báo cáo 4c](docs/Step4c_Services.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Services.ps1
-```
-
-## Bước 4d.1 — khách hàng và chuẩn hóa SĐT
-
-1. Đăng nhập nhân viên có `Customer.View`, bấm **Khách hàng**. Staff/Manager/Admin mặc định có quyền xem/thêm/sửa.
-2. Nhập một phần tên hoặc SĐT đầy đủ rồi bấm **Tìm**; nhập cả hai để lọc đồng thời. Để trống hai ô để xem tất cả. Tìm tên không phân biệt hoa/thường, giữ dấu tiếng Việt.
-3. **Thêm khách hàng**: nhập họ tên, SĐT rồi **Lưu**. Chọn dòng để sửa; **Bỏ thay đổi** không lưu.
-4. SĐT được bỏ khoảng trắng/chấm/gạch ngang, đổi `+84`/`84` thành `0` rồi kiểm tra đúng 10 chữ số đầu 0. Ví dụ `+84 912.345-678` lưu thành `0912345678`.
-
-SĐT unique: tạo/sửa sang số đã thuộc khách khác bị chặn, không tự ghi đè tên khách cũ. Đổi số giữ CustomerId và các liên kết lịch sử; các lần tìm sau dùng số mới. Không xóa khách hàng. Quyền thêm/sửa tách riêng và cần quyền xem để dùng màn hình; tài khoản chỉ xem có form bị khóa. Khi lưu xong, bộ lọc được xóa để thấy dòng vừa sửa.
-
-Schema giữ **v6**, dùng bảng Customers có từ v5. Hàm chuẩn hóa dùng chung đã sẵn sàng cho các luồng sau. **Đây là tìm khách hàng nội bộ, chưa phải Guest tra cứu phòng đã đặt.** Trang lịch sử Reservation/Session/Invoice, số lần hoàn tất/lần sử dụng gần nhất còn cần hoàn thiện khi có luồng dữ liệu tương ứng; không bỏ khỏi scope. Xem [báo cáo 4d.1](docs/Step4d1_Customers.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Customers.ps1
-```
-
-## Bước 5a — nền tảng giờ và phòng trống
-
-Đã có `BookingHours` và `AvailabilityService` dùng chung cho bước đặt phòng kế tiếp. Phần này chưa thêm nút/form đặt phòng và chưa ghi Reservation qua ứng dụng.
-
-- Tính ngày theo giờ Việt Nam UTC+7; nhận hôm nay đến +30 ngày, không đặt trong quá khứ.
-- Bắt đầu ở phút 00/30, không giây lẻ; thời lượng ban đầu 60/90/120/180 phút.
-- Nằm hoàn toàn trong ca 09:00–12:00 hoặc 13:00–23:00; được kết thúc đúng cuối ca.
-- Kiểm tra overlap cả phòng và khách; đặt sát nhau được. Confirmed còn hiệu lực và phiên Active nguồn booking giữ khoảng lịch; walk-in không chặn mọi booking tương lai. Đặt bắt đầu đúng now cần không có phiên Active ở phòng/khách.
-
-Kết quả kiểm tra chỉ là xem trước. Service đặt phòng tương lai phải kiểm tra quyền/khách rồi chạy lại cùng transaction ghi với INSERT và nhật ký. Chưa có worker ghi NoShow, nhưng Confirmed hết đúng 15 phút đã không giữ lịch. Xem [báo cáo 5a](docs/Step5a_Availability.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availability.ps1
-```
-
-## Bước 5b.1 — lưu booking và NoShow
-
-Đã có service tạo đặt phòng cho Guest/Staff; chưa thêm form đặt phòng nên hiện chưa dùng thao tác này từ giao diện. Staff cần quyền `Reservation.Create`; đường Guest riêng không cần tài khoản. Cả hai dùng cùng quy tắc giờ/phòng/khách/overlap và tạo **Confirmed ngay**, không thu cọc.
-
-SĐT chuẩn hóa tìm Customer cũ, giữ nguyên tên đã lưu; chưa có thì tạo Customer cùng booking và nhật ký trong transaction. Nếu lỗi/trùng lịch, hoàn tác cả khách mới. Hai lượt đồng thời đặt cùng phòng hoặc cùng khách ở hai phòng khác nhau chỉ một lượt thành công. Staff đặt hộ không cần mở màn hình quản trị khách để tìm-tạo khách của booking.
-
-`NoShowService` chuyển Confirmed đã hết hạn 15 phút thành NoShow và ghi log System; không chuyển booking đã có session/CheckedIn. WPF chạy tác vụ khi khởi động và mỗi phút, xử lý ở luồng nền, dừng timer khi thoát. Khi app đóng không có worker; lần mở sau xử lý tồn đọng. Tạo booking cũng xử lý NoShow trong transaction. Lịch trống vẫn loại booking hết hạn ngay cả khi worker chậm; không cam kết chuyển status đúng từng giây.
-
-Build Debug/Release và chín bộ kiểm tra đạt, tất cả bằng dữ liệu tạm. Xem [báo cáo 5b.1](docs/Step5b1_Reservations.md). Tiếp theo form chọn phòng/ngày/giờ, rồi lookup/hủy và calendar.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Reservations.ps1
-```
-
-## Bước 5b.2 — Khách đặt phòng từ giao diện
-
-1. Ở **chế độ Khách**, bấm **Đặt phòng**. Nếu chưa có phòng, đăng nhập Admin → Phòng để thêm phòng có ảnh, rồi đăng xuất về Khách. Không tự seed phòng demo.
-2. Chọn phòng đang mở, xem ảnh/loại/sức chứa/giá/tiện ích/mô tả. Danh sách này là phòng nhận đặt; phòng đang có khách vẫn có thể nhận lịch tương lai theo plan.
-3. Chọn ngày (hôm nay đến +30), giờ, thời lượng 60/90/120/180 phút, nhập tên và SĐT.
-4. Bấm **Kiểm tra giờ** để xem khoảng đã chọn có đặt được không. Đây chỉ là xem trước, chưa giữ chỗ.
-5. Bấm **Xác nhận đặt**: service kiểm tra lại và lưu Confirmed. Thành công hiện mã booking, phòng, giờ bắt đầu/kết thúc và hạn đến nhận phòng trước StartTime+15 phút. Không thu cọc.
-6. Sau thành công form/nút gửi được khóa. **Đặt lượt mới** xóa tên/SĐT để nhập lượt khác. Đóng khi chưa xác nhận không lưu; đóng sau thành công giữ booking đã lưu.
-
-SĐT 0/+84/84 dùng chung chuẩn hóa; số cũ giữ tên khách cũ. Nếu vừa xem trống nhưng có người đặt trước, lần xác nhận báo trùng và không ghi thêm khách/booking. Sửa lựa chọn hoặc thông tin sẽ bỏ kết quả preview cũ. Khi bận không đóng/gửi lặp; schema giữ v6 và các transaction của 5b.1.
-
-Guest tra cứu/hủy sau khi đóng form đã có ở bước 5c.1 bên dưới. UI Staff đặt hộ đã có ở 5c.2b; calendar ngày/tuần là phần kế tiếp. Chi tiết [báo cáo 5b.2](docs/Step5b2_GuestBooking.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestBooking.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 5c.1 — Khách tra cứu và hủy booking
-
-1. Ở **chế độ Khách**, bấm **Tra cứu SĐT**, nhập SĐT đầy đủ rồi **Tra cứu**. Số dạng `0`, `+84`, `84` dùng cùng quy tắc chuẩn hóa với đặt phòng.
-2. Danh sách chỉ có booking **Confirmed còn hiệu lực** của SĐT hiện hành, gồm mã booking/phòng và giờ bắt đầu/kết thúc theo UTC+7. Không cần tài khoản/OTP/mã truy cập.
-3. Chọn dòng để xem điều kiện hủy. Trước hoặc **đúng mốc 2 giờ** đến giờ đặt, bấm **Hủy booking đã chọn** → **Đồng ý hủy**. **Giữ booking** hoặc đóng cửa sổ chưa xác nhận không ghi thay đổi.
-4. Còn dưới 2 giờ, màn hình hướng dẫn liên hệ cửa hàng. Dù kết quả tra cứu cũ còn cho phép hủy, lần xác nhận vẫn kiểm tra lại SĐT/trạng thái/giờ trong transaction ghi.
-
-Hủy chuyển trạng thái thành Cancelled, ghi lý do `Customer cancelled online` và nhật ký Guest cùng transaction; không xóa booking hoặc sửa lịch/phòng. Booking đã hủy không giữ chỗ nữa. Khi đổi SĐT khách ở màn hình nội bộ, các lần tra cứu/hủy dùng số mới; sửa ô SĐT trên màn hình Guest xóa ngay kết quả/selection cũ. Lookup xử lý NoShow tồn đọng và loại booking hết đúng +15 phút.
-
-Schema giữ v6. Debug/Release và 11 bộ kiểm tra đạt trên dữ liệu tạm tại bước 5c.1; kiểm tra UI render 25 ảnh. Chi tiết [báo cáo 5c.1](docs/Step5c1_GuestLookup.md). Phần tra cứu phiên Active/tiền tạm tính/gia hạn/gọi món sẽ bổ sung ở bước vận hành khi có các service tương ứng; Guest Lookup chưa hoàn tất toàn bộ mục 22. Danh sách/chi tiết/hủy nội bộ và UI đặt hộ đã có ở bước 5c.2a/5c.2b bên dưới; calendar ngày/tuần còn làm tiếp.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestLookup.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 5c.2a — nhân viên xem và hủy booking
-
-1. Đăng nhập tài khoản có `Reservation.View`, bấm **Booking**. Guest không có nút này; Staff/Manager/Admin mặc định xem được.
-2. Chọn khoảng ngày (mặc định hôm nay..+30), SĐT đầy đủ nếu cần, trạng thái rồi **Tải danh sách**. Bỏ trống hai ngày để xem toàn bộ lịch sử booking. SĐT dùng chuẩn hóa 0/+84/84 chung; cả ngày đến được tính theo giờ Việt Nam.
-3. Chọn dòng để xem tên/SĐT khách, phòng, giờ bắt đầu/kết thúc, hạn nhận, người đặt/lúc tạo và lý do hủy nếu có. Cancelled/NoShow/CheckedIn/Completed vẫn xem được nội bộ.
-4. Có `Reservation.Cancel` và booking Confirmed còn hạn, chưa có phiên nguồn: **Hủy booking đã chọn** → nhập lý do → **Xác nhận hủy**. **Giữ booking**/đóng trước xác nhận không lưu. Staff được hủy trong vòng 2 giờ và trong grace trước khi nhận phòng; đúng StartTime+15 phút đã hết hạn.
-
-Hủy đọc lại quyền/trạng thái/giờ/nguồn session trong transaction với lý do và nhật ký Staff; không xóa booking hoặc sửa lịch/phòng. Mất quyền sau khi mở form bị chặn và xóa dữ liệu chi tiết cũ. Tài khoản chỉ có quyền xem vẫn lọc/xem được, không hủy. Nếu hủy đã lưu nhưng tải lại lỗi, màn hình vẫn báo đã hủy.
-
-Schema giữ v6. Build Debug/Release và 12 bộ kiểm tra đạt tại bước 5c.2a trên dữ liệu tạm, UI render 30 ảnh. Chi tiết [báo cáo 5c.2a](docs/Step5c2a_StaffReservations.md). Form đặt hộ đã có ở 5c.2b bên dưới; calendar ngày/tuần còn làm tiếp. Check-in/walk-in và phần phiên chưa có, không coi chi tiết booking là hoàn tất vận hành.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-StaffReservations.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 5c.2b — nhân viên đặt hộ từ giao diện
-
-1. Đăng nhập tài khoản có `Reservation.Create`, bấm **Đặt hộ** ở màn hình chính. Nếu có thêm `Reservation.View`, cũng mở được **Booking → Đặt hộ**. Tài khoản chỉ có quyền xem không được đặt hộ; quyền tạo độc lập với quyền xem và Customer CRUD.
-2. Chọn phòng đang mở, ngày/giờ/thời lượng, nhập tên/SĐT như form Khách. **Kiểm tra giờ** chỉ xem trước, chưa giữ chỗ; giờ/ca/slot/overlap giữ quy tắc đã chốt.
-3. **Xác nhận đặt** gọi CreateStaff và đọc lại quyền/phòng/khách/lịch trong transaction. Booking Confirmed lưu đúng tài khoản người đặt và nhật ký Staff; SĐT cũ giữ tên khách đã lưu, khách mới được tạo cùng booking. Có lỗi thì rollback cả khách mới/booking/nhật ký.
-4. Thành công hiện mã/giờ/hạn nhận, khóa gửi lặp. **Đặt lượt mới** xóa tên/SĐT; đóng trước xác nhận không lưu. Mất quyền sau khi mở form bị chặn, xóa dữ liệu form, vẫn đóng được; không chuyển sang đường Guest.
-5. Mở từ Booking rồi lưu/đóng sẽ tải lại, bỏ bộ lọc cũ và chọn booking vừa tạo. Lỗi tải lại sau commit vẫn báo đã đặt hộ để tránh gửi lại booking.
-
-Schema giữ v6. Debug/Release và 13 bộ kiểm tra đạt trên dữ liệu tạm, UI render 36 ảnh. Chi tiết [báo cáo 5c.2b](docs/Step5c2b_StaffBooking.md). Tiếp theo 5d.1 nền tảng lịch/trạng thái phòng, rồi giao diện Ngày và Tuần. Ảnh AI vẫn chờ người dùng chọn; chưa thay ảnh phòng đang dùng.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-StaffBooking.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 5d.1 — nền tảng lịch và trạng thái phòng
-
-Đã có CalendarService cho lịch nội bộ, cần quyền `Calendar.View` hiện hành; chưa thêm nút/màn hình lịch. CalendarRange.Day lấy ngày Việt Nam 00:00 đến trước 00:00 hôm sau; Week lấy thứ Hai đến trước thứ Hai kế tiếp. Đọc tất cả phòng hoặc lọc một Room, có cả phòng khóa để xem lịch sử.
-
-- Trạng thái hiện tại ưu tiên Inactive → Occupied → Reserved → Available. Chỉ Confirmed đang tới lượt và còn grace mới làm Reserved; booking ngày mai không đổi trạng thái hôm nay.
-- Khoảng giữ lịch dùng chung quy tắc với AvailabilityService. Phiên nguồn booking chỉ giữ tới ExpectedEndTime, CheckedIn không vẽ thêm booking cũ. Quá giờ cảnh báo nhưng không tự nới hold.
-- Dữ liệu thực tế giữ nguyên giây/phút: Active đến now, Completed đến ActualEndTime, không làm tròn theo ô 30 phút. Walk-in không giữ lịch tương lai; hạn trả phòng tính động theo ca và booking kế tiếp của phòng/khách.
-- Lịch là kết quả đọc tại một mốc thời gian, không giữ chỗ hoặc tự cập nhật NoShow. Mọi thao tác ghi vẫn kiểm tra lại trong transaction. Đây là dữ liệu nội bộ có thông tin khách, chưa phải đường lịch Guest.
-
-Schema giữ v6. Debug/Release và 14 bộ kiểm tra đạt trên database tạm; kiểm tra WPF cũ vẫn render 36 ảnh. Fixture session kiểm tra cách đọc lịch, chưa có service/UI check-in hoặc walk-in. Chi tiết [báo cáo 5d.1](docs/Step5d1_CalendarFoundation.md). Tiếp theo 5d.2 giao diện lịch **Ngày**, rồi **Tuần** và lịch Guest chỉ trống/bận, giữ đủ phạm vi plan.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Calendar.ps1
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Availability.ps1
-```
-
-## Bước 5d.2 — lịch Ngày từ giao diện
-
-1. Đăng nhập tài khoản có `Calendar.View` → **Lịch phòng** (mặc định Ngày). Guest không có nút nội bộ này; không cần thêm quyền xem booking hoặc quản lý phòng/khách.
-2. Chọn ngày và phòng (hoặc tất cả), bấm **Tải lịch**. **Ngày trước / Hôm nay / Ngày sau** đổi ngày và tải lại. Chưa có phòng thì màn hình hướng dẫn thêm ở danh mục Phòng.
-3. Lưới giờ Việt Nam 09:00–23:00, ô 30 phút, đánh dấu nghỉ 12:00–13:00. Mỗi cột có mã/tên phòng và trạng thái **hiện tại**, còn khối lịch thuộc ngày đã chọn. Cuộn dọc xem giờ muộn, cuộn ngang xem thêm phòng.
-4. Chọn khối để xem mã booking/phiên, tên/SĐT, giờ thực tế/dự kiến/hạn trả và cảnh báo. Dự kiến dùng nền sáng/viền nét đứt; Completed màu xám; quá giờ viền nâu. Walk-in chưa chốt kết thúc, chỉ vẽ tới lúc tải và có hạn trả động. Các lượt chồng do phiên trước quá giờ được vẽ cạnh nhau.
-
-Giờ thực tế như 10:37 giữ nguyên vị trí, không làm tròn slot. Phần vẽ cắt theo khung 09–23, chi tiết giữ giờ gốc. Lịch chỉ đọc, không kéo-thả sửa booking và không giữ chỗ. Tải lại để cập nhật; không có timer tự tải ở màn hình này. Đổi ngày/phòng xóa lịch/chi tiết cũ; bị thu hồi quyền khi tải lại sẽ xóa cả dữ liệu/canvas, vẫn cho đóng.
-
-Schema giữ v6. Debug/Release và 14 bộ kiểm tra đạt trên dữ liệu tạm; UI render 42 ảnh. Xem [báo cáo 5d.2](docs/Step5d2_CalendarDay.md). Tiếp theo 5d.3 UI lịch **Tuần**, rồi lịch Guest một phòng chỉ trống/bận. Session/walk-in trong bài kiểm tra là fixture; service nhận phòng/vận hành vẫn chưa triển khai.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-Calendar.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 5d.3 — lịch Tuần
-
-1. Đăng nhập → **Lịch phòng**, chọn **Tuần**. Chuyển chế độ tự tải lại, giữ ngày/phòng đang chọn; mở cửa sổ mới vẫn mặc định Ngày.
-2. Chọn bất kỳ ngày nào trong tuần muốn xem rồi **Tải lịch**. Tuần bắt đầu thứ Hai, kết thúc Chủ nhật theo giờ Việt Nam; status ghi rõ ngày đầu/cuối. **Tuần trước/Tuần sau** dịch 7 ngày; **Hôm nay** giữ chế độ đang dùng.
-3. Có đủ 7 cột ngày, cùng trục 09–23/ô 30 phút/nghỉ 12–13. Cuộn ngang để xem các ngày cuối, lọc một phòng nếu nhiều lượt chồng nhau. Mỗi lượt có mã phòng, chọn/tooltip xem đầy đủ thông tin.
-4. Phiên giao qua nửa đêm vẽ phần giao với từng ngày trong tuần; phần trước/sau khung không bị đổi giờ gốc. Chi tiết vẫn có ngày và giờ thực tế tới giây. Trạng thái phòng hiện tại hiện riêng ở bên phải, không tô kín lịch tuần.
-
-Tuần dùng cùng CalendarService/quyền/NoShow-grace/giữ lịch với Ngày, chỉ đọc và tải lại thủ công. Không kéo-thả/sửa giờ hoặc giữ chỗ từ hình lịch. Schema v6; Debug/Release và 14 bộ kiểm tra đạt tại bước 5d.3 trên dữ liệu tạm, UI render 46 ảnh. Xem [báo cáo 5d.3](docs/Step5d3_CalendarWeek.md). Lịch Guest đã có ở 5d.4 bên dưới; service/UI vận hành vẫn chưa triển khai.
-
-## Bước 5d.4 — Khách xem trống/bận theo ngày
-
-1. Chế độ Khách → **Đặt phòng**, chọn phòng/ngày/thời lượng → **Xem trống/bận theo ngày**. Chưa cần nhập tên/SĐT. Form nhân viên đặt hộ cũng dùng được nút này theo quyền `Reservation.Create`.
-2. Danh sách có 28 giờ bắt đầu cách nhau 30 phút từ 09:00 đến 22:30. Ô **Có thể đặt** màu xanh nhạt; ô **Bận**, **Đã qua**, **Giờ nghỉ**, **Không đủ ca** không được chọn. Trạng thái tính cho cả khoảng theo thời lượng đang chọn, không chỉ 30 phút của ô.
-3. Chọn dòng trống → **Chọn giờ này** chỉ điền giờ vào form. Đóng hoặc xem/tải lại lịch không tạo booking/khách. Đổi ngày/phòng/thời lượng ở form và mở lại để xem lựa chọn khác.
-4. **Tải lại lịch** lấy snapshot mới; phòng bị khóa/lỗi sẽ xóa các ô cũ. Màn hình không hiển thị tên/SĐT, mã booking/phiên hoặc thông tin khách khác.
-
-Lịch kiểm tra **phòng**, chưa kiểm tra lịch riêng của bạn vì chưa có SĐT. Nhập tên/SĐT rồi Kiểm tra giờ/Xác nhận đặt như trước; submit vẫn kiểm tra cả phòng và khách trong transaction. Lịch không giữ chỗ, lịch trống có thể đổi khi người khác đặt trước. Walk-in/quá giờ không tự tô bận tương lai; bắt đầu đúng now vẫn bị chặn nếu phòng có Active.
-
-Schema v6; Debug/Release và 15 bộ kiểm tra đạt trên dữ liệu tạm, UI render 50 ảnh. Chi tiết [báo cáo 5d.4](docs/Step5d4_GuestCalendar.md). Tiếp theo 6a.1 nền tảng **check-in từ booking** theo quyền Session.CheckIn; chưa có luồng nhận phòng thực tế ở bước này.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-GuestCalendar.ps1
-powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-AuthenticationUi.ps1
-```
-
-## Bước 6a.1 — service nhận phòng từ booking
-
-Có RoomSessionService.CheckIn theo quyền Session.CheckIn hiện hành. Nhận sớm khi đủ khoảng trống, giờ thực tế giữ nguyên giây/ticks; dự kiến trả sau đầy đủ thời lượng booking. Kiểm tra grace/ca/Room và Customer/overlap bỏ nguồn trong transaction, chốt giá và loại phòng lúc nhận; session, CheckedIn và nhật ký Staff cùng commit. Nhận lặp trả phiên đã lưu, không tạo phiên hoặc log thứ hai.
-
-Schema v6, Debug/Release và 16 bộ kiểm tra đạt trên database tạm, gồm NoShow/check-in cả hai thứ tự writer, hủy/khóa phòng, snapshot và rollback. UI cũ render 50 ảnh. **Chưa có nút nhận phòng trên UI**; tiếp theo 6a.2 thêm thao tác ở chi tiết booking. Chi tiết [báo cáo 6a.1](docs/Step6a1_CheckIn.md).
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tests\Verify-CheckIn.ps1
-```
-
-## Bước 6a.2 — UI nhận phòng
-
-Đăng nhập → Booking → chọn Confirmed còn hạn → Nhận phòng → xem giờ/giá tham khảo → Xác nhận nhận phòng. Cần Reservation.View để mở danh sách và Session.CheckIn để nhận; không cần quyền đặt/hủy hoặc Customer CRUD. Để sau chưa lưu. Service kiểm tra lại và chốt giờ thực tế/giá; kết quả hiện mã phiên, phòng/loại, giờ nhận/dự kiến trả và giá chốt. Gửi lặp/mất quyền/booking bị hủy đều được xử lý; lỗi tải lại sau commit vẫn báo đã nhận. Chi tiết [báo cáo 6a.2](docs/Step6a2_CheckInUi.md).
-
-Debug/Release build vào bin/VerifyDebug và bin/VerifyRelease vì bản Debug đang chạy trong Visual Studio. 7 bộ kiểm tra liên quan đạt trên dữ liệu tạm, UI 55 ảnh. Bản đang chạy chưa tự cập nhật; dừng phiên chạy rồi build/F5 lại để dùng thay đổi. Tiếp theo 6b.1 walk-in.
-
-Quản trị tài khoản và ma trận quyền có trong bước 8: Admin tạo/sửa/khóa, gán Staff/Manager/Admin và chỉnh quyền theo role. Người dùng đã chốt giữ RBAC theo role; dashboard hoạt động/doanh thu quán sẽ thay phần bảng/nút kiểm tra quyền tạm ở màn hình chính, không cần module khoản chi điện/thuê mặt bằng.
-
-## Bước 6b.1 — service nhận khách trực tiếp
-
-RoomSessionService.CreateWalkIn theo Session.WalkIn nhận phòng/tên/SĐT, không chọn thời lượng hoặc tạo booking. Kiểm tra ca/phòng mở/Room và Customer không Active/booking đã tới giờ còn grace; lưu session Active, giờ thực tế/snapshot giá-phòng/customer/audit trong transaction. Giờ cần trả phòng tính động theo ca và booking kế tiếp của Room/Customer, không lưu thành ExpectedEndTime hoặc chặn booking tương lai vô hạn. ReadWalkIn theo Session.View chỉ đọc và cập nhật cảnh báo theo lịch hiện tại.
-
-Schema v6, Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ liệu tạm, UI cũ 55 ảnh. Chưa có nút/form walk-in; tiếp theo 6b.2 UI nhận khách trực tiếp. Chi tiết [báo cáo 6b.1](docs/Step6b1_WalkIn.md).
-
-## Bước 6b.2 — nhận khách trực tiếp
-
-Menu trái có Khách trực tiếp theo Session.WalkIn: chọn phòng mở/tên/SĐT, xác nhận giá và giờ cần trả, nhận ngay qua service transaction. Không chọn thời lượng hoặc tạo booking. Khóa gửi lặp, xử lý mất quyền/stale; kết quả có Cập nhật giờ trả theo lịch hiện hành và Nhận lượt mới. Chi tiết trong [báo cáo 6b.2](docs/Step6b2_WalkInUi.md). Tiếp theo service gia hạn phiên.
-
-## Bước 6c.1 — service gia hạn
-
-Gia hạn phiên Active từ booking theo Session.Extend, mỗi lần +30/+60 trước hoặc đúng ExpectedEndTime. Preview chỉ đọc; lúc ghi kiểm tra lại quyền/giờ/ca/lịch Room và Customer trong transaction, chặn form cũ bằng observedEnd; giữ Reservation và snapshot giá, ghi audit cùng cập nhật. Chưa thêm UI hoặc đường Guest. Xem [báo cáo 6c.1](docs/Step6c1_Extension.md). Debug/Release và 11 bộ kiểm tra liên quan đạt trên dữ liệu tạm; UI cũ 63 ảnh. Tiếp theo 6c.2 danh sách/chi tiết phiên và UI gia hạn.
-
-## Bước 6c.2 — phiên sử dụng và giao diện gia hạn
-
-Đăng nhập → Phiên sử dụng → lọc Active/Completed/Tất cả hoặc SĐT → chọn phiên. Session.View độc lập Reservation.View; chi tiết dùng snapshot giá/phòng và giờ thực tế, walk-in hiện giờ cần trả động. Phiên từ booking đủ điều kiện với Session.Extend có thể chọn 30/60 phút, xem trước và xác nhận gia hạn. Chặn gửi lặp/stale/mất quyền, tải lại giờ mới và giữ thông báo thành công khi refresh lỗi sau commit. Chi tiết [báo cáo 6c.2](docs/Step6c2_SessionsExtensionUi.md). Debug/Release và 14 bộ kiểm tra liên quan đạt, UI 69 ảnh trên dữ liệu tạm. Tiếp theo Guest Lookup Active và gia hạn theo SĐT; gọi món/tiền tạm tính và checkout vẫn theo plan.
-
-## Bước 6c.3a — service phiên và gia hạn cho Khách
-
-GuestSessionService tra cứu phiên Active đúng SĐT hiện hành qua DTO public riêng; preview/gia hạn +30/+60 kiểm tra lại số, trạng thái, giờ trả, ca và lịch Room/Customer trong transaction, audit Guest và chặn xác nhận cũ. Giữ snapshot/Reservation; walk-in chỉ xem giờ cần trả động. Debug/Release và 16 bộ kiểm tra đạt trên dữ liệu tạm, UI cũ 69 ảnh. Xem [báo cáo 6c.3a](docs/Step6c3a_GuestSessions.md). **Chưa nối vào màn hình Tra cứu SĐT**; tiếp theo 6c.3b giao diện phiên Active và xác nhận gia hạn cho Khách. Tiền tạm tính/gọi món/checkout vẫn giữ trong plan.
-
-## Bước 6c.3b — Khách xem phiên và xác nhận gia hạn
-
-Khách → Tra cứu SĐT → nhập số → tab Đang sử dụng: xem phiên Active/giá đã chốt/giờ nhận/trả; phiên từ booking có thể chọn 30/60 phút → Xem trước gia hạn → Xác nhận gia hạn hoặc Giữ giờ trả. Walk-in chỉ hiện hạn trả động, không có gia hạn. Đổi số xóa dữ liệu cũ; xác nhận kiểm tra lại số/phiên/giờ/lịch, chặn gửi lặp và giữ thông báo đã gia hạn nếu refresh lỗi. Debug/Release và 16 bộ kiểm tra đạt, UI 76 ảnh trên dữ liệu tạm. Xem [báo cáo 6c.3b](docs/Step6c3b_GuestSessionUi.md). Tiếp theo gọi món/Order; tiền tạm tính/checkout/hóa đơn/dashboard/RBAC/báo cáo vẫn theo plan.
-
-## Bước 6d.1 — nền tảng đơn món
-
-Schema v7 nâng từ v6 giữ dữ liệu, thêm Orders/OrderItems và snapshot tên/giá. OrderService tạo Guest Pending hoặc Staff Completed (món đã phục vụ), xác nhận/hủy Pending cùng transaction/audit, quyền riêng và số hiện hành; chỉ Active Session, món mới trong ca và đang bán, mỗi món 1–10. Đơn cũ giữ snapshot khi danh mục đổi/ngừng bán. Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.1](docs/Step6d1_OrderFoundation.md). **Chưa có giao diện gọi món**; tiếp theo menu/giỏ món và thao tác phục vụ/hủy, rồi tiền tạm tính/checkout theo plan.
-
-## Bước 6d.2a — đường menu và xem trước giỏ món
-
-Đã có ReadMenuGuest/ReadMenuStaff và PreviewGuest/PreviewStaff: chỉ món đang bán/phiên Active, Guest đúng SĐT hiện hành hoặc Staff Order.Create riêng, không cần quyền quản lý dịch vụ. Preview chỉ đọc giỏ/giá hiện tại, không tạo đơn/khóa giá; khi gửi vẫn kiểm tra lại toàn bộ trong transaction ghi. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI cũ 76 ảnh. Xem [báo cáo 6d.2a](docs/Step6d2a_OrderMenuPreview.md). **Chưa có màn hình gọi món**; tiếp theo giao diện Guest chọn/gửi/xem-hủy Pending, sau đó giao diện Staff phục vụ/tạo hộ/hủy theo plan.
-
-## Bước 6d.2b — Khách gọi món, xem và hủy đơn chờ
-
-Khách → Tra cứu SĐT → Đang sử dụng → Gọi món / xem đơn: chọn món đang bán, thêm số lượng 1–10 vào giỏ, xem trước rồi xác nhận gửi Pending. Danh sách bên phải cho xem snapshot món và xác nhận hủy Pending; Quay lại không lưu. Màn hình dùng số/phiên đã tra cứu, kiểm tra lại khi ghi, khóa gửi lặp và xóa kết quả stale; lỗi tải lại sau commit vẫn báo đã gửi/đã hủy. Ngoài ca không gửi mới nhưng vẫn hủy Pending của phiên Active. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 83 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2b](docs/Step6d2b_GuestOrderUi.md). Tiếp theo 6d.2c giao diện Staff xem/phục vụ/hủy/tạo hộ Completed theo quyền riêng; Billing/checkout/dashboard/RBAC/báo cáo vẫn trong plan.
-
-## Bước 6d.2c — nhân viên xử lý đơn và ghi món đã phục vụ
-
-Đăng nhập → Đơn món → chọn phiên: Order.View xem đơn/chi tiết snapshot và lịch sử Completed; Order.Confirm xác nhận đã phục vụ, Order.Cancel hủy Pending sau xác nhận. Order.Create độc lập quyền khác cho chọn phiên Active và ghi đơn hộ Completed sau khi giao món. Nhân viên chỉ có quyền tạo vẫn mở được menu này, không đọc đơn cũ. Chặn thao tác lặp/stale/mất quyền, lỗi refresh sau commit giữ thông báo thành công. Schema v7; Debug/Release và 21 bộ kiểm tra đạt, UI 94 ảnh trên dữ liệu tạm. Xem [báo cáo 6d.2c](docs/Step6d2c_StaffOrderUi.md). Tiếp theo BillingService/tiền tạm tính dùng chung checkout; hóa đơn/dashboard/quản trị RBAC/báo cáo vẫn theo plan.
-
-## Bước 6e.1 — nền tảng tính tiền phiên
-
-BillingService đọc phiên Active đúng SĐT Guest hoặc Session.View của Staff trong transaction: tiền phòng theo actual/giá snapshot, giữ giây/ticks, làm tròn đồng AwayFromZero; cộng chỉ món Completed theo snapshot. Trả giờ tính, thời lượng, các khoản/tổng và số đơn chờ/đã hủy; preview không ghi hoặc kết thúc phiên. Có helper internal dùng cùng writer/công thức cho checkout tương lai. Schema v7; Debug/Release và 22 bộ kiểm tra đạt, UI cũ 94 ảnh trên dữ liệu tạm. Xem [báo cáo 6e.1](docs/Step6e1_BillingFoundation.md). Chưa có giao diện tiền tạm tính; tiếp theo nối Guest/Staff và nút cập nhật, rồi checkout/hóa đơn.
-
-- **6e.2 hoàn thành 11/10/2026:** UI tiền tạm tính cho Khách từ Tra cứu SĐT/Active và nhân viên từ Phiên sử dụng/Active. Hiện actual/giờ tính UTC+7/thời lượng/giá snapshot/tiền phòng-món-tổng, số Pending chưa cộng và trạng thái tiền chưa chốt; cập nhật qua ReadGuest/ReadStaff riêng. Chặn đọc lặp/đóng khi busy, xóa tiền cũ khi số/quyền/Completed/lỗi đọc thay đổi, tải lại cha khi đóng. Schema v7; Debug/Release và 22 bộ kiểm tra đạt trên dữ liệu tạm, UI 100 ảnh. Xem docs/Step6e2_BillingUi.md. Tiếp theo bước 7 checkout/hóa đơn theo Session.CheckOut riêng: clock mới sau writer, chốt tiền/hủy Pending/Session/Reservation/Invoice/audit cùng transaction, Cash/BankTransfer/idempotence và cạnh tranh service thật. Dashboard/quản trị tài khoản/RBAC/báo cáo/Excel/lịch sử khách vẫn giữ scope.
-
-## Bước 7a.1 — nền tảng checkout/hóa đơn (11/10/2026)
-
-Schema hiện v8: Invoices unique RoomSession/InvoiceNumber, FK/CHECK/UTC, tên thu ngân snapshot, Cash/BankTransfer, trigger chặn sửa/xóa; số tiền nguyên đồng lưu TEXT chuẩn/đọc decimal, không dùng SQLite REAL hoặc SUM trên chuỗi tiền cho báo cáo. Migration giữ v7, không backfill hóa đơn/doanh thu giả cho Completed fixture. CheckoutService.PreviewStaff/ConfirmStaff theo Session.CheckOut hiện hành độc lập View/Order/Invoice.View; preview chỉ đọc bill và Completed items. Confirm đọc tiền/clock mới sau writer, Cancel Pending + Session/Reservation Completed + Invoice/PaidAt/thu ngân snapshot + audit cùng transaction; replay trả invoice cũ vẫn kiểm tra quyền, không đọc clock/đổi payment/log. Đã có service thật, chưa UI checkout/tìm-xem-in invoice. Debug/Release và 23 bộ kiểm tra đạt, Checkout/Billing thêm Release, UI cũ 100 ảnh trên dữ liệu tạm. Xem docs/Step7a1_CheckoutFoundation.md.
-
-Khi sửa checkout/hóa đơn chạy Verify-Checkout và 22 bộ Billing/Orders/Foundation/Authentication/RoomTypes/Rooms/Services/Customers/Availability/Reservations/GuestBooking/GuestLookup/StaffReservations/StaffBooking/Calendar/GuestCalendar/CheckIn/WalkIn/Extension/Sessions/GuestSessions/AuthenticationUi. Verify-Checkout đã có service thật checkout-order confirm/cancel/create và checkout-extend cả hai thứ tự, hai checkout/replay, source/Pending/audit rollback, clock sau lock, vòng nhận khách tiếp theo và migration. Fixture hạ schema phải bỏ Invoices trước các bảng nguồn.
-
-Tiếp theo 7a.2 UI checkout theo Session.CheckOut riêng, có entry CheckOut-only; preview/tính lại/Completed items/cảnh báo hủy Pending, Cash/BankTransfer/xác nhận đã thu tiền, busy/duplicate/stale/quyền/refresh sau commit/replay. Invoice.View/Print cho xem/in độc lập bước tiếp sau; giữ dashboard/quản trị tài khoản/role/ma trận/audit/báo cáo/Excel/lịch sử khách.
-## Bước 7a.2 — UI trả phòng (12/10/2026)
-
-Đã có menu Trả phòng và CheckoutWindow/CheckoutViewModel theo Session.CheckOut riêng; selector ListActiveStaff/DTO Active-only không Customer PII, không đòi Session.View/Order.View/Invoice.View và không fallback Guest. Preview hiện actual/giá snapshot/Completed items/phòng-món-tổng, Pending sẽ hủy, thời điểm tính; Cash/BankTransfer/xác nhận đã kiểm tra nhận tiền/Quay lại/tính lại bỏ ack. Busy/duplicate/stale/quyền/rollback/replay; thành công giữ Invoice đã chốt kể cả refresh sau commit lỗi, không tự gửi lại. Đây là receipt từ thao tác checkout, chưa màn lịch sử/in invoice. Schema giữ v8; Debug/Release và 23 bộ kiểm tra đạt, Checkout thêm Release, UI 109 ảnh trên dữ liệu tạm. Xem docs/Step7a2_CheckoutUi.md; giữ bộ kiểm tra 7a.1. AuthenticationUi có sidebar CheckOut-only/empty/checkbox/payment/fresh amount/keep/duplicate/revoked/rollback/replay/post-commit/manual refresh/busy preview và confirm/stale trước preview/compact.
-
-Tiếp theo nền tảng đọc/tìm Invoice theo Invoice.View: mã/ngày PaidAt Việt Nam/SĐT hiện hành, detail lấy snapshot Session/Order/Invoice, tiền TEXT đọc decimal chính xác, không đọc lại giá/tên catalog/thu ngân để sửa lịch sử. Sau đó UI xem/in theo Invoice.View/Print; không Guest history hoặc bypass quyền qua checkout. Giữ dashboard/quản trị tài khoản/role/ma trận/audit/báo cáo/Excel/lịch sử khách, doanh thu PaidAt không tiền tạm tính.
-## Bước 7b.1 — nền tảng đọc/tìm hóa đơn (12/10/2026)
-
-Đã có InvoiceService.Search/Read/ReadForPrint theo Invoice.View/Print hiện hành độc lập quyền Session/Order/Customer/CheckOut/Report. Mã đủ trim/uppercase, ngày PaidAt UTC+7 [đầu from, đầu sau to), SĐT hiện hành qua CustomerId và filters AND; DTO summary không Customer PII. Detail header/session/Completed items cùng snapshot/một clock, giữ room/type/price/service/cashier snapshots, UsedTicks/decimal/tiền TEXT chính xác; không tính lại bill lịch sử hoặc đọc catalog hiện tại để đổi phiếu. Guard Completed/end=PaidAt/line totals và header totals; ReadForPrint đọc lại cả View+Print, không dùng CanPrint cache. Schema giữ v8; Debug/Release và 24 bộ kiểm tra đạt, Invoices thêm Release, UI cũ 109 ảnh trên DB tạm. Xem docs/Step7b1_InvoiceReading.md. Chưa menu/form xem lịch sử hoặc PrintDialog.
-
-Khi sửa hóa đơn chạy Verify-Invoices cùng 23 bộ Checkout/Billing/Orders/Foundation/Authentication/RoomTypes/Rooms/Services/Customers/Availability/Reservations/GuestBooking/GuestLookup/StaffReservations/StaffBooking/Calendar/GuestCalendar/CheckIn/WalkIn/Extension/Sessions/GuestSessions/AuthenticationUi. Invoices có View-only/current View/Print/stamp/active/logout, code/phone/date midnight/Kind/AND/open bounds, immutable catalog/user/phone snapshots, precision vượt Int64, readonly/consistency guard và read snapshot vs checkout thật.
-
-Tiếp theo 7b.2 UI tìm/xem invoice theo Invoice.View riêng: code/ngày PaidAt/SĐT, danh sách/detail snapshot/tổng chốt, đổi filter/mất quyền/stale xóa dữ liệu; sau đó in WPF gọi ReadForPrint kiểm tra View+Print hiện hành. Không Guest history hoặc bypass qua checkout; giữ dashboard/quản trị tài khoản/role/RBAC/audit/báo cáo/Excel/lịch sử khách.
-## Bước 7b.2 — UI tìm/xem hóa đơn (12/10/2026)
-
-Đã có menu Hóa đơn, ForInvoices/InvoicesWindow/InvoicesViewModel theo Invoice.View riêng, View-only không đòi quyền Session/Order/Customer/CheckOut/Report/Print và không Guest route. Mã đủ/ngày PaidAt UTC+7/SĐT hiện hành/filters AND/Xóa lọc, danh sách và auto Read chi tiết snapshots/phòng/món/thu ngân/tiền đã chốt, decimal lớn/phiếu không món. Đổi lọc/chọn/tải lại xóa dữ liệu cũ, busy/duplicate/đóng/stale/quyền; mất View xóa cả dữ liệu và input riêng tư, vẫn đóng/tải lại được. Nhãn ngày/tiền/placeholder tiếng Việt, không sửa/xóa/invoice audit. Schema v8; Debug/Release và 24 bộ kiểm tra đạt, Invoices thêm Release, UI 116 ảnh trên DB tạm. Xem docs/Step7b2_InvoiceUi.md, giữ bộ kiểm tra 7b.1. AuthenticationUi thêm menu View-only/empty/filter/code/phone đổi/ngày midnight/snapshot/large money/no items/error/stale/revoked/busy/compact; chưa PrintDialog.
-
-Tiếp theo 7b.3 in hóa đơn WPF theo Invoice.View + Invoice.Print, gọi ReadForPrint kiểm tra quyền và snapshot mới tại thao tác in, dựng phiếu từ dữ liệu đã chốt/decimal, test bản in tạm/nhiều dòng/in lại/hủy dialog/thu hồi quyền; không tự gửi giấy thật khi kiểm tra. Giữ dashboard/quản trị tài khoản/role/ma trận/audit/báo cáo/Excel/lịch sử khách.
-
-## Bước 7b.3 — Xem trước/in hóa đơn WPF (13/10/2026)
-
-Đã có Xem trước / In từ Hóa đơn, InvoiceDocument/InvoicePrintWindow/InvoicePrintViewModel và PrintDialog thật qua InvoicePrinter. ReadForPrint kiểm tra Invoice.View + Invoice.Print trước mở preview, trước chọn máy và sau xác nhận; phiếu snapshot/decimal/UTC+7, phân trang A4 và dàn lại theo vùng in máy chọn, không tính lại tiền lịch sử. Hủy không gửi, in lại không ghi DB/audit; busy/duplicate/đóng/revoked/stale/khổ nhỏ/lỗi hàng đợi có guard và xóa bản cũ khi lỗi. Schema v8; Debug/Release và 25 bộ kiểm tra đạt, InvoicePrinting thêm Release; AuthenticationUi 116 ảnh, in thêm 7 ảnh với phiếu 70 dòng/4 trang/tiền vượt Int64. Test chỉ dùng DB tạm và bộ giả lập máy in, chưa kiểm tra giấy/driver thật. Xem docs/Step7b3_InvoicePrinting.md.
-
-Khi sửa xem/in hóa đơn chạy Verify-InvoicePrinting (-STA) và Verify-Invoices cùng 23 bộ Checkout/Billing/Orders/Foundation/Authentication/RoomTypes/Rooms/Services/Customers/Availability/Reservations/GuestBooking/GuestLookup/StaffReservations/StaffBooking/Calendar/GuestCalendar/CheckIn/WalkIn/Extension/Sessions/GuestSessions/AuthenticationUi. Không gửi lệnh tới máy in thật trong kiểm tra tự động; không dùng DTO/cache CanPrint thay ReadForPrint hiện hành. Read transaction kết thúc trước dialog; lần kiểm tra cuối và hàng đợi in không là một transaction SQLite.
-
-Tiếp theo 8a.1 nền tảng dashboard hoạt động theo mục 29: phòng/booking hôm nay/Active/Pending và cảnh báo bắt buộc, doanh thu hôm nay chỉ Admin hoặc Manager có Report.View, Staff luôn bị chặn phần tổng hợp. Sau đó UI dashboard thay bảng quyền kỹ thuật ở màn chính. Giữ quản trị tài khoản tạo/sửa/khóa/gán role/reset mật khẩu/bảo vệ Admin cuối cùng, ma trận Role → Permission/audit, báo cáo/Excel, lịch sử khách, dữ liệu demo và kiểm tra; không tính chi điện/mặt bằng.
-
-## Bước 8a.1 — Nền tảng dashboard (13/10/2026)
-
-Đã có DashboardService.Read/ReadRevenueToday, DashboardSnapshot và ForDashboard theo Dashboard.View hiện hành, độc lập quyền xem chi tiết. Phòng/trạng thái dùng chung ScheduleRules với Calendar; booking hôm nay UTC+7/đủ status/NoShow hiệu lực không ghi DB, Active gồm qua đêm, Pending chỉ Active, 4 cảnh báo NearNoShow/Overdue/NextBooking/OutsideHours. Một read transaction/một IClock; DTO không PII khách, không tự NoShow/checkout/ghi audit. Doanh thu Invoice.PaidAt/TotalAmount decimal TEXT chỉ Admin hoặc Manager có Report.View, Staff luôn null/bị từ chối API riêng dù gán nhầm Report; kiểm tra quyền/role hiện hành và overflow. Schema v8; Debug/Release và 26 bộ kiểm tra đạt, Dashboard thêm Release, UI cũ 116 ảnh. Xem docs/Step8a1_DashboardFoundation.md; chưa nối UI dashboard.
-
-Khi sửa dashboard chạy Verify-Dashboard cùng Calendar/Availability/Authentication/Checkout/Billing/Orders/Reservations/Sessions/WalkIn/CheckIn/Extension/GuestSessions/Foundation/AuthenticationUi; giữ UTC+7/PaidAt đầu ngày/decimal/Staff không tổng hợp, 1 clock/read snapshot/quyền hiện hành/readonly, grace5 phút và +15/ticks/ReturnBy Room+Customer/qua đêm/cạnh tranh checkout thật. Khi đụng nguồn hóa đơn hoặc lịch chung, giữ các bộ tương ứng ở bước 7b.3/5d/6 như trước.
-
-Tiếp theo 8a.2 nối UI dashboard lên màn chính thay bảng quyền kỹ thuật: số liệu/cảnh báo/cập nhật/Làm mới, Dashboard.View hiện hành, xóa dữ liệu cũ khi đổi phiên/mất quyền/lỗi; quyền chi tiết vẫn riêng, doanh thu chỉ Admin/Manager đủ Report.View. Giữ quản trị tài khoản/RBAC/role/reset/khóa/bảo vệ Admin cuối cùng/audit, báo cáo/Excel/lịch sử khách/dữ liệu demo/kiểm tra. Không cắt chức năng hoặc thêm chi điện/mặt bằng.
-
-## Bước 8a.2 — UI dashboard và giải thích luồng code (13/10/2026)
-
-Đã thay bảng quyền kỹ thuật ở màn chính bằng DashboardView/DashboardViewModel: số liệu/phòng/booking/Active/Pending, cảnh báo, timestamp/Làm mới, doanh thu chỉ Admin/Manager đủ quyền. ForDashboard/Read hiện hành, Task.Run/binding, busy/version/Reset chống dữ liệu cũ khi logout/chuyển actor/lỗi/revoked; không cấp quyền nghiệp vụ từ Dashboard.View. Main RefreshAccessAsync dùng SemaphoreSlim tuần tự, cập nhật sau khi đóng nghiệp vụ và không bỏ lần tải quyền mới; Guest xóa/ẩn dashboard. Schema v8; Debug/Release và 15 bộ kiểm tra liên quan đạt, UI 122 ảnh trên DB tạm. Xem docs/Step8a2_DashboardUi.md. Có docs/Code_Flow_Full_Guide.md giải thích gọi hàm chi tiết dashboard và 14 luồng chính, quyền/transaction/binding/async/debug; nối với tài liệu kiến trúc trước.
-
-Khi sửa dashboard/MainWindow chạy Dashboard/Calendar/Availability/Authentication/Checkout/Billing/Orders/Reservations/Sessions/WalkIn/CheckIn/Extension/GuestSessions/Foundation/AuthenticationUi; kiểm tra Dashboard-only/không quyền/Staff không doanh thu/Manager bị thu hồi, reset/logout trong Task/gửi trùng/lỗi/quyền mới khi refresh chồng/compact/tải lại sau nghiệp vụ. Các menu chi tiết vẫn kiểm tra quyền riêng; engine và schema không đổi.
-
-Tiếp theo nền tảng quản trị tài khoản nhân viên ở bước 8: tạo/sửa/khóa/gán Staff-Manager-Admin/reset mật khẩu/bảo vệ Admin cuối cùng/audit, rồi UI Admin. Đọc plan WPF và tham chiếu nghiệp vụ tài khoản/quyền trước; không sửa trực tiếp qua Identity store bỏ qua service quản trị. Giữ ma trận Role-Permission/audit UI/báo cáo-Excel/lịch sử khách/demo/kiểm tra; không quyền riêng user, không chi điện/mặt bằng.
-
-## Bước 8b.1 — Nền tảng quản trị tài khoản (14/10/2026)
-
-Đã có AccountManagementService.List/CreateAsync/UpdateAsync/ResetPasswordAsync theo User.Manage hiện hành (Admin-only), UserAccount/AccountEdit DTO riêng không credentials, revision fingerprint chống form cũ. UserManager chuẩn bị password/role/stamp ngoài writer, store pending, kiểm tra quyền/record/unique trong writer mới lưu; SaveManagedChanges là đường internal có guard, SaveChanges bootstrap không cập nhật user cũ tùy ý. Không hard delete, đúng một role Staff/Manager/Admin, chặn Admin tự khóa/hạ role và giữ Admin active kể cả đồng thời; role/reset/lock-unlock đổi stamp, metadata giữ phiên. User/role/hash/stamp/audit cùng commit, reset rollback giữ mật khẩu cũ, không log password/hash. Schema v8; Debug/Release và 27 bộ kiểm tra đạt, Accounts thêm Release; UI cũ 122 ảnh. Xem docs/Step8b1_AccountFoundation.md; chưa có UI quản trị.
-
-Khi sửa tài khoản/Identity store chạy Verify-Accounts và Authentication/Foundation cùng các bộ nghiệp vụ dùng phiên/quyền và AuthenticationUi. Giữ Admin-only kể cả gán nhầm, stale sau writer, unique case-insensitive, one role, self/last Admin/concurrent locks/duplicate create, hash/stamp/audit rollback, old session invalidation/no revive on unlock, no secrets in DTO/log. Không sửa cập nhật user qua SaveChanges bootstrap hoặc SQL UI; UserManager xử lý mật khẩu.
-
-Tiếp theo 8b.2 UI Admin quản trị tài khoản: danh sách/thêm/sửa/khóa-mở/gán role/reset mật khẩu, revision/xác nhận/busy/mất quyền/refresh sau commit, tự reset yêu cầu đăng nhập mới. Giữ ma trận Role-Permission/audit UI/báo cáo-Excel/lịch sử khách/demo/kiểm tra; không per-user permission, không xóa cứng tài khoản hoặc chi điện/mặt bằng.
-
-## Bước 8b.2 — UI quản trị nhân viên (14/10/2026)
-
-Đã có menu Nhân viên/ForAccounts/Admin-only, AccountsWindow/AccountsViewModel: List/thêm/sửa/khóa-mở/gán role/reset, original revision/Prepare/xác nhận/giữ, Task.Run hash và service hiện hành, busy/duplicate/đóng/stale/revoked/rollback/post-commit reload error. PasswordBox không bind VM, xóa theo ngữ cảnh/thao tác; form self role/active khóa, service giữ guard; tự reset giữ đã lưu/RequiresRelogin/xóa data và khi đóng main về Guest/clear dashboard. Không Delete user, không SQL/Identity bypass UI. Schema v8; Debug/Release và 12 bộ liên quan đạt, UI 131 ảnh (Debug/lượt cuối Release), DB tạm. Xem docs/Step8b2_AccountsUi.md; Code_Flow_Full_Guide đã bổ sung event/UI quản trị.
-
-Khi sửa account UI/Main chạy Accounts/Authentication/Foundation/Dashboard/Checkout/Invoices/Reservations/Sessions/Extension/Orders/Billing/AuthenticationUi; giữ mismatch/secret clearing/preview-keep/one-way readonly table/stale/busy/duplicate/self-reset-main-Guest/role and lock guards/revoked/private data cleared/audit rollback/success despite refresh failure/compact. Không gửi lại thao tác đã Commit vì reload lỗi.
-
-Tiếp theo ma trận quyền Staff/Manager và audit ở bước 8: Role-Permission/giới hạn bất biến/dependencies/current permission/transaction/audit; Staff không Report, Manager không User-Permission-Audit, Admin luôn toàn quyền, Print cần View/Export cần Report.View. Giữ báo cáo-Excel/lịch sử khách/demo/kiểm tra; không per-user permission, không xóa cứng tài khoản hoặc chi điện/mặt bằng.
+Ngày 06/11/2026 đã dọn 92 tài liệu từng bước/nháp/lịch sử đã được thay thế, đồng thời giữ báo cáo và ảnh kiểm thử. Tài liệu đã gỡ vẫn có trong [snapshot Git trước khi dọn](https://github.com/thmvu/MusicBoxManagement.Wpf/tree/72a0fa70cdec42769f00a2bd9d5826de4f2adb53/docs), có thể lấy lại từ lịch sử Git.

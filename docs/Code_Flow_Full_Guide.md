@@ -1,4 +1,6 @@
-# Luồng code Music Box WPF — lần theo từ giao diện đến SQLite
+# Luồng code Music Box WPF — tài liệu học theo phiên bản 14/10/2026
+
+> **Mốc tài liệu:** bản học kiến trúc/luồng gọi trước đợt chuyển MySQL. Runtime hiện tại dùng **MySQL/Aiven**; tên lớp backend cũ trong phần minh họa là lịch sử. Đọc [wiring MySQL](MySql_Migration_06b_08_ReportsHistoryWiring.md) và [bàn giao hiện hành](MySql_Migration_Status.md) khi lần theo code đang chạy.
 
 Cập nhật **14/10/2026**, sau bước **8b.2 UI quản trị tài khoản** và 8a.2 UI dashboard. Đọc cùng [giải thích kiến trúc MVC/MVVM](Architecture_MVC_Services_Explanation.md). Tài liệu này tập trung vào **ai gọi hàm nào, truyền gì, nhận gì, dữ liệu đổi ở đâu**, thay vì chỉ định nghĩa tên các lớp.
 

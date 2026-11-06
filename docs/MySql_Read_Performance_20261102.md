@@ -1,6 +1,6 @@
 # Tối ưu các luồng đọc MySQL — 02/11/2026
 
-Tiếp [tối ưu khởi tạo](MySql_Performance_Review_20261102.md) theo yêu cầu người dùng tự động làm đủ và áp dụng Superpowers/Ponytail. Đây là rà đường dữ liệu và tối ưu những round-trip thừa được chứng minh, không cắt tính năng hay cache quyền/dữ liệu quán. [Plan và ledger](superpowers/plans/2026-11-02-mysql-read-batching.md).
+Tiếp [tối ưu khởi tạo](MySql_Performance_Review_20261102.md) theo yêu cầu người dùng tự động làm đủ và áp dụng Superpowers/Ponytail. Đây là rà đường dữ liệu và tối ưu những round-trip thừa được chứng minh, không cắt tính năng hay cache quyền/dữ liệu quán. [Plan và ledger](https://github.com/thmvu/MusicBoxManagement.Wpf/blob/72a0fa70cdec42769f00a2bd9d5826de4f2adb53/docs/superpowers/plans/2026-11-02-mysql-read-batching.md).
 
 ## Vấn đề và thay đổi
 

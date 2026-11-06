@@ -1,6 +1,6 @@
 # Rà soát độ trễ MySQL — 02/11/2026
 
-Người dùng yêu cầu tự động tối ưu và xét phần cần/không cần bằng Superpowers và [Ponytail](https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md). Đã đọc using-superpowers, systematic-debugging, brainstorming, writing-plans, executing-plans, TDD, review và verification; áp dụng Ponytail trực tiếp từ nguồn, không cài plugin/dependency hoặc chạy script bên ngoài. User giao tự quyết nên ghi lựa chọn/phạm vi vào [plan](superpowers/plans/2026-11-02-mysql-latency.md) và triển khai không chờ hỏi thiết kế.
+Người dùng yêu cầu tự động tối ưu và xét phần cần/không cần bằng Superpowers và [Ponytail](https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md). Đã đọc using-superpowers, systematic-debugging, brainstorming, writing-plans, executing-plans, TDD, review và verification; áp dụng Ponytail trực tiếp từ nguồn, không cài plugin/dependency hoặc chạy script bên ngoài. User giao tự quyết nên ghi lựa chọn/phạm vi vào [plan](https://github.com/thmvu/MusicBoxManagement.Wpf/blob/72a0fa70cdec42769f00a2bd9d5826de4f2adb53/docs/superpowers/plans/2026-11-02-mysql-latency.md) và triển khai không chờ hỏi thiết kế.
 
 ## Phân loại từ luồng thực tế
 

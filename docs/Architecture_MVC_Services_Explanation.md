@@ -1,5 +1,7 @@
 # Giải thích kiến trúc MVC/MVVM và các Service trong Music Box WPF
 
+> **Mốc tài liệu:** bản học kiến trúc/luồng gọi trước đợt chuyển MySQL. Runtime hiện tại dùng **MySQL/Aiven**; tên lớp backend cũ trong phần minh họa là lịch sử. Đọc [wiring MySQL](MySql_Migration_06b_08_ReportsHistoryWiring.md) và [bàn giao hiện hành](MySql_Migration_Status.md) khi lần theo code đang chạy.
+
 Tài liệu này giải thích cấu trúc mã nguồn hiện tại của Music Box Management WPF, vai trò của từng phần và cách các service phối hợp với nhau. Dự án dùng **WPF trên .NET Framework 4.7.2 và SQLite**.
 
 > **Điểm cần phân biệt:** project này không dùng ASP.NET MVC. Giao diện desktop được tổ chức theo kiểu **MVVM đơn giản**, cộng với các lớp Service và Data. Tài liệu so sánh với MVC để người học dễ liên hệ.

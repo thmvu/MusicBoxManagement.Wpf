@@ -1,5 +1,11 @@
 ﻿# Music Box WPF
 
+## Dọn tài liệu đóng gói — 06/11/2026
+
+Theo yêu cầu người dùng, đã gỡ92 file tài liệu từng bước/nháp/port đã hoàn tất; docs còn20 Markdown cấp đầu có mục lục. README được rút gọn và sửa hướng dẫn chạy MySQL hiện hành. Giữ code/assets/Tests/Tools, ERD/schema, use case, plan/nghiệp vụ, vận hành và toàn bộ ảnh/log/manifest kiểm thử. Tài liệu đã gỡ có trong snapshot Git72a0fa70cdec42769f00a2bd9d5826de4f2adb53;78 link lịch sử được chuyển sang snapshot đó. Hai guide kiến trúc/code cũ có nhãn mốc14/10, không coi chúng là backend hiện hành.
+
+Kiểm tra tĩnh:0 link local tài liệu/ảnh bị thiếu,304 hash ảnh không đổi, code/assets/tests/tools không đổi; csproj171/49 có sẵn giữ ngoài commit. Chỉ dọn tài liệu, không build hoặc chạy lại suite/database. Không xóa provider/package/test cũ hay .git.
+
 ## Kiểm thử luồng MySQL có ảnh — 05/11/2026
 
 Theo yêu cầu tổng kiểm tra, đã build lại Debug/Release dùng thật và chạy34/34 nhóm Release đạt kết quả cuối (29 service/nền tảng +5 UI); thêm Hours UI Debug18 popup và Feedback UI Debug36 popup đạt. Release cuối tương ứng18/36 popup; có walk-in qua hai nút và bill Guest khớp checkout. Không nhận34 nhóm đều chạy hai cấu hình hoặc mọi tổ hợp đầu vào/race đã thử. Product20788df không đổi; chỉ bổ sung runner allowlist MySQL-only/assertion/capture/tài liệu, giữ csproj171/49 ngoài commit.
@@ -24,7 +30,7 @@ Theo yêu cầu bắt buộc của người dùng, các lệnh dữ liệu ở U
 
 ## Lịch phòng và dashboard WPF — 02/11/2026
 
-Theo thiết kế người dùng đã chốt: lịch Ngày/tất cả phòng, Tuần ưu tiên một phòng, trục giờ/header cố định khi cuộn và lịch tháng. Dashboard có bảng phòng vector WPF 2D, trạng thái/chỉ số/cảnh báo từ snapshot hiện hành; giữ doanh thu theo quyền. Menu gom một mục Đặt phòng, vẫn hỗ trợ View-only hoặc Create-only; walk-in giữ riêng nghiệp vụ. Không thêm thư viện hoặc sửa service/schema/dữ liệu quán. Xem [cách dùng, kiểm tra và ảnh](docs/Ui_Calendar_Dashboard_20261102.md) và [plan](docs/superpowers/plans/2026-11-02-counter-ui.md). Build dùng thật Debug/Release và runner UI MySQL cuối đều đạt, 8 ảnh/bản; đã kiểm View-only/Create-only/Staff không doanh thu, chọn ngày/phòng đúng một Read, resize/scroll không Read và revoke xóa chi tiết. Diff csproj có sẵn vẫn giữ ngoài commit.
+Theo thiết kế người dùng đã chốt: lịch Ngày/tất cả phòng, Tuần ưu tiên một phòng, trục giờ/header cố định khi cuộn và lịch tháng. Dashboard có bảng phòng vector WPF 2D, trạng thái/chỉ số/cảnh báo từ snapshot hiện hành; giữ doanh thu theo quyền. Menu gom một mục Đặt phòng, vẫn hỗ trợ View-only hoặc Create-only; walk-in giữ riêng nghiệp vụ. Không thêm thư viện hoặc sửa service/schema/dữ liệu quán. Xem [cách dùng, kiểm tra và ảnh](docs/Ui_Calendar_Dashboard_20261102.md) và [plan](https://github.com/thmvu/MusicBoxManagement.Wpf/blob/72a0fa70cdec42769f00a2bd9d5826de4f2adb53/docs/superpowers/plans/2026-11-02-counter-ui.md). Build dùng thật Debug/Release và runner UI MySQL cuối đều đạt, 8 ảnh/bản; đã kiểm View-only/Create-only/Staff không doanh thu, chọn ngày/phòng đúng một Read, resize/scroll không Read và revoke xóa chi tiết. Diff csproj có sẵn vẫn giữ ngoài commit.
 
 
 ## Chỉ làm việc với MySQL/Aiven — chỉ đạo người dùng 02/11/2026
@@ -34,7 +40,7 @@ Người dùng yêu cầu: **không bao giờ động đến SQLite nữa** đ�
 
 ## Tối ưu truy vấn MySQL theo luồng — 02/11/2026
 
-Đã rà các luồng đọc và thay N+1 bằng batch trong cùng snapshot: lịch Khách 28 ô đọc2 SELECT thay50; trạng thái21 phòng1 thay43; dữ liệu lịch nhân viên3 thay63; ReturnBy5walk-in1 thay5; đơn món1 SELECT thay1+2N; danh sách5tài khoản2 thay7 gồm kiểm quyền. Mẫu ReadDay trên musicbox8219→718ms, không SLA toàn app. Không đổi writer locks/clock/tiền/quyền/SSL/schema/UI/seed. Xem [phạm vi, kiểm tra và giới hạn](docs/MySql_Read_Performance_20261102.md), [plan/ledger](docs/superpowers/plans/2026-11-02-mysql-read-batching.md). Giữ các validation/refresh hiện hành cần thiết, không xóa SQLite/tools/test vì chúng không gây round-trip UI. Diff csproj có sẵn vẫn giữ ngoài commit. Kết quả online/những lượt fail và retry phải đọc ở report, không nhận toàn76suite đã chạy từ sốsuite có sẵn.
+Đã rà các luồng đọc và thay N+1 bằng batch trong cùng snapshot: lịch Khách 28 ô đọc2 SELECT thay50; trạng thái21 phòng1 thay43; dữ liệu lịch nhân viên3 thay63; ReturnBy5walk-in1 thay5; đơn món1 SELECT thay1+2N; danh sách5tài khoản2 thay7 gồm kiểm quyền. Mẫu ReadDay trên musicbox8219→718ms, không SLA toàn app. Không đổi writer locks/clock/tiền/quyền/SSL/schema/UI/seed. Xem [phạm vi, kiểm tra và giới hạn](docs/MySql_Read_Performance_20261102.md), [plan/ledger](https://github.com/thmvu/MusicBoxManagement.Wpf/blob/72a0fa70cdec42769f00a2bd9d5826de4f2adb53/docs/superpowers/plans/2026-11-02-mysql-read-batching.md). Giữ các validation/refresh hiện hành cần thiết, không xóa SQLite/tools/test vì chúng không gây round-trip UI. Diff csproj có sẵn vẫn giữ ngoài commit. Kết quả online/những lượt fail và retry phải đọc ở report, không nhận toàn76suite đã chạy từ sốsuite có sẵn.
 
 Kiểm chứng cuối: 44/44 local Debug và 15 nhóm MySQL liên quan đạt kết quả cuối, 3 bộ tối ưu mới thêm Release đạt; Billing giữ lượt đầu fail8s và isolatedretryđạt với assertion cũ. Build Debug/Release dùng thật đạt. Máy in giả đã kiểm, chưa in giấy thật.
 
